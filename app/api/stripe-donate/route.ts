@@ -152,7 +152,7 @@ async function sendConfirmationEmail(
     const line6Base = ec?.line6 || "Thank you again for standing with the people of Ukraine this Christmas."
     // FIX: closing_salutation is its own protected field so it cannot be
     // accidentally removed by purpose-specific overrides
-    const closingSalutation = ec?.closing_salutation || "Yours in Christ,"
+    const closingSalutation = ec?.closing_salutation || ""
     const signatureNameBase = ec?.signature_name || "Dr. Hannu Haukka"
     const signatureTitleBase = ec?.signature_title || "CEO, Great Commission Media Ministries (GCMM)"
     const line9 =
@@ -226,10 +226,8 @@ async function sendConfirmationEmail(
               ${line6}
             </p>
 
-            <!-- Closing Salutation (protected plain-text field) -->
-            <p style="color: #1e293b; margin: 0 0 5px 0; font-size: 16px; line-height: 1.6; font-style: italic;">
-              ${escapeHtml(closingSalutation)}
-            </p>
+            <!-- Closing Salutation (only shown if set in Plasmic) -->
+            ${closingSalutation ? `<p style="color: #1e293b; margin: 0 0 5px 0; font-size: 16px; line-height: 1.6; font-style: italic;">${escapeHtml(closingSalutation)}</p>` : ""}
 
             <!-- Signature Name & Title -->
             <p style="color: #1e293b; margin: 0 0 5px 0; font-size: 16px; line-height: 1.6; font-weight: 600;">
