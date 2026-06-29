@@ -111,7 +111,8 @@ async function sendConfirmationEmail(
   amount: number,
   accountId?: string,
   emailCustomization?: any,
-  purpose?: string
+  purpose?: string,
+  frequency?: string
 ) {
   try {
     const transporter = createTransporter()
@@ -138,6 +139,7 @@ async function sendConfirmationEmail(
     // Email content lines (base values)
     const greeting = ec?.greeting || "Dear [Donor Name],"
     const line2 = ec?.line2 || "Thank you for your generous donation of [$xx] for [Donation field]."
+    const line2Monthly = ec?.line2Monthly || "Thank you for your generous monthly gift of [$xx] for [Donation field]. Your recurring support makes a lasting difference every month."
     const line3Base =
       ec?.line3 ||
       "Your support is helping provide urgent aid to families affected by the war with food and life-saving wood-burning stoves that bring warmth, dignity, and strength in the harsh winter, along with medical supplies and ambulances."
@@ -172,7 +174,7 @@ async function sendConfirmationEmail(
 
     const formattedAmount = `$${(amount / 100).toFixed(2)}`
     const processedGreeting = greeting.replace("[Donor Name]", escapeHtml(donorInfo.name))
-    const processedLine2 = line2
+    const processedLine2 = (frequency === "monthly" ? line2Monthly : line2)
       .replace("[$xx]", escapeHtml(formattedAmount))
       .replace("[Donation field]", escapeHtml(purposeLabel))
 
@@ -246,6 +248,7 @@ async function sendConfirmationEmail(
               <!-- FIX: Canadian date format -->
               <p style="color: #64748b; margin: 4px 0; font-size: 14px;"><strong>Date:</strong> ${formatDateCA()}</p>
               <p style="color: #64748b; margin: 4px 0; font-size: 14px;"><strong>Payment Method:</strong> **** **** **** ${escapeHtml(lastFour)}</p>
+              <p style="color: #64748b; margin: 4px 0; font-size: 14px;"><strong>Frequency:</strong> ${frequency === "monthly" ? "Monthly (recurring)" : "One-time"}</p>
               ${accountId ? `<p style="color: #64748b; margin: 4px 0; font-size: 14px;"><strong>Account ID:</strong> ${escapeHtml(accountId)}</p>` : ""}
             </div>
 
@@ -471,7 +474,8 @@ export async function POST(request: NextRequest) {
           confirmedPaymentIntent.amount,
           account_id,
           email_customization,
-          purpose
+          purpose,
+          frequency
         ),
         sendNotificationEmail(
           donor_info,
