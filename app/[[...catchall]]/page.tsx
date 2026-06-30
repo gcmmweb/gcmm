@@ -40,6 +40,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: meta.description || undefined,
       images: meta.openGraphImageUrl ? [{ url: meta.openGraphImageUrl }] : undefined,
     },
+    twitter: {
+      card: "summary_large_image",
+      title: meta.title || undefined,
+      description: meta.description || undefined,
+      images: meta.openGraphImageUrl ? [meta.openGraphImageUrl] : undefined,
+    },
   };
 }
 
