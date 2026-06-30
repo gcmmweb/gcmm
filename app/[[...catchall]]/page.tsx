@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { PLASMIC } from "@/src/plasmic-init";
+import { PLASMIC_SERVER } from "@/src/plasmic-init-server";
 import PlasmicClientPage from "./client-page";
 
 type Props = {
@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const resolvedParams = await params;
   const pathname = getPathname(resolvedParams?.catchall);
 
-  const pageData = await PLASMIC.maybeFetchComponentData(pathname);
+  const pageData = await PLASMIC_SERVER.maybeFetchComponentData(pathname);
   const meta = pageData?.entryCompMetas?.[0]?.pageMetadata;
 
   if (!meta) {
@@ -48,7 +48,7 @@ export default async function CatchallPage({ params, searchParams }: Props) {
   const resolvedSearchParams = await searchParams;
   const pathname = getPathname(resolvedParams?.catchall);
 
-  const pageData = await PLASMIC.maybeFetchComponentData(pathname);
+  const pageData = await PLASMIC_SERVER.maybeFetchComponentData(pathname);
 
   if (!pageData) {
     return (
