@@ -1,63 +1,81 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { PLASMIC } from "@/src/plasmic-init";
-import PlasmicClientPage from "./client-page";
+"use client"
 
-type Props = {
-  params: Promise<{ catchall?: string[] }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-};
+import {
+  PlasmicComponent,
+  type ComponentRenderData,
+  PlasmicRootProvider,
+  PageParamsProvider,
+} from "@plasmicapp/loader-react"
+import { useEffect, useState } from "react"
+import { usePathname, useSearchParams } from "next/navigation"
+import { PLASMIC } from "@/src/plasmic-init"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
 
-function getPathname(catchall?: string[]) {
-  return "/" + (catchall ? catchall.join("/") : "");
-}
+export default function CatchallPage() {
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const [loading, setLoading] = useState(true)
+  const [pageData, setPageData] = useState<ComponentRenderData | null>(null)
 
-// This runs on the SERVER, before the page is ever sent to a browser or
-// a crawler (Google, Facebook, WhatsApp, iMessage, etc). It fetches this
-// specific page's Title/Description/OG Image from Plasmic and turns them
-// into real Next.js metadata.
-export async function generateMetadata({
-  params,
-  searchParams,
-}: Props): Promise<Metadata> {
-  const resolvedParams = await params;
-  const resolvedSearchParams = await searchParams;
-  const pathname = getPathname(resolvedParams?.catchall);
+  useEffect(() => {
+    async function load() {
+      const data = await PLASMIC.maybeFetchComponentData(pathname || "/")
+      setPageData(data)
+      setLoading(false)
+    }
+    load()
+  }, [pathname])
 
-  const pageData = await PLASMIC.maybeFetchComponentData(pathname);
-  if (!pageData) {
-    return {};
-  }
-
-  return PLASMIC.unstable__generateMetadata(pageData, {
-    params: resolvedParams,
-    query: resolvedSearchParams,
-  });
-}
-
-export default async function CatchallPage({ params, searchParams }: Props) {
-  const resolvedParams = await params;
-  const resolvedSearchParams = await searchParams;
-  const pathname = getPathname(resolvedParams?.catchall);
-
-  const pageData = await PLASMIC.maybeFetchComponentData(pathname);
+  if (loading)
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#fff",
+        }}
+      >
+        <div
+          className="spinner"
+          style={{
+            marginTop: "20px",
+            width: "40px",
+            height: "40px",
+            border: "4px solid #ccc",
+            borderTop: "4px solid #0070f3",
+            borderRadius: "50%",
+            animation: "spin 1s linear infinite",
+          }}
+        />
+        <style>{`
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    `}</style>
+      </div>
+    )
 
   if (!pageData) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
+        {/* Main Content */}
         <main className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8">
           <div className="max-w-md w-full text-center">
             <div className="mb-8">
-              <h1 className="text-4xl font-bold text-primary mb-4 text-balance">
-                404 - Page Not Found
-              </h1>
+              <h1 className="text-4xl font-bold text-primary mb-4 text-balance">404 - Page Not Found</h1>
+
               <p className="text-lg text-muted-foreground mb-8 text-pretty">
-                We couldn&apos;t find the page you&apos;re looking for. It
-                might have been moved, deleted, or you might have
-                accidentally entered the wrong URL.
+                We couldn't find the page you're looking for. It might have been moved, deleted, or you might have accidentally entered the
+                wrong URL.
               </p>
             </div>
+
+            {/* Call to Action */}
             <div className="space-y-4">
               <Button variant="outline" asChild className="w-full bg-transparent">
                 <Link href="/">Go to Homepage</Link>
@@ -66,17 +84,15 @@ export default async function CatchallPage({ params, searchParams }: Props) {
           </div>
         </main>
       </div>
-    );
+    )
   }
 
-  const query = Object.fromEntries(
-    Object.entries(resolvedSearchParams ?? {}).map(([key, value]) => [
-      key,
-      Array.isArray(value) ? value[0] ?? "" : value ?? "",
-    ])
-  );
-
+  const query = Object.fromEntries((searchParams ?? new URLSearchParams()).entries())
   return (
-    <PlasmicClientPage pathname={pathname} pageData={pageData} query={query} />
-  );
+    <PlasmicRootProvider loader={PLASMIC}>
+      <PageParamsProvider route={pathname || "/"} query={query}>
+        <PlasmicComponent component={pathname || "/"} />
+      </PageParamsProvider>
+    </PlasmicRootProvider>
+  )
 }
