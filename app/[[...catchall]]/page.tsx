@@ -1,81 +1,70 @@
-"use client"
+import type { Metadata } from "next";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { PLASMIC } from "@/src/plasmic-init";
+import PlasmicClientPage from "./client-page";
 
-import {
-  PlasmicComponent,
-  type ComponentRenderData,
-  PlasmicRootProvider,
-  PageParamsProvider,
-} from "@plasmicapp/loader-react"
-import { useEffect, useState } from "react"
-import { usePathname, useSearchParams } from "next/navigation"
-import { PLASMIC } from "@/src/plasmic-init"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
+type Props = {
+  params: Promise<{ catchall?: string[] }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
 
-export default function CatchallPage() {
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
-  const [loading, setLoading] = useState(true)
-  const [pageData, setPageData] = useState<ComponentRenderData | null>(null)
+function getPathname(catchall?: string[]) {
+  return "/" + (catchall ? catchall.join("/") : "");
+}
 
-  useEffect(() => {
-    async function load() {
-      const data = await PLASMIC.maybeFetchComponentData(pathname || "/")
-      setPageData(data)
-      setLoading(false)
-    }
-    load()
-  }, [pathname])
+// Runs on the SERVER, before the page is ever sent to a browser or crawler
+// (Google, Facebook, WhatsApp, iMessage, etc). Plasmic's fetched page data
+// already includes each page's Title/Description/OG Image (set in Plasmic
+// Studio's Page Settings) inside a "pageMetadata" field — we just read it
+// directly and hand it to Next.js, rather than relying on Plasmic's
+// unstable__generateMetadata helper, which doesn't exist in this version
+// of the library.
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const resolvedParams = await params;
+  const pathname = getPathname(resolvedParams?.catchall);
 
-  if (loading)
-    return (
-      <div
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: "#fff",
-        }}
-      >
-        <div
-          className="spinner"
-          style={{
-            marginTop: "20px",
-            width: "40px",
-            height: "40px",
-            border: "4px solid #ccc",
-            borderTop: "4px solid #0070f3",
-            borderRadius: "50%",
-            animation: "spin 1s linear infinite",
-          }}
-        />
-        <style>{`
-      @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-    `}</style>
-      </div>
-    )
+  const pageData = await PLASMIC.maybeFetchComponentData(pathname);
+  const meta = pageData?.entryCompMetas?.[0]?.pageMetadata;
+
+  if (!meta) {
+    return {};
+  }
+
+  return {
+    title: meta.title || undefined,
+    description: meta.description || undefined,
+    alternates: meta.canonical ? { canonical: meta.canonical } : undefined,
+    openGraph: {
+      title: meta.title || undefined,
+      description: meta.description || undefined,
+      images: meta.openGraphImageUrl ? [{ url: meta.openGraphImageUrl }] : undefined,
+    },
+  };
+}
+
+export default async function CatchallPage({ params, searchParams }: Props) {
+  const resolvedParams = await params;
+  const resolvedSearchParams = await searchParams;
+  const pathname = getPathname(resolvedParams?.catchall);
+
+  const pageData = await PLASMIC.maybeFetchComponentData(pathname);
 
   if (!pageData) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
-        {/* Main Content */}
         <main className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8">
           <div className="max-w-md w-full text-center">
             <div className="mb-8">
-              <h1 className="text-4xl font-bold text-primary mb-4 text-balance">404 - Page Not Found</h1>
-
+              <h1 className="text-4xl font-bold text-primary mb-4 text-balance">
+                404 - Page Not Found
+              </h1>
               <p className="text-lg text-muted-foreground mb-8 text-pretty">
-                We couldn't find the page you're looking for. It might have been moved, deleted, or you might have accidentally entered the
-                wrong URL.
+                We couldn&apos;t find the page you&apos;re looking for. It
+                might have been moved, deleted, or you might have
+                accidentally entered the wrong URL.
               </p>
             </div>
-
-            {/* Call to Action */}
             <div className="space-y-4">
               <Button variant="outline" asChild className="w-full bg-transparent">
                 <Link href="/">Go to Homepage</Link>
@@ -84,15 +73,17 @@ export default function CatchallPage() {
           </div>
         </main>
       </div>
-    )
+    );
   }
 
-  const query = Object.fromEntries((searchParams ?? new URLSearchParams()).entries())
+  const query = Object.fromEntries(
+    Object.entries(resolvedSearchParams ?? {}).map(([key, value]) => [
+      key,
+      Array.isArray(value) ? value[0] ?? "" : value ?? "",
+    ])
+  );
+
   return (
-    <PlasmicRootProvider loader={PLASMIC}>
-      <PageParamsProvider route={pathname || "/"} query={query}>
-        <PlasmicComponent component={pathname || "/"} />
-      </PageParamsProvider>
-    </PlasmicRootProvider>
-  )
+    <PlasmicClientPage pathname={pathname} pageData={pageData} query={query} />
+  );
 }
