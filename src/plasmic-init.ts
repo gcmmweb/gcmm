@@ -1,5 +1,5 @@
 // plasmic-init.ts
-import { initPlasmicLoader } from '@plasmicapp/loader-nextjs/react-server';
+import { initPlasmicLoader } from '@plasmicapp/loader-nextjs';
 import MainPage from '@/components/MainPage';
 import ministryImpact from '@/components/ministry-impact';
 
