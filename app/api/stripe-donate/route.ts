@@ -149,7 +149,7 @@ async function sendConfirmationEmail(
     const line5 =
       ec?.line5 ||
       "For GCMM information, please visit gcmm.ca. For Ukraine updates and Ukraine-focused giving, visit UkraineAidToday.ca. You can also follow us on social media @GreatCommissionMediaMinistries."
-    const line6Base = ec?.line6 || "Thank you again for standing with the people of Ukraine this Christmas."
+    const line6Base = ec?.line6 || ""
     // FIX: closing_salutation is its own protected field so it cannot be
     // accidentally removed by purpose-specific overrides
     const closingSalutation = ec?.closing_salutation || "With gratitude,"
