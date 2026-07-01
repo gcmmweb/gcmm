@@ -2,6 +2,7 @@
 import { initPlasmicLoader } from '@plasmicapp/loader-nextjs';
 import MainPage from '@/components/MainPage';
 import ministryImpact from '@/components/ministry-impact';
+import { StripeDonationPage as StripeDonationPageV2 } from "@/components/stripe-donation-page-v2"
 
 export const PLASMIC = initPlasmicLoader({
   projects: [
@@ -18390,4 +18391,192 @@ PLASMIC.registerComponent(VideoMinistriesSection, {
   },
   importPath: "./components/video-ministries-section",
 });
+
+
+PLASMIC.registerComponent(StripeDonationPageV2, {
+  name: "StripeDonationPageV2",
+  displayName: "Stripe Donation Page (v2 — Campaigns)",
+  description:
+    "Rebuilt donation page. Campaigns are now a single reorderable array (like Photo Carousel) instead of ~100 separate fields — add, remove, and drag-reorder campaigns freely, with no code changes needed.",
+  props: {
+    donateNowHeading: {
+      type: "string",
+      displayName: "Donate Now Heading",
+      defaultValue: "Donate Now:",
+      section: "Page Content",
+    },
+    generousDonationText: {
+      type: "string",
+      displayName: "Generous Donation Text",
+      defaultValue: "Your most generous donation",
+      section: "Page Content",
+    },
+    customAmountPlaceholder: {
+      type: "string",
+      displayName: "Custom Amount Placeholder",
+      defaultValue: "100",
+      section: "Page Content",
+    },
+    termsAndConditionsUrl: {
+      type: "string",
+      displayName: "Terms and Conditions URL",
+      defaultValue: "/terms-and-conditions",
+      section: "Page Content",
+    },
+    matchingBannerText: {
+      type: "string",
+      displayName: "Matching Campaign Banner Text",
+      defaultValue: "🎉 This campaign is being matched — your gift will go twice as far!",
+      section: "Page Content",
+    },
+    presetAmount1: { type: "number", displayName: "Preset Amount 1", defaultValue: 40, section: "Preset Amounts" },
+    presetAmount2: { type: "number", displayName: "Preset Amount 2", defaultValue: 70, section: "Preset Amounts" },
+    presetAmount3: { type: "number", displayName: "Preset Amount 3", defaultValue: 200, section: "Preset Amounts" },
+    presetAmount4: { type: "number", displayName: "Preset Amount 4", defaultValue: 400, section: "Preset Amounts" },
+    presetAmount5: { type: "number", displayName: "Preset Amount 5", defaultValue: 800, section: "Preset Amounts" },
+    presetAmount6: { type: "number", displayName: "Preset Amount 6", defaultValue: 1500, section: "Preset Amounts" },
+    campaigns: {
+      type: "array",
+      displayName: "Campaigns",
+      description:
+        "Each campaign is fully self-contained: name, banner, and email text. Drag to reorder which one shows first. Add a new campaign any time — no code changes needed.",
+      section: "Campaigns",
+      itemType: {
+        type: "object",
+        nameFunc: (item: any) => item.name || "New Campaign",
+        fields: {
+          name: {
+            type: "string",
+            displayName: "Campaign Name",
+            defaultValue: "New Campaign",
+          },
+          bannerUrl: {
+            type: "imageUrl",
+            displayName: "Confirmation Email Banner",
+          },
+          emailBodyOneTime: {
+            type: "string",
+            displayName: "Email Body — One-Time Gift",
+            defaultValue:
+              "Thank you for your gift of {amount} toward {campaignName}. Your generosity is helping us reach people around the world with practical support and the message of hope.",
+            description:
+              "Merge tags: {donorName}, {amount}, {campaignName}, {matchedAmount}. Signature is added automatically.",
+          },
+          emailBodyMonthly: {
+            type: "string",
+            displayName: "Email Body — Monthly Gift",
+            defaultValue:
+              "Thank you for your generous monthly gift of {amount} toward {campaignName}. Your recurring support helps us plan ahead and make a lasting difference every month.",
+          },
+          isMatching: {
+            type: "boolean",
+            displayName: "Matching Campaign?",
+            defaultValue: false,
+          },
+          matchMultiplier: {
+            type: "number",
+            displayName: "Match Multiplier",
+            defaultValue: 2,
+            hidden: (item: any) => !item.isMatching,
+          },
+        },
+      },
+      defaultValue: [
+        {
+          name: "Where Most Needed",
+          bannerUrl: "/images/email-banner.png",
+          emailBodyOneTime:
+            "Thank you for your gift of {amount} toward {campaignName}. Your generosity is helping us reach people around the world with practical support and the message of hope.",
+          emailBodyMonthly:
+            "Thank you for your generous monthly gift of {amount} toward {campaignName}. Your recurring support helps us plan ahead and make a lasting difference every month.",
+          isMatching: false,
+          matchMultiplier: 2,
+        },
+      ],
+    },
+    organizationName: {
+      type: "string",
+      displayName: "Organization Name",
+      defaultValue: "Great Commission Media Ministries",
+      section: "Organization Info",
+    },
+    organizationPhone: {
+      type: "string",
+      displayName: "Organization Phone",
+      defaultValue: "1-877-674-5630",
+      section: "Organization Info",
+    },
+    organizationEmail: {
+      type: "string",
+      displayName: "Organization Email",
+      defaultValue: "info@gcmm.ca",
+      section: "Organization Info",
+    },
+    organizationAddress: {
+      type: "string",
+      displayName: "Organization Address",
+      defaultValue: "PO Box 14006, Abbotsford, BC V2T 0B4",
+      section: "Organization Info",
+    },
+    organizationCharityNumber: {
+      type: "string",
+      displayName: "Charity Registration Number",
+      defaultValue: "82864 9467 RR0001",
+      section: "Organization Info",
+    },
+    signatureName: {
+      type: "string",
+      displayName: "Signature Name",
+      defaultValue: "Dr. Hannu Haukka",
+      section: "Signature",
+    },
+    signatureTitle: {
+      type: "string",
+      displayName: "Signature Title",
+      defaultValue: "CEO, Great Commission Media Ministries (GCMM)",
+      section: "Signature",
+    },
+    emailSubject: {
+      type: "string",
+      displayName: "Email Subject",
+      defaultValue: "Thank you for your donation",
+      section: "Email Settings",
+    },
+    notificationEmailRecipient: {
+      type: "string",
+      displayName: "Notification Email Recipient",
+      defaultValue: "info@gcmm.ca",
+      section: "Email Settings",
+    },
+    showLocationNotice: {
+      type: "boolean",
+      displayName: "Show Location Notice",
+      defaultValue: true,
+      section: "Location Notice",
+    },
+    locationNoticeTitle: {
+      type: "string",
+      displayName: "Notice Title",
+      defaultValue: "Are you donating from the United States?",
+      section: "Location Notice",
+      hidden: (props: any) => !props.showLocationNotice,
+    },
+    locationNoticeText: {
+      type: "string",
+      displayName: "Notice Text",
+      defaultValue:
+        "GCMM is a registered Canadian charity. If you're a US donor looking for a tax-deductible option, please use our US donation partner page instead.",
+      section: "Location Notice",
+      hidden: (props: any) => !props.showLocationNotice,
+    },
+    usDonationUrl: {
+      type: "string",
+      displayName: "US Donation URL",
+      defaultValue: "https://donate.gcmm.ca/us",
+      section: "Location Notice",
+      hidden: (props: any) => !props.showLocationNotice,
+    },
+  },
+  importPath: "./components/stripe-donation-page-v2",
+})
 
