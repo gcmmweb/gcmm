@@ -152,7 +152,7 @@ async function sendConfirmationEmail(
     const line6Base = ec?.line6 || "Thank you again for standing with the people of Ukraine this Christmas."
     // FIX: closing_salutation is its own protected field so it cannot be
     // accidentally removed by purpose-specific overrides
-    const closingSalutation = ec?.closing_salutation || "Yours in Christ,"
+    const closingSalutation = ec?.closing_salutation || "With gratitude,"
     const signatureNameBase = ec?.signature_name || "Dr. Hannu Haukka"
     const signatureTitleBase = ec?.signature_title || "CEO, Great Commission Media Ministries (GCMM)"
     const line9 =
