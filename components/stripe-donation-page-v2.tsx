@@ -102,6 +102,42 @@ interface Campaign {
   emailBodyMonthly: string
   isMatching?: boolean
   matchMultiplier?: number
+  matchEmailText?: string
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EMAIL PREVIEW HELPERS — mirror the logic in route.ts exactly, so what
+// Junita sees in Plasmic Studio matches what actually gets sent. Kept
+// duplicated (rather than a shared import) since route.ts runs server-side
+// and this runs in the browser during editing.
+// ─────────────────────────────────────────────────────────────────────────────
+function previewApplyMergeTags(
+  body: string,
+  vars: { donorName: string; amount: string; campaignName: string; matchedAmount?: string }
+): string {
+  const values: Record<string, string> = {
+    donorName: vars.donorName,
+    amount: vars.amount,
+    campaignName: vars.campaignName,
+    matchedAmount: vars.matchedAmount ?? "",
+  }
+  let result = body
+  for (const key of Object.keys(values)) {
+    const words = key.replace(/([A-Z])/g, " $1").trim().split(/\s+/)
+    const pattern = words.join("[\\s_]*")
+    const regex = new RegExp(`\\{\\s*${pattern}\\s*\\}`, "gi")
+    result = result.replace(regex, values[key])
+  }
+  return result
+}
+
+function previewFormatBodyText(text: string): string {
+  return text
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean)
+    .map((p) => `<p style="margin: 0 0 16px 0;">${p.replace(/\n/g, "<br>")}</p>`)
+    .join("")
 }
 
 // Payment form component that uses Stripe hooks
@@ -330,6 +366,11 @@ export function StripeDonationPage({
   // Matching campaign banner text (shown above amounts when selected campaign is matching)
   matchingBannerText = "🎉 This campaign is being matched — your gift will go twice as far!",
 
+  // Email Preview — for editing convenience in Plasmic Studio only.
+  // Renders a live mockup of the confirmation email for the selected
+  // campaign, using sample donor info, right below the form.
+  showEmailPreview = false,
+
   // Location Notice
   showLocationNotice = true,
   locationNoticeTitle = "Are you donating from the United States?",
@@ -358,6 +399,7 @@ export function StripeDonationPage({
   emailSubject?: string
   notificationEmailRecipient?: string
   matchingBannerText?: string
+  showEmailPreview?: boolean
   showLocationNotice?: boolean
   locationNoticeTitle?: string
   locationNoticeText?: string
@@ -432,6 +474,7 @@ export function StripeDonationPage({
           emailBodyMonthly: selectedCampaign.emailBodyMonthly,
           isMatching: selectedCampaign.isMatching,
           matchMultiplier: selectedCampaign.matchMultiplier,
+          matchEmailText: selectedCampaign.matchEmailText,
         }
       : undefined,
   }
@@ -855,6 +898,76 @@ export function StripeDonationPage({
           </div>
         </div>
       </section>
+
+      {/* ── Live Email Preview — editing aid only, mirrors the real sent email ── */}
+      {showEmailPreview && selectedCampaign && (
+        <section className="bg-slate-100 py-16 px-4">
+          <div className="max-w-2xl mx-auto">
+            <div className="mb-4 flex items-center gap-2">
+              <span className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                📧 Email Preview — editing aid, not shown to real donors
+              </span>
+            </div>
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+              {(selectedCampaign.bannerUrl) && (
+                <img
+                  src={selectedCampaign.bannerUrl}
+                  alt="Campaign banner"
+                  className="w-full h-auto block"
+                />
+              )}
+              <div className="p-6">
+                {(() => {
+                  const sampleDonorName = "John Doe"
+                  const sampleAmountNum =
+                    Number.parseFloat(donationForm.customAmount) > 0
+                      ? Number.parseFloat(donationForm.customAmount)
+                      : presetAmounts[0] || 50
+                  const sampleAmountText = `$${sampleAmountNum.toFixed(2)}`
+                  const isMonthlyPreview = donationForm.frequency === "monthly"
+                  const rawBody = isMonthlyPreview
+                    ? selectedCampaign.emailBodyMonthly
+                    : selectedCampaign.emailBodyOneTime
+                  let sampleMatchedText: string | undefined
+                  let sampleMatchMessage: string | undefined
+                  if (selectedCampaign.isMatching && selectedCampaign.matchMultiplier) {
+                    sampleMatchedText = `$${(sampleAmountNum * selectedCampaign.matchMultiplier).toFixed(2)}`
+                    const template =
+                      selectedCampaign.matchEmailText ||
+                      "Your gift of {amount} will be matched to {matchedAmount}!"
+                    sampleMatchMessage = template
+                      .replace(/\{\s*amount\s*\}/gi, sampleAmountText)
+                      .replace(/\{\s*matched[\s_]*amount\s*\}/gi, sampleMatchedText)
+                  }
+                  const merged = previewApplyMergeTags(rawBody || "", {
+                    donorName: sampleDonorName,
+                    amount: sampleAmountText,
+                    campaignName: selectedCampaign.name,
+                    matchedAmount: sampleMatchedText,
+                  })
+                  const formatted = previewFormatBodyText(merged)
+                  return (
+                    <>
+                      <div
+                        className="text-slate-800 text-base leading-relaxed mb-4"
+                        dangerouslySetInnerHTML={{ __html: formatted }}
+                      />
+                      {sampleMatchMessage && (
+                        <div className="bg-emerald-50 border-l-4 border-emerald-500 rounded-lg px-4 py-3 mb-4">
+                          <p className="text-emerald-800 font-semibold text-sm">{sampleMatchMessage}</p>
+                        </div>
+                      )}
+                      <p className="italic text-slate-800 mb-1">With gratitude,</p>
+                      <p className="font-semibold text-slate-800 mb-1">{signatureName}</p>
+                      <p className="text-slate-500 text-sm">{signatureTitle}</p>
+                    </>
+                  )
+                })()}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
     </main>
   )
 }

@@ -18393,12 +18393,17 @@ PLASMIC.registerComponent(VideoMinistriesSection, {
 });
 
 
+// Add this near your other PLASMIC.registerComponent(...) calls in plasmic-init.ts
+// Import path assumes the new file lives at: components/stripe-donation-page-v2.tsx
+// import { StripeDonationPage } from "@/components/stripe-donation-page-v2"
+
 PLASMIC.registerComponent(StripeDonationPageV2, {
   name: "StripeDonationPageV2",
   displayName: "Stripe Donation Page (v2 — Campaigns)",
   description:
     "Rebuilt donation page. Campaigns are now a single reorderable array (like Photo Carousel) instead of ~100 separate fields — add, remove, and drag-reorder campaigns freely, with no code changes needed.",
   props: {
+    // ── Page Content ──
     donateNowHeading: {
       type: "string",
       displayName: "Donate Now Heading",
@@ -18427,14 +18432,27 @@ PLASMIC.registerComponent(StripeDonationPageV2, {
       type: "string",
       displayName: "Matching Campaign Banner Text",
       defaultValue: "🎉 This campaign is being matched — your gift will go twice as far!",
+      description: "Shown above the amount buttons whenever a matching campaign is selected",
       section: "Page Content",
     },
+    showEmailPreview: {
+      type: "boolean",
+      displayName: "Show Email Preview (editing aid)",
+      defaultValue: false,
+      description:
+        "Turn on while editing campaign content to see a live mockup of the confirmation email below the form. Uses sample donor info — safe to leave on or off.",
+      section: "Page Content",
+    },
+
+    // ── Preset Amounts — shared across every campaign ──
     presetAmount1: { type: "number", displayName: "Preset Amount 1", defaultValue: 40, section: "Preset Amounts" },
     presetAmount2: { type: "number", displayName: "Preset Amount 2", defaultValue: 70, section: "Preset Amounts" },
     presetAmount3: { type: "number", displayName: "Preset Amount 3", defaultValue: 200, section: "Preset Amounts" },
     presetAmount4: { type: "number", displayName: "Preset Amount 4", defaultValue: 400, section: "Preset Amounts" },
     presetAmount5: { type: "number", displayName: "Preset Amount 5", defaultValue: 800, section: "Preset Amounts" },
     presetAmount6: { type: "number", displayName: "Preset Amount 6", defaultValue: 1500, section: "Preset Amounts" },
+
+    // ── CAMPAIGNS — the reorderable array. Add/remove/drag campaigns freely. ──
     campaigns: {
       type: "array",
       displayName: "Campaigns",
@@ -18449,10 +18467,12 @@ PLASMIC.registerComponent(StripeDonationPageV2, {
             type: "string",
             displayName: "Campaign Name",
             defaultValue: "New Campaign",
+            description: "Shown to donors in the dropdown, and used in the {campaignName} merge tag",
           },
           bannerUrl: {
             type: "imageUrl",
             displayName: "Confirmation Email Banner",
+            description: "Banner image shown at the top of THIS campaign's confirmation email",
           },
           emailBodyOneTime: {
             type: "string",
@@ -18460,23 +18480,34 @@ PLASMIC.registerComponent(StripeDonationPageV2, {
             defaultValue:
               "Thank you for your gift of {amount} toward {campaignName}. Your generosity is helping us reach people around the world with practical support and the message of hope.",
             description:
-              "Merge tags: {donorName}, {amount}, {campaignName}, {matchedAmount}. Signature is added automatically.",
+              "The full confirmation email message for one-time gifts. Available merge tags: {donorName}, {amount}, {campaignName}, {matchedAmount}. The signature ('With gratitude, ...') is added automatically — don't include it here.",
           },
           emailBodyMonthly: {
             type: "string",
             displayName: "Email Body — Monthly Gift",
             defaultValue:
               "Thank you for your generous monthly gift of {amount} toward {campaignName}. Your recurring support helps us plan ahead and make a lasting difference every month.",
+            description: "Same merge tags as above. Shown instead of the one-time body when the donor picks Monthly.",
           },
           isMatching: {
             type: "boolean",
             displayName: "Matching Campaign?",
             defaultValue: false,
+            description: "Turn on to show the 'double your donation' visual and matched-amount messaging",
           },
           matchMultiplier: {
             type: "number",
             displayName: "Match Multiplier",
             defaultValue: 2,
+            description: "e.g. 2 = donation is doubled, 3 = tripled",
+            hidden: (item: any) => !item.isMatching,
+          },
+          matchEmailText: {
+            type: "string",
+            displayName: "Matched-Amount Email Text",
+            defaultValue: "Your gift of {amount} will be matched to {matchedAmount}!",
+            description:
+              "The highlighted message shown in the confirmation email when this campaign matches donations. Merge tags: {amount}, {matchedAmount}. Fully editable here — no code changes needed to update the wording.",
             hidden: (item: any) => !item.isMatching,
           },
         },
@@ -18494,6 +18525,8 @@ PLASMIC.registerComponent(StripeDonationPageV2, {
         },
       ],
     },
+
+    // ── Organization Info — shared/global, unchanged ──
     organizationName: {
       type: "string",
       displayName: "Organization Name",
@@ -18524,6 +18557,8 @@ PLASMIC.registerComponent(StripeDonationPageV2, {
       defaultValue: "82864 9467 RR0001",
       section: "Organization Info",
     },
+
+    // ── Signature — one shared block appended to every campaign's email ──
     signatureName: {
       type: "string",
       displayName: "Signature Name",
@@ -18536,6 +18571,8 @@ PLASMIC.registerComponent(StripeDonationPageV2, {
       defaultValue: "CEO, Great Commission Media Ministries (GCMM)",
       section: "Signature",
     },
+
+    // ── Email Settings ──
     emailSubject: {
       type: "string",
       displayName: "Email Subject",
@@ -18546,8 +18583,11 @@ PLASMIC.registerComponent(StripeDonationPageV2, {
       type: "string",
       displayName: "Notification Email Recipient",
       defaultValue: "info@gcmm.ca",
+      description: "Where the internal 'New Donation Received' alert is sent",
       section: "Email Settings",
     },
+
+    // ── Location Notice ──
     showLocationNotice: {
       type: "boolean",
       displayName: "Show Location Notice",
@@ -18578,5 +18618,4 @@ PLASMIC.registerComponent(StripeDonationPageV2, {
     },
   },
   importPath: "./components/stripe-donation-page-v2",
-})
-
+} as any)
