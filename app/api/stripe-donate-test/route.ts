@@ -129,6 +129,7 @@ interface CampaignData {
   isMatching?: boolean
   matchMultiplier?: number // e.g. 2 = donation is doubled
   matchEmailText?: string // Customizable matched-amount message. Merge tags: {amount}, {matchedAmount}
+  signatureTitleOverride?: string // Optional: overrides the global signature title for THIS campaign only (e.g. UkraineAid adds "| UkraineAid")
 }
 
 interface EmailCustomization {
@@ -163,6 +164,10 @@ async function sendConfirmationEmail(
     const lastFour =
       (paymentIntent.latest_charge as Stripe.Charge)?.payment_method_details?.card?.last4 || "N/A"
 
+    // ── Campaign-specific content ──
+    const campaign = ec?.campaign
+    const campaignName = campaign?.name || "General Ministry Support"
+
     // ── Organization-wide defaults (shared across every campaign) ──
     const orgName = ec?.organizationName || "Great Commission Media Ministries"
     const orgPhone = ec?.organizationPhone || "1-877-674-5630"
@@ -170,12 +175,12 @@ async function sendConfirmationEmail(
     const orgAddress = ec?.organizationAddress || "PO Box 14006, Abbotsford, BC V2T 0B4"
     const charityNumber = ec?.organizationCharityNumber || "82864 9467 RR0001"
     const signatureName = ec?.signatureName || "Dr. Hannu Haukka"
-    const signatureTitle = ec?.signatureTitle || "CEO, Great Commission Media Ministries (GCMM)"
+    // Per-campaign override takes priority (e.g. UkraineAid adds "| UkraineAid"),
+    // falls back to the shared global title otherwise.
+    const signatureTitle =
+      campaign?.signatureTitleOverride || ec?.signatureTitle || "CEO, Great Commission Media Ministries (GCMM)"
     const subject = ec?.emailSubject || "Thank you for your donation"
 
-    // ── Campaign-specific content ──
-    const campaign = ec?.campaign
-    const campaignName = campaign?.name || "General Ministry Support"
     const bannerUrl = campaign?.bannerUrl || "/images/email-banner.png"
     const isMonthly = frequency === "monthly"
     const rawBody =
@@ -300,15 +305,23 @@ async function sendNotificationEmail(
   amountCents: number,
   accountId: string | undefined,
   emailCustomization: EmailCustomization | undefined,
-  comment: string | undefined
+  comment: string | undefined,
+  frequency: string | undefined
 ) {
   try {
     const transporter = createTransporter()
     const ec = emailCustomization
     const notificationRecipient = ec?.notificationEmailRecipient || process.env.CONTACT_EMAIL || "info@gcmm.ca"
     const orgName = ec?.organizationName || "Great Commission Media Ministries"
-    const campaignName = ec?.campaign?.name || "Not specified"
+    const campaign = ec?.campaign
+    const campaignName = campaign?.name || "Not specified"
     const formattedAmount = formatAmount(amountCents)
+    const isMonthly = frequency === "monthly"
+
+    let matchedAmountText: string | undefined
+    if (campaign?.isMatching && campaign?.matchMultiplier) {
+      matchedAmountText = formatAmount(amountCents * campaign.matchMultiplier)
+    }
 
     const mailOptions = {
       from: `"${orgName}" <${process.env.SMTP_USER}>`,
@@ -322,6 +335,12 @@ async function sendNotificationEmail(
               <h3 style="color: #475569; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">Donation Details</h3>
               <p style="color: #64748b; margin: 5px 0; font-size: 16px;"><strong>Amount:</strong> ${escapeHtml(formattedAmount)}</p>
               <p style="color: #64748b; margin: 5px 0; font-size: 16px;"><strong>Campaign:</strong> ${escapeHtml(campaignName)}</p>
+              <p style="color: #64748b; margin: 5px 0; font-size: 16px;"><strong>Frequency:</strong> ${isMonthly ? "Monthly (recurring)" : "One-time"}</p>
+              ${
+                matchedAmountText
+                  ? `<p style="color: #059669; margin: 5px 0; font-size: 16px;"><strong>🎉 Matching:</strong> This gift will be matched to ${escapeHtml(matchedAmountText)}</p>`
+                  : ""
+              }
               <p style="color: #64748b; margin: 5px 0; font-size: 16px;"><strong>Transaction ID:</strong> ${escapeHtml(paymentIntentId)}</p>
               <p style="color: #64748b; margin: 5px 0; font-size: 16px;"><strong>Date:</strong> ${formatDateCA()}</p>
               ${accountId ? `<p style="color: #64748b; margin: 5px 0; font-size: 16px;"><strong>Account ID:</strong> ${escapeHtml(accountId)}</p>` : ""}
@@ -486,7 +505,8 @@ export async function POST(request: NextRequest) {
           confirmedPaymentIntent.amount,
           account_id,
           email_customization,
-          comment
+          comment,
+          frequency
         ),
       ])
 
