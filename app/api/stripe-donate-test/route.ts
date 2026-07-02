@@ -41,7 +41,9 @@ function formatAmount(cents: number): string {
 
 /**
  * Replace merge tags inside a campaign's email body.
- * Supported tags: {donorName}, {amount}, {campaignName}, {matchedAmount}
+ * Flexible on purpose — Junita may type {donorName}, {Donor Name},
+ * {donor_name}, {DONOR NAME}, etc. All common variations are accepted so a
+ * natural typing style still works, instead of requiring exact camelCase.
  * Unrecognized tags are left as-is rather than silently deleted, so a typo
  * in Plasmic is visible in the sent email instead of disappearing.
  */
@@ -54,11 +56,42 @@ function applyMergeTags(
     matchedAmount?: string
   }
 ): string {
-  return body
-    .replace(/\{donorName\}/g, vars.donorName)
-    .replace(/\{amount\}/g, vars.amount)
-    .replace(/\{campaignName\}/g, vars.campaignName)
-    .replace(/\{matchedAmount\}/g, vars.matchedAmount ?? "")
+  const values: Record<string, string> = {
+    donorName: vars.donorName,
+    amount: vars.amount,
+    campaignName: vars.campaignName,
+    matchedAmount: vars.matchedAmount ?? "",
+  }
+
+  let result = body
+  for (const key of Object.keys(values)) {
+    // "donorName" -> words ["donor", "Name"] -> case-insensitive,
+    // whitespace/underscore-insensitive match inside curly braces.
+    const words = key.replace(/([A-Z])/g, " $1").trim().split(/\s+/)
+    const pattern = words.join("[\\s_]*")
+    const regex = new RegExp(`\\{\\s*${pattern}\\s*\\}`, "gi")
+    result = result.replace(regex, values[key])
+  }
+  return result
+}
+
+/**
+ * Convert plain text with blank lines into properly spaced HTML paragraphs.
+ * Junita writes campaign body text as normal prose with blank lines between
+ * paragraphs (like a regular email) — this preserves that spacing once it
+ * becomes HTML, since plain line breaks are otherwise collapsed by email
+ * clients. A single line break within a paragraph becomes <br>.
+ */
+function formatBodyText(text: string): string {
+  return text
+    .split(/\n\s*\n/) // blank line = new paragraph
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean)
+    .map(
+      (paragraph) =>
+        `<p style="margin: 0 0 20px 0;">${paragraph.replace(/\n/g, "<br>")}</p>`
+    )
+    .join("")
 }
 
 // Function to get client IP address
@@ -95,6 +128,7 @@ interface CampaignData {
   emailBodyMonthly: string // Full email body text for monthly gifts
   isMatching?: boolean
   matchMultiplier?: number // e.g. 2 = donation is doubled
+  matchEmailText?: string // Customizable matched-amount message. Merge tags: {amount}, {matchedAmount}
 }
 
 interface EmailCustomization {
@@ -150,19 +184,27 @@ async function sendConfirmationEmail(
 
     const formattedAmount = formatAmount(amountCents)
     let matchedAmountText: string | undefined
+    let matchEmailMessage: string | undefined
     if (campaign?.isMatching && campaign?.matchMultiplier) {
       const matchedCents = amountCents * campaign.matchMultiplier
       matchedAmountText = formatAmount(matchedCents)
+      const matchTemplate =
+        campaign.matchEmailText || "Your gift of {amount} will be matched to {matchedAmount}!"
+      matchEmailMessage = matchTemplate
+        .replace(/\{\s*amount\s*\}/gi, formattedAmount)
+        .replace(/\{\s*matched[\s_]*amount\s*\}/gi, matchedAmountText)
     }
 
     // Merge tags applied to the campaign's own body text — body may contain
     // intentional HTML (links, bold, etc.) so it is NOT escaped.
-    const emailBody = applyMergeTags(rawBody, {
+    const mergedBody = applyMergeTags(rawBody, {
       donorName: escapeHtml(donorInfo.name),
       amount: formattedAmount,
       campaignName: escapeHtml(campaignName),
       matchedAmount: matchedAmountText,
     })
+    // Blank lines in Junita's plain-text body become real paragraph spacing
+    const emailBody = formatBodyText(mergedBody)
 
     const fullBannerUrl = bannerUrl.startsWith("http")
       ? bannerUrl
@@ -187,10 +229,10 @@ async function sendConfirmationEmail(
 
             <!-- Matching campaign highlight, only rendered if applicable -->
             ${
-              matchedAmountText
+              matchEmailMessage
                 ? `<div style="background-color: #ecfdf5; border-left: 4px solid #10b981; padding: 16px 20px; border-radius: 8px; margin: 0 0 24px 0;">
                      <p style="color: #065f46; margin: 0; font-size: 16px; font-weight: 600;">
-                       Your gift of ${escapeHtml(formattedAmount)} will be matched to ${escapeHtml(matchedAmountText)}!
+                       ${matchEmailMessage}
                      </p>
                    </div>`
                 : ""
