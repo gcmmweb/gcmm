@@ -299,7 +299,8 @@ async function sendNotificationEmail(
   paymentIntentId: string,
   amountCents: number,
   accountId: string | undefined,
-  emailCustomization: EmailCustomization | undefined
+  emailCustomization: EmailCustomization | undefined,
+  comment: string | undefined
 ) {
   try {
     const transporter = createTransporter()
@@ -332,6 +333,15 @@ async function sendNotificationEmail(
               <p style="color: #64748b; margin: 5px 0; font-size: 16px;"><strong>Phone:</strong> ${escapeHtml(donorInfo.phone || "Not provided")}</p>
               <p style="color: #64748b; margin: 5px 0; font-size: 16px;"><strong>Address:</strong> ${escapeHtml(donorInfo.address)}, ${escapeHtml(donorInfo.city)}, ${escapeHtml(donorInfo.state)} ${escapeHtml(donorInfo.zip_code)}</p>
             </div>
+
+            ${
+              comment && comment.trim()
+                ? `<div style="background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                     <h3 style="color: #92400e; margin: 0 0 10px 0; font-size: 18px; font-weight: 600;">💬 Message from Donor</h3>
+                     <p style="color: #78350f; margin: 0; font-size: 16px; white-space: pre-wrap;">${escapeHtml(comment)}</p>
+                   </div>`
+                : ""
+            }
             <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
               <p style="color: #94a3b8; margin: 0; font-size: 14px;">
                 This notification was sent from the ${escapeHtml(orgName)} donation system on ${formatDateCA()}.
@@ -475,7 +485,8 @@ export async function POST(request: NextRequest) {
           confirmedPaymentIntent.id,
           confirmedPaymentIntent.amount,
           account_id,
-          email_customization
+          email_customization,
+          comment
         ),
       ])
 
