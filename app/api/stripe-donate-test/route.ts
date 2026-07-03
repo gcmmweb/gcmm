@@ -222,7 +222,7 @@ async function sendConfirmationEmail(
     const formattedAmount = formatAmount(amountCents)
     let matchedAmountText: string | undefined
     let matchEmailMessage: string | undefined
-    if (campaign?.isMatching && campaign?.matchMultiplier) {
+    if (campaign?.isMatching && campaign?.matchMultiplier && !isMonthly) { // matching applies to one-time gifts only
       const matchedCents = amountCents * campaign.matchMultiplier
       matchedAmountText = formatAmount(matchedCents)
       const matchTemplate =
@@ -305,17 +305,14 @@ async function sendConfirmationEmail(
             <p style="color: #1e293b; margin: 0 0 20px 0; font-size: 16px; line-height: 1.6;">
               For assistance or questions about your donation, please email ${escapeHtml(orgEmail)} or call ${escapeHtml(orgPhone)} and our staff will be happy to assist you.
             </p>
-            <p style="color: #64748b; margin: 0 0 30px 0; font-size: 14px; line-height: 1.6; font-style: italic;">
-              ${escapeHtml(orgName)} is a registered Canadian charity (No. ${escapeHtml(charityNumber)}), serving worldwide for over 45 years.
-            </p>
 
             <div style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #e2e8f0;">
               <p style="color: #94a3b8; margin: 0 0 8px 0; font-size: 13px; line-height: 1.5;">
                 <strong>${escapeHtml(orgName)}</strong>
               </p>
               <p style="color: #94a3b8; margin: 0; font-size: 13px; line-height: 1.5;">
-                ${escapeHtml(orgAddress)}<br>
-                Phone: ${escapeHtml(orgPhone)} | Email: ${escapeHtml(orgEmail)}
+                Registered Canadian Charity: ${escapeHtml(charityNumber)}<br>
+                ${escapeHtml(orgAddress)}
               </p>
             </div>
           </div>
@@ -351,7 +348,7 @@ async function sendNotificationEmail(
     const isMonthly = frequency === "monthly"
 
     let matchedAmountText: string | undefined
-    if (campaign?.isMatching && campaign?.matchMultiplier) {
+    if (campaign?.isMatching && campaign?.matchMultiplier && !isMonthly) { // matching applies to one-time gifts only
       matchedAmountText = formatAmount(amountCents * campaign.matchMultiplier)
     }
 

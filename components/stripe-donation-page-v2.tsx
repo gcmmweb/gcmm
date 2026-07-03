@@ -87,7 +87,7 @@ const cardElementOptions = {
       iconColor: "#9e2146",
     },
   },
-  hidePostalCode: false,
+  hidePostalCode: true, // FIX: postal code already collected in Billing Address — no double ask
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -434,7 +434,7 @@ export function StripeDonationPage({
     city: "",
     state: "",
     zipCode: "",
-    country: "US",
+    country: "CA", // FIX: GCMM is Canadian — default CA (was hardcoded US with no field to change it)
     comment: "",
   })
 
@@ -449,6 +449,15 @@ export function StripeDonationPage({
     if (!showLocationNotice) return
     setDetectedCountry(getDetectedCountry())
   }, [showLocationNotice])
+
+  // FIX: prefill the country from the visitor's timezone (CA stays the default
+  // when detection is inconclusive). The donor can still change it in the form.
+  useEffect(() => {
+    const detected = getDetectedCountry()
+    if (detected) {
+      setDonationForm((prev) => ({ ...prev, country: detected }))
+    }
+  }, [])
 
   const donationRef = useRef<HTMLElement>(null)
 
@@ -541,7 +550,7 @@ export function StripeDonationPage({
       city: "",
       state: "",
       zipCode: "",
-      country: "US",
+      country: "CA", // FIX: was hardcoded US
       comment: "",
     })
   }
@@ -567,6 +576,16 @@ export function StripeDonationPage({
   }
 
   const isMatchingSelected = !!(selectedCampaign?.isMatching && selectedCampaign?.matchMultiplier)
+
+  // SUPERVISOR REVISION: matching campaigns apply to one-time gifts only.
+  // If the donor switches to (or lands on) a matching campaign while "monthly"
+  // is selected, snap the frequency back to one-time. The Monthly button is
+  // also disabled below while a matching campaign is active.
+  useEffect(() => {
+    if (isMatchingSelected && donationForm.frequency === "monthly") {
+      setDonationForm((prev) => ({ ...prev, frequency: "one-time" }))
+    }
+  }, [isMatchingSelected, donationForm.frequency])
 
   return (
     <main className={`overflow-hidden font-light ${className || ""}`}>
@@ -664,16 +683,26 @@ export function StripeDonationPage({
               </button>
               <button
                 type="button"
+                disabled={isMatchingSelected}
                 onClick={() => setDonationForm((prev) => ({ ...prev, frequency: "monthly" }))}
+                title={isMatchingSelected ? "Matching applies to one-time gifts only" : undefined}
                 className={`px-8 py-3 rounded-2xl font-semibold transition-all duration-200 border-2 ${
-                  donationForm.frequency === "monthly"
-                    ? "border-blue-500 bg-blue-50 text-blue-600"
-                    : "border-slate-300 bg-white text-slate-700 hover:border-slate-400"
+                  isMatchingSelected
+                    ? "border-slate-200 bg-slate-100 text-slate-400 cursor-not-allowed"
+                    : donationForm.frequency === "monthly"
+                      ? "border-blue-500 bg-blue-50 text-blue-600"
+                      : "border-slate-300 bg-white text-slate-700 hover:border-slate-400"
                 }`}
               >
                 Monthly
               </button>
             </div>
+
+            {isMatchingSelected && (
+              <p className="text-center text-slate-500 text-sm -mt-4 mb-8">
+                Matching applies to one-time gifts only.
+              </p>
+            )}
 
             <div className="text-center mb-6">
               <p className="text-slate-600 text-lg font-medium">{generousDonationText}</p>
@@ -797,7 +826,7 @@ export function StripeDonationPage({
                 <input
                   type="text"
                   name="state"
-                  placeholder="Province"
+                  placeholder={donationForm.country === "US" ? "State" : "Province"}
                   value={donationForm.state}
                   onChange={handleInputChange}
                   required
@@ -806,13 +835,32 @@ export function StripeDonationPage({
                 <input
                   type="text"
                   name="zipCode"
-                  placeholder="Postal Code"
+                  placeholder={donationForm.country === "US" ? "ZIP Code" : "Postal Code"}
                   value={donationForm.zipCode}
                   onChange={handleInputChange}
                   required
                   className="px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-300"
                 />
               </div>
+              <select
+                name="country"
+                value={donationForm.country}
+                onChange={handleInputChange}
+                required
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300"
+              >
+                <option value="CA">Canada</option>
+                <option value="US">United States</option>
+                <option value="FI">Finland</option>
+                <option value="GB">United Kingdom</option>
+                <option value="AU">Australia</option>
+                <option value="DE">Germany</option>
+                <option value="NL">Netherlands</option>
+                <option value="NO">Norway</option>
+                <option value="SE">Sweden</option>
+                <option value="NZ">New Zealand</option>
+                <option value="UA">Ukraine</option>
+              </select>
             </div>
 
             {/* Comment */}
