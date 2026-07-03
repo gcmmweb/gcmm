@@ -40,3 +40,4 @@ next-env.d.ts
 
 public/*.mp4
 .env
+!public/hero-loop.mp4
