@@ -459,7 +459,7 @@ export async function POST(request: NextRequest) {
             city: donor_info.city,
             state: donor_info.state,
             postal_code: donor_info.zip_code,
-            country: "CA", // GCMM is a Canadian charity — always CA
+            country: donor_info.country || "CA", // FIX: respect the country chosen on the form, default CA
           },
           payment_method: payment_method_id,
           invoice_settings: { default_payment_method: payment_method_id },
@@ -620,7 +620,7 @@ export async function POST(request: NextRequest) {
           city: donor_info.city,
           state: donor_info.state,
           postal_code: donor_info.zip_code,
-          country: "CA", // GCMM is a Canadian charity — always CA
+          country: donor_info.country || "CA", // FIX: respect the country chosen on the form, default CA
         },
       },
     }

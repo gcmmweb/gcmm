@@ -562,7 +562,7 @@ export function StripeDonationPage({
     city: "",
     state: "",
     zipCode: "",
-    country: "US",
+    country: "CA", // FIX: GCMM is Canadian — default CA (was hardcoded US with no way to change it)
     comment: "",
   })
 
@@ -577,6 +577,15 @@ export function StripeDonationPage({
     if (!showLocationNotice) return
     setDetectedCountry(getDetectedCountry())
   }, [showLocationNotice])
+
+  // FIX: prefill the country from the visitor's timezone (CA stays the default
+  // when detection is inconclusive). The donor can still change it in the form.
+  useEffect(() => {
+    const detected = getDetectedCountry()
+    if (detected) {
+      setDonationForm((prev) => ({ ...prev, country: detected }))
+    }
+  }, [])
 
   const donationRef = useRef<HTMLElement>(null)
   const waysRef = useRef<HTMLElement>(null)
@@ -748,7 +757,7 @@ export function StripeDonationPage({
       city: "",
       state: "",
       zipCode: "",
-      country: "US",
+      country: "CA", // FIX: was hardcoded US
       comment: "",
     })
   }
@@ -977,7 +986,7 @@ export function StripeDonationPage({
                 <input
                   type="text"
                   name="state"
-                  placeholder="Province"
+                  placeholder={donationForm.country === "US" ? "State" : "Province"}
                   value={donationForm.state}
                   onChange={handleInputChange}
                   required
@@ -986,13 +995,32 @@ export function StripeDonationPage({
                 <input
                   type="text"
                   name="zipCode"
-                  placeholder="Postal Code"
+                  placeholder={donationForm.country === "US" ? "ZIP Code" : "Postal Code"}
                   value={donationForm.zipCode}
                   onChange={handleInputChange}
                   required
                   className="px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-300"
                 />
               </div>
+              <select
+                name="country"
+                value={donationForm.country}
+                onChange={handleInputChange}
+                required
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300"
+              >
+                <option value="CA">Canada</option>
+                <option value="US">United States</option>
+                <option value="FI">Finland</option>
+                <option value="GB">United Kingdom</option>
+                <option value="AU">Australia</option>
+                <option value="DE">Germany</option>
+                <option value="NL">Netherlands</option>
+                <option value="NO">Norway</option>
+                <option value="SE">Sweden</option>
+                <option value="NZ">New Zealand</option>
+                <option value="UA">Ukraine</option>
+              </select>
             </div>
 
             {/* Donation Purpose */}
