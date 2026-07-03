@@ -95,6 +95,38 @@ function formatBodyText(text: string): string {
 }
 
 // Function to get client IP address
+/**
+ * Reuse existing monthly Price objects instead of creating a new one for every
+ * donation (which clutters the Stripe dashboard with duplicates).
+ * Uses a deterministic lookup_key: e.g. "monthly_mega-city-media-campaigns_cad_500"
+ */
+async function getOrCreateMonthlyPrice(
+  amount: number,
+  currency: string,
+  campaignName: string,
+  orgName: string
+): Promise<Stripe.Price> {
+  const safeCampaign = campaignName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "general"
+  const lookupKey = `monthly_${safeCampaign}_${currency.toLowerCase()}_${amount}`
+
+  const existing = await stripe.prices.list({
+    lookup_keys: [lookupKey],
+    active: true,
+    limit: 1,
+  })
+  if (existing.data.length > 0) return existing.data[0]
+
+  return stripe.prices.create({
+    unit_amount: amount,
+    currency,
+    recurring: { interval: "month" },
+    lookup_key: lookupKey,
+    product_data: {
+      name: `Monthly Donation to ${orgName} - ${campaignName}`,
+    },
+  })
+}
+
 function getClientIP(request: NextRequest): string {
   const forwarded = request.headers.get("x-forwarded-for")
   const realIP = request.headers.get("x-real-ip")
@@ -435,6 +467,160 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // ── MONTHLY SUBSCRIPTION FLOW ─────────────────────────────────────────────
+    // FIX: Same bug as the old live route — the code charged a one-time
+    // PaymentIntent first (no customer), then tried to attach the already-used
+    // card to a new customer. Stripe forbids that, so subscription creation
+    // failed on every monthly donation and the error was silently swallowed.
+    // Now: customer FIRST, card attached, subscription makes the first charge.
+    if (frequency === "monthly") {
+      try {
+        const customer = await stripe.customers.create({
+          email: donor_info.email,
+          name: donor_info.name,
+          phone: donor_info.phone,
+          address: {
+            line1: donor_info.address,
+            city: donor_info.city,
+            state: donor_info.state,
+            postal_code: donor_info.zip_code,
+            country: donor_info.country || "CA", // respect form country, default CA
+          },
+          payment_method: payment_method_id,
+          invoice_settings: { default_payment_method: payment_method_id },
+          metadata: { campaign: campaignName, account_id: account_id || "" },
+        })
+
+        const orgName = email_customization?.organizationName || "Great Commission Media Ministries"
+        const price = await getOrCreateMonthlyPrice(amount, currency, campaignName, orgName)
+
+        const subscription = await stripe.subscriptions.create({
+          customer: customer.id,
+          items: [{ price: price.id }],
+          default_payment_method: payment_method_id,
+          payment_behavior: "default_incomplete",
+          payment_settings: { save_default_payment_method: "on_subscription" },
+          expand: ["latest_invoice.payment_intent"],
+          metadata: {
+            donor_name: donor_info.name,
+            donor_email: donor_info.email,
+            donor_phone: donor_info.phone || "",
+            frequency: "monthly",
+            comment: comment || "",
+            campaign: campaignName,
+            account_id: account_id || "",
+          },
+        })
+
+        const invoice = subscription.latest_invoice as Stripe.Invoice
+        let subPaymentIntent = invoice.payment_intent as Stripe.PaymentIntent
+        if (!subPaymentIntent) {
+          throw new Error("No payment intent found on subscription invoice")
+        }
+
+        // Give the dashboard entry the same readable description as one-time gifts
+        await stripe.paymentIntents.update(subPaymentIntent.id, {
+          description: `Donation from ${donor_info.name} - Monthly (${campaignName})${account_id ? ` (Account: ${account_id})` : ""}`,
+          metadata: {
+            donor_name: donor_info.name,
+            donor_email: donor_info.email,
+            donor_phone: donor_info.phone || "",
+            frequency: "monthly",
+            comment: comment || "",
+            campaign: campaignName,
+            account_id: account_id || "",
+          },
+        })
+
+        const subConfirmParams: Stripe.PaymentIntentConfirmParams = {
+          payment_method: payment_method_id,
+        }
+        if (request.headers.get("origin")) {
+          subConfirmParams.return_url = `${request.headers.get("origin")}/donation-success`
+        }
+        subPaymentIntent = await stripe.paymentIntents.confirm(subPaymentIntent.id, subConfirmParams)
+
+        if (subPaymentIntent.status === "requires_action") {
+          return NextResponse.json({
+            success: true,
+            requires_action: true,
+            client_secret: subPaymentIntent.client_secret,
+            payment_intent_id: subPaymentIntent.id,
+            subscription_id: subscription.id,
+            customer_id: customer.id,
+            account_id,
+          })
+        }
+
+        if (subPaymentIntent.status === "succeeded") {
+          console.log("[v0] Monthly subscription created successfully:", subscription.id)
+
+          await Promise.all([
+            sendConfirmationEmail(
+              donor_info,
+              subPaymentIntent.id,
+              subPaymentIntent.amount,
+              account_id,
+              email_customization,
+              frequency
+            ),
+            sendNotificationEmail(
+              donor_info,
+              subPaymentIntent.id,
+              subPaymentIntent.amount,
+              account_id,
+              email_customization,
+              comment,
+              frequency
+            ),
+          ])
+
+          return NextResponse.json({
+            success: true,
+            payment_intent_id: subPaymentIntent.id,
+            subscription_id: subscription.id,
+            customer_id: customer.id,
+            amount: subPaymentIntent.amount,
+            currency: subPaymentIntent.currency,
+            status: subPaymentIntent.status,
+            account_id,
+            frequency: "monthly",
+          })
+        }
+
+        // Payment did not succeed — cancel the incomplete subscription so it
+        // doesn't linger, and tell the donor honestly.
+        await stripe.subscriptions.cancel(subscription.id).catch(() => {})
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Monthly donation payment failed. You have not been charged.",
+            status: subPaymentIntent.status,
+            account_id,
+          },
+          { status: 400 }
+        )
+      } catch (subscriptionError: any) {
+        // FIX: no more silent failure — nothing has been charged if we get here.
+        console.error("Error creating monthly subscription:", subscriptionError)
+        if (subscriptionError.type === "StripeCardError") {
+          return NextResponse.json(
+            { success: false, error: subscriptionError.message },
+            { status: 400 }
+          )
+        }
+        return NextResponse.json(
+          {
+            success: false,
+            error: "We couldn't set up your monthly donation. You have not been charged. Please try again or contact info@gcmm.ca.",
+            account_id,
+          },
+          { status: 400 }
+        )
+      }
+    }
+
+    // ── ONE-TIME PAYMENT FLOW ─────────────────────────────────────────────────
     const paymentIntentData: Stripe.PaymentIntentCreateParams = {
       amount,
       currency,
@@ -457,7 +643,7 @@ export async function POST(request: NextRequest) {
           city: donor_info.city,
           state: donor_info.state,
           postal_code: donor_info.zip_code,
-          country: "CA", // GCMM is a Canadian charity — always CA
+          country: donor_info.country || "CA", // respect form country, default CA
         },
       },
     }
@@ -510,74 +696,8 @@ export async function POST(request: NextRequest) {
         ),
       ])
 
-      if (frequency === "monthly") {
-        try {
-          const customer = await stripe.customers.create({
-            email: donor_info.email,
-            name: donor_info.name,
-            phone: donor_info.phone,
-            address: {
-              line1: donor_info.address,
-              city: donor_info.city,
-              state: donor_info.state,
-              postal_code: donor_info.zip_code,
-              country: "CA",
-            },
-            payment_method: payment_method_id,
-            invoice_settings: { default_payment_method: payment_method_id },
-            metadata: { campaign: campaignName, account_id: account_id || "" },
-          })
-
-          const price = await stripe.prices.create({
-            unit_amount: amount,
-            currency,
-            recurring: { interval: "month" },
-            product_data: {
-              name: `Monthly Donation to ${email_customization?.organizationName || "GCMM"} - ${campaignName}`,
-            },
-          })
-
-          // Month 1 is already covered by the PaymentIntent confirmed above.
-          // trial_end pushes the subscription's first invoice to day 30,
-          // preventing a double-charge in the first month.
-          const subscription = await stripe.subscriptions.create({
-            customer: customer.id,
-            items: [{ price: price.id }],
-            default_payment_method: payment_method_id,
-            trial_end: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
-            metadata: {
-              donor_name: donor_info.name,
-              donor_email: donor_info.email,
-              comment: comment || "",
-              campaign: campaignName,
-              account_id: account_id || "",
-            },
-          })
-
-          return NextResponse.json({
-            success: true,
-            payment_intent_id: confirmedPaymentIntent.id,
-            subscription_id: subscription.id,
-            customer_id: customer.id,
-            amount: confirmedPaymentIntent.amount,
-            currency: confirmedPaymentIntent.currency,
-            status: confirmedPaymentIntent.status,
-            account_id,
-            frequency: "monthly",
-          })
-        } catch (subscriptionError) {
-          console.error("Error creating subscription:", subscriptionError)
-          return NextResponse.json({
-            success: true,
-            payment_intent_id: confirmedPaymentIntent.id,
-            amount: confirmedPaymentIntent.amount,
-            currency: confirmedPaymentIntent.currency,
-            status: confirmedPaymentIntent.status,
-            subscription_error: "Monthly subscription setup failed, but one-time payment succeeded",
-            account_id,
-          })
-        }
-      }
+      // (Monthly donations are handled earlier via the subscription flow —
+      // they never reach this point.)
 
       return NextResponse.json({
         success: true,
