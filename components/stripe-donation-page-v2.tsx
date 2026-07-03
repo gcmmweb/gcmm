@@ -206,7 +206,7 @@ function StripePaymentForm({
 
     try {
       const finalAmount = donationData.customAmount || donationData.amount
-      const response = await fetch("/api/stripe-donate-test", {
+      const response = await fetch("/api/stripe-donate-v2", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -357,7 +357,7 @@ export function StripeDonationPage({
 
   // Signature — one shared block, appended after every campaign's email body
   signatureName = "Dr. Hannu Haukka",
-  signatureTitle = "CEO, Great Commission Media Ministries (GCMM)",
+  signatureTitle = "CEO, Great Commission Media Ministries",
 
   // Email settings
   emailSubject = "Thank you for your donation",
