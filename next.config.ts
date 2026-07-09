@@ -44,6 +44,20 @@ const nextConfig: NextConfig = {
     ],
     unoptimized: true,
   },
+  async redirects() {
+    return [
+      {
+        source: "/mongolia-campaign",
+        destination: "/impact/mongolia",
+        permanent: true,
+      },
+      {
+        source: "/satellite-tv-broadcasting-the-gospel-into-countries-difficult-to-reach",
+        destination: "/10-40-media-outreach",
+        permanent: true,
+      },
+    ]
+  },
 }
 
 export default nextConfig
