@@ -28,7 +28,6 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/**",
       },
-      // Add other image hosts you might use
       {
         protocol: "https",
         hostname: "images.unsplash.com",
@@ -54,6 +53,31 @@ const nextConfig: NextConfig = {
       {
         source: "/satellite-tv-broadcasting-the-gospel-into-countries-difficult-to-reach",
         destination: "/10-40-media-outreach",
+        permanent: true,
+      },
+      {
+        source: "/ukraineaid-donate",
+        destination: "/donate",
+        permanent: true,
+      },
+      {
+        source: "/contact-us",
+        destination: "/contact",
+        permanent: true,
+      },
+      {
+        source: "/the-church-is-silent",
+        destination: "/when-churches-fall-silent",
+        permanent: true,
+      },
+      {
+        source: "/ukrainians-open-to-the-gospel-during-war",
+        destination: "/war-cannot-stop-the-gospel",
+        permanent: true,
+      },
+      {
+        source: "/index.php",
+        destination: "/",
         permanent: true,
       },
     ]
