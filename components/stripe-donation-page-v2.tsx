@@ -190,6 +190,7 @@ function StripePaymentForm({
         phone: donationData.phone,
         address: {
           line1: donationData.address,
+          line2: donationData.addressLine2 || undefined,
           city: donationData.city,
           state: donationData.state,
           postal_code: donationData.zipCode,
@@ -220,6 +221,7 @@ function StripePaymentForm({
             email: donationData.email,
             phone: donationData.phone,
             address: donationData.address,
+            address_line2: donationData.addressLine2,
             city: donationData.city,
             state: donationData.state,
             zip_code: donationData.zipCode,
@@ -431,6 +433,7 @@ export function StripeDonationPage({
     email: "",
     phone: "",
     address: "",
+    addressLine2: "",
     city: "",
     state: "",
     zipCode: "",
@@ -547,6 +550,7 @@ export function StripeDonationPage({
       email: "",
       phone: "",
       address: "",
+      addressLine2: "",
       city: "",
       state: "",
       zipCode: "",
@@ -811,6 +815,14 @@ export function StripeDonationPage({
                 value={donationForm.address}
                 onChange={handleInputChange}
                 required
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-300"
+              />
+              <input
+                type="text"
+                name="addressLine2"
+                placeholder="Apartment, suite, unit, etc."
+                value={donationForm.addressLine2}
+                onChange={handleInputChange}
                 className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-300"
               />
               <div className="grid md:grid-cols-3 gap-4">

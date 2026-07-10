@@ -210,7 +210,7 @@ async function sendConfirmationEmail(
     // Per-campaign override takes priority (e.g. UkraineAid adds "| UkraineAid"),
     // falls back to the shared global title otherwise.
     const signatureTitle =
-      campaign?.signatureTitleOverride || ec?.signatureTitle || "CEO, Great Commission Media Ministries (GCMM)"
+      campaign?.signatureTitleOverride || ec?.signatureTitle || "CEO, Great Commission Media Ministries"
     const subject = ec?.emailSubject || "Thank you for your donation"
 
     const bannerUrl = campaign?.bannerUrl || "/images/email-banner.png"
@@ -478,6 +478,7 @@ export async function POST(request: NextRequest) {
           phone: donor_info.phone,
           address: {
             line1: donor_info.address,
+            line2: donor_info.address_line2 || undefined,
             city: donor_info.city,
             state: donor_info.state,
             postal_code: donor_info.zip_code,
@@ -637,6 +638,7 @@ export async function POST(request: NextRequest) {
         name: donor_info.name,
         address: {
           line1: donor_info.address,
+          line2: donor_info.address_line2 || undefined,
           city: donor_info.city,
           state: donor_info.state,
           postal_code: donor_info.zip_code,
