@@ -18631,6 +18631,9 @@ PLASMIC.registerComponent(DonationThankYou, {
       type: "array",
       itemType: {
         type: "object",
+        // Shows the Campaign ID as the item's label in the panel (e.g. "mcmc")
+        // instead of "Item 0" / "Item 1" — easier to find the right one at a glance.
+        nameFunc: (item: any) => item.campaignId || "New Campaign",
         fields: {
           campaignId: { type: "string" },
           headline: { type: "string" },
