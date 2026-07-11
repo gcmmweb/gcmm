@@ -15,6 +15,7 @@ export interface ThankYouCampaignContent {
 }
 
 export interface DonationThankYouProps {
+  className?: string
   campaigns: ThankYouCampaignContent[]
   defaultHeadline?: string
   defaultPhotoUrl?: string
@@ -27,6 +28,7 @@ const FALLBACK_PHOTO = "/images/thank-you-default.jpg"
 const FALLBACK_COLOR = "#1D9E75"
 
 export default function DonationThankYou({
+  className,
   campaigns = [],
   defaultHeadline = FALLBACK_HEADLINE,
   defaultPhotoUrl = FALLBACK_PHOTO,
@@ -36,7 +38,6 @@ export default function DonationThankYou({
   const searchParams = useSearchParams()
 
   // These come from the URL, e.g. /thank-you?campaign=ukraineaid&amount=50&frequency=monthly&name=Junita
-  // (Step 2 will wire the actual donation flow to redirect here with real values.)
   const campaignId = searchParams?.get("campaign") ?? ""
   const amount = searchParams?.get("amount") ?? ""
   const frequency = searchParams?.get("frequency") ?? ""
@@ -61,75 +62,84 @@ export default function DonationThankYou({
     frequency === "monthly" ? "Monthly" : frequency === "one-time" ? "One-time" : null
 
   return (
-    <div style={styles.wrapper}>
-      <div style={styles.iconCircle(accentColor)}>
-        <CheckCircle size={28} color={accentColor} />
-      </div>
-
-      <h1 style={styles.heading}>Thank you{donorName ? `, ${donorName}` : ""}</h1>
-      <p style={styles.subheading}>{headline}</p>
-
-      {(formattedAmount || frequencyLabel || campaignId) && (
-        <div style={styles.summaryCard}>
-          {formattedAmount && (
-            <div style={styles.summaryRow}>
-              <span style={styles.summaryLabel}>Amount</span>
-              <span style={styles.summaryValue}>{formattedAmount}</span>
-            </div>
-          )}
-          {frequencyLabel && (
-            <div style={styles.summaryRow}>
-              <span style={styles.summaryLabel}>Frequency</span>
-              <span style={styles.summaryValue}>{frequencyLabel}</span>
-            </div>
-          )}
-          {campaignId && (
-            <div style={styles.summaryRowLast}>
-              <span style={styles.summaryLabel}>Campaign</span>
-              <span style={styles.summaryValue}>{matched?.campaignId ?? campaignId}</span>
-            </div>
-          )}
+    // Outer section: className comes from Plasmic, so Studio's width/stretch/
+    // background controls actually reach this element (full-bleed friendly).
+    <div className={className} style={styles.section}>
+      {/* Inner content: fixed reading width, always centered, regardless of
+          how wide the outer section is set to in Plasmic. */}
+      <div style={styles.wrapper}>
+        <div style={styles.iconCircle(accentColor)}>
+          <CheckCircle size={28} color={accentColor} />
         </div>
-      )}
 
-      <div style={styles.photoWrap}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={photoUrl} alt="" style={styles.photo} />
-      </div>
+        <h1 style={styles.heading}>Thank you{donorName ? `, ${donorName}` : ""}</h1>
+        <p style={styles.subheading}>{headline}</p>
 
-      <div style={styles.noticeBox}>
-        <Mail size={18} color="#5F5E5A" style={{ flexShrink: 0, marginTop: 2 }} />
-        <p style={styles.noticeText}>
-          A confirmation email with your official tax receipt is on its way to your inbox.
-        </p>
-      </div>
+        {(formattedAmount || frequencyLabel || campaignId) && (
+          <div style={styles.summaryCard}>
+            {formattedAmount && (
+              <div style={styles.summaryRow}>
+                <span style={styles.summaryLabel}>Amount</span>
+                <span style={styles.summaryValue}>{formattedAmount}</span>
+              </div>
+            )}
+            {frequencyLabel && (
+              <div style={styles.summaryRow}>
+                <span style={styles.summaryLabel}>Frequency</span>
+                <span style={styles.summaryValue}>{frequencyLabel}</span>
+              </div>
+            )}
+            {campaignId && (
+              <div style={styles.summaryRowLast}>
+                <span style={styles.summaryLabel}>Campaign</span>
+                <span style={styles.summaryValue}>{matched?.campaignId ?? campaignId}</span>
+              </div>
+            )}
+          </div>
+        )}
 
-      <div style={styles.ctaRow}>
-        <a href={newsletterUrl} style={styles.ctaButton}>
-          <Heart size={16} style={{ marginRight: 6, verticalAlign: -2 }} />
-          Subscribe to updates
-        </a>
-        <button
-          type="button"
-          style={styles.ctaButton}
-          onClick={() => {
-            if (typeof navigator !== "undefined" && (navigator as any).share) {
-              ;(navigator as any).share({
-                title: "I just supported GCMM",
-                url: window.location.origin,
-              })
-            }
-          }}
-        >
-          <Share2 size={16} style={{ marginRight: 6, verticalAlign: -2 }} />
-          Share this cause
-        </button>
+        <div style={styles.photoWrap}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={photoUrl} alt="" style={styles.photo} />
+        </div>
+
+        <div style={styles.noticeBox}>
+          <Mail size={18} color="#5F5E5A" style={{ flexShrink: 0, marginTop: 2 }} />
+          <p style={styles.noticeText}>
+            A confirmation email with your official tax receipt is on its way to your inbox.
+          </p>
+        </div>
+
+        <div style={styles.ctaRow}>
+          <a href={newsletterUrl} style={styles.ctaButton}>
+            <Heart size={16} style={{ marginRight: 6, verticalAlign: -2 }} />
+            Subscribe to updates
+          </a>
+          <button
+            type="button"
+            style={styles.ctaButton}
+            onClick={() => {
+              if (typeof navigator !== "undefined" && (navigator as any).share) {
+                ;(navigator as any).share({
+                  title: "I just supported GCMM",
+                  url: window.location.origin,
+                })
+              }
+            }}
+          >
+            <Share2 size={16} style={{ marginRight: 6, verticalAlign: -2 }} />
+            Share this cause
+          </button>
+        </div>
       </div>
     </div>
   )
 }
 
 const styles: Record<string, any> = {
+  section: {
+    width: "100%",
+  },
   wrapper: {
     maxWidth: 560,
     margin: "0 auto",

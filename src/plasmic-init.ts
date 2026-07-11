@@ -18625,6 +18625,7 @@ PLASMIC.registerComponent(StripeDonationPageV2, {
 PLASMIC.registerComponent(DonationThankYou, {
   name: "DonationThankYou",
   displayName: "Donation Thank You",
+  classNameProp: "className",
   props: {
     campaigns: {
       type: "array",
