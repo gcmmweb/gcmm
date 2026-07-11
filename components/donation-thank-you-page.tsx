@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useSearchParams } from "next/navigation"
-import { CheckCircle, Mail, Share2, Heart } from "lucide-react"
+import { CheckCircle, Mail, Heart } from "lucide-react"
 
 // One entry per ministry campaign (mcmc, ukraineaid, israel-jewish-ministry,
 // satellite-10-40-window, etc). campaignId must match whatever identifier
@@ -115,21 +115,6 @@ export default function DonationThankYou({
             <Heart size={16} style={{ marginRight: 6, verticalAlign: -2 }} />
             Subscribe to updates
           </a>
-          <button
-            type="button"
-            style={styles.ctaButton}
-            onClick={() => {
-              if (typeof navigator !== "undefined" && (navigator as any).share) {
-                ;(navigator as any).share({
-                  title: "I just supported GCMM",
-                  url: window.location.origin,
-                })
-              }
-            }}
-          >
-            <Share2 size={16} style={{ marginRight: 6, verticalAlign: -2 }} />
-            Share this cause
-          </button>
         </div>
       </div>
     </div>
