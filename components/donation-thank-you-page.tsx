@@ -44,8 +44,8 @@ export default function DonationThankYou({
   const donorName = searchParams?.get("name") ?? ""
 
   const matched = campaigns.find(
-    (c) => c.campaignId.toLowerCase() === campaignId.toLowerCase()
-  )
+  (c) => c.campaignId && c.campaignId.toLowerCase() === campaignId.toLowerCase()
+)
 
   const headline = matched?.headline || defaultHeadline
   const photoUrl = matched?.photoUrl || defaultPhotoUrl
