@@ -97,6 +97,11 @@ const cardElementOptions = {
 // ─────────────────────────────────────────────────────────────────────────────
 interface Campaign {
   name: string
+  // Matches the "Campaign ID" field on the Donation Thank You component's
+  // Campaigns array in Plasmic — this is how the thank-you page knows which
+  // headline/photo/accent color to show. Keep the two in sync by typing the
+  // same value into both Plasmic panels; no code change needed to update it.
+  campaignId?: string
   bannerUrl?: string
   emailBodyOneTime: string
   emailBodyMonthly: string
@@ -340,6 +345,7 @@ export function StripeDonationPage({
   campaigns = [
     {
       name: "Where Most Needed",
+      campaignId: "general",
       bannerUrl: "/images/email-banner.png",
       emailBodyOneTime:
         "Thank you for your gift of {amount} toward {campaignName}. Your generosity is helping us reach people around the world with practical support and the message of hope.",
@@ -540,6 +546,14 @@ export function StripeDonationPage({
   const handlePaymentSuccess = (result: any) => {
     setSubmitStatus("success")
     setSuccessData(result)
+
+    // Capture what the thank-you page needs BEFORE the form resets below —
+    // once setDonationForm runs, donationForm reverts to blank defaults.
+    const redirectAmount = donationForm.amount || donationForm.customAmount
+    const redirectFrequency = donationForm.frequency
+    const redirectName = donationForm.firstName
+    const redirectCampaignId = selectedCampaign?.campaignId
+
     setDonationForm({
       amount: "",
       customAmount: "",
@@ -557,6 +571,16 @@ export function StripeDonationPage({
       country: "CA", // FIX: was hardcoded US
       comment: "",
     })
+
+    // TEST ONLY — points at the test thank-you page while we verify this.
+    // Swap to "/thank-you" once confirmed and ready to go live.
+    const params = new URLSearchParams()
+    if (redirectCampaignId) params.set("campaign", redirectCampaignId)
+    if (redirectAmount) params.set("amount", redirectAmount)
+    if (redirectFrequency) params.set("frequency", redirectFrequency)
+    if (redirectName) params.set("name", redirectName)
+
+    window.location.href = `/thank-you-test-only?${params.toString()}`
   }
 
   const handlePaymentError = (error: string) => {

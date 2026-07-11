@@ -18470,6 +18470,12 @@ PLASMIC.registerComponent(StripeDonationPageV2, {
             defaultValue: "New Campaign",
             description: "Shown to donors in the dropdown, and used in the {campaignName} merge tag",
           },
+          campaignId: {
+            type: "string",
+            displayName: "Campaign ID",
+            description:
+              "Must exactly match the Campaign ID set for this same campaign on the Donation Thank You component — this is how the thank-you page knows which headline/photo/color to show after a successful donation. Not shown to donors.",
+          },
           bannerUrl: {
             type: "imageUrl",
             displayName: "Confirmation Email Banner",
@@ -18516,6 +18522,7 @@ PLASMIC.registerComponent(StripeDonationPageV2, {
       defaultValue: [
         {
           name: "Where Most Needed",
+          campaignId: "general",
           bannerUrl: "/images/email-banner.png",
           emailBodyOneTime:
             "Thank you for your gift of {amount} toward {campaignName}. Your generosity is helping us reach people around the world with practical support and the message of hope.",
