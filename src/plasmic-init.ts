@@ -18632,15 +18632,19 @@ PLASMIC.registerComponent(StripeDonationPageV2, {
 PLASMIC.registerComponent(DonationThankYou, {
   name: "DonationThankYou",
   displayName: "Donation Thank You",
+  classNameProp: "className",
   props: {
     campaigns: {
       type: "array",
       itemType: {
         type: "object",
+        // Shows the Campaign ID as the item's label in the panel (e.g. "mcmc")
+        // instead of "Item 0" / "Item 1" — easier to find the right one at a glance.
+        nameFunc: (item: any) => item.campaignId || "New Campaign",
         fields: {
           campaignId: { type: "string" },
           headline: { type: "string" },
-          photoUrl: { type: "img" },
+          photoUrl: { type: "imageUrl" },
           accentColor: { type: "color" },
         },
       },
@@ -18651,7 +18655,7 @@ PLASMIC.registerComponent(DonationThankYou, {
       defaultValue: "Your generosity is already at work.",
     },
     defaultPhotoUrl: {
-      type: "img",
+      type: "imageUrl",
       defaultValue: "/images/thank-you-default.jpg",
     },
     defaultAccentColor: {
