@@ -3,6 +3,7 @@ import { initPlasmicLoader } from '@plasmicapp/loader-nextjs';
 import MainPage from '@/components/MainPage';
 import ministryImpact from '@/components/ministry-impact';
 import { StripeDonationPage as StripeDonationPageV2 } from "@/components/stripe-donation-page-v2"
+import DonationThankYou from "@/components/donation-thank-you-page"
 
 export const PLASMIC = initPlasmicLoader({
   projects: [
@@ -18619,3 +18620,42 @@ PLASMIC.registerComponent(StripeDonationPageV2, {
   },
   importPath: "./components/stripe-donation-page-v2",
 } as any)
+
+
+PLASMIC.registerComponent(DonationThankYou, {
+  name: "DonationThankYou",
+  displayName: "Donation Thank You",
+  props: {
+    campaigns: {
+      type: "array",
+      itemType: {
+        type: "object",
+        fields: {
+          campaignId: { type: "string" },
+          headline: { type: "string" },
+          photoUrl: { type: "img" },
+          accentColor: { type: "color" },
+        },
+      },
+      defaultValue: [],
+    },
+    defaultHeadline: {
+      type: "string",
+      defaultValue: "Your generosity is already at work.",
+    },
+    defaultPhotoUrl: {
+      type: "img",
+      defaultValue: "/images/thank-you-default.jpg",
+    },
+    defaultAccentColor: {
+      type: "color",
+      defaultValue: "#1D9E75",
+    },
+    newsletterUrl: {
+      type: "string",
+      defaultValue: "/newsletters",
+    },
+  },
+  importPath: "@/components/donation-thank-you-page",
+  isDefaultExport: true,
+} as any);
