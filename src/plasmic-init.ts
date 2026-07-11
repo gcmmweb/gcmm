@@ -18633,7 +18633,7 @@ PLASMIC.registerComponent(DonationThankYou, {
         fields: {
           campaignId: { type: "string" },
           headline: { type: "string" },
-          photoUrl: { type: "img" },
+          photoUrl: { type: "imageUrl" },
           accentColor: { type: "color" },
         },
       },
@@ -18644,7 +18644,7 @@ PLASMIC.registerComponent(DonationThankYou, {
       defaultValue: "Your generosity is already at work.",
     },
     defaultPhotoUrl: {
-      type: "img",
+      type: "imageUrl",
       defaultValue: "/images/thank-you-default.jpg",
     },
     defaultAccentColor: {
