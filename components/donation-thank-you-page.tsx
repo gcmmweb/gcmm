@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+import { useEffect } from "react"
 import { useSearchParams } from "next/navigation"
 import { CheckCircle, Mail, Heart } from "lucide-react"
 
@@ -57,6 +58,26 @@ export default function DonationThankYou({
         currency: "CAD",
       }).format(Number(amount))
     : null
+
+  // Fires once per page load. This is what lets GA4 (and later, Google Ads
+  // via an imported conversion) see BOTH the dollar value AND which campaign
+  // it came from — the layout.tsx gtag config alone only sees a page view.
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    const gtag = (window as any).gtag
+    if (typeof gtag !== "function") return
+    if (!amount || !campaignId) return
+
+    gtag("event", "donation_completed", {
+      value: Number(amount),
+      currency: "CAD",
+      campaign_id: campaignId,
+      frequency: frequency || "unknown",
+    })
+    // Only re-fire if the actual donation details change — not on every
+    // re-render — so a single page load only ever counts as one donation.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [amount, campaignId, frequency])
 
   const frequencyLabel =
     frequency === "monthly" ? "Monthly" : frequency === "one-time" ? "One-time" : null
