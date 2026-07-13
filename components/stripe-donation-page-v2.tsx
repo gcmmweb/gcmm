@@ -788,7 +788,34 @@ export function StripeDonationPage({
 
             {/* Personal Information Section */}
             <div className="space-y-4 mb-8">
-              <h3 className="text-lg font-semibold text-slate-900">Personal Information</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-slate-900">Personal Information</h3>
+                {process.env.NODE_ENV === "development" && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDonationForm((prev) => ({
+                        ...prev,
+                        firstName: "Test",
+                        lastName: "Donor",
+                        email: "info@gcmm.ca",
+                        phone: "6045551234",
+                        address: "123 Test Street",
+                        addressLine2: "",
+                        city: "Abbotsford",
+                        state: "BC",
+                        zipCode: "V2T 0B4",
+                        country: "CA",
+                        comment: "",
+                      }))
+                    }}
+                    className="text-xs px-3 py-1.5 rounded-lg border border-amber-400 bg-amber-50 text-amber-700 hover:bg-amber-100 font-medium"
+                    title="Dev only — fills the form with sample data. Never shows in production."
+                  >
+                    🧪 Fill Test Data
+                  </button>
+                )}
+              </div>
               <div className="grid md:grid-cols-2 gap-4">
                 <input
                   type="text"

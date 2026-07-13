@@ -75,7 +75,7 @@ export default function DonationThankYou({
         <h1 style={styles.heading}>Thank you{donorName ? `, ${donorName}` : ""}</h1>
         <p style={styles.subheading}>{headline}</p>
 
-        {(formattedAmount || frequencyLabel || campaignId) && (
+        {(formattedAmount || frequencyLabel) && (
           <div style={styles.summaryCard}>
             {formattedAmount && (
               <div style={styles.summaryRow}>
@@ -84,15 +84,9 @@ export default function DonationThankYou({
               </div>
             )}
             {frequencyLabel && (
-              <div style={styles.summaryRow}>
+              <div style={styles.summaryRowLast}>
                 <span style={styles.summaryLabel}>Frequency</span>
                 <span style={styles.summaryValue}>{frequencyLabel}</span>
-              </div>
-            )}
-            {campaignId && (
-              <div style={styles.summaryRowLast}>
-                <span style={styles.summaryLabel}>Campaign</span>
-                <span style={styles.summaryValue}>{matched?.campaignId ?? campaignId}</span>
               </div>
             )}
           </div>
