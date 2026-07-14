@@ -121,7 +121,7 @@ export default function DonationThankYou({
         <div style={styles.noticeBox}>
           <Mail size={18} color="#5F5E5A" style={{ flexShrink: 0, marginTop: 2 }} />
           <p style={styles.noticeText}>
-            A confirmation email with your official tax receipt is on its way to your inbox.
+            A donation acknowledgement email is on its way to your inbox.
           </p>
         </div>
 
