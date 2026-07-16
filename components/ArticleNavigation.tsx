@@ -16,6 +16,7 @@ interface ArticleNavigationProps {
   previousLabel?: string
   nextLabel?: string
   borderColor?: string
+  backgroundColor?: string
   accentColor?: string
   titleColor?: string
   titleHoverColor?: string
@@ -28,6 +29,7 @@ export const ArticleNavigation = ({
   previousLabel = "Previous Article",
   nextLabel = "Next Article",
   borderColor = "#0057B8",
+  backgroundColor = "#F3F4F6",
   accentColor = "#0057B8",
   titleColor = "#1F2D55",
   titleHoverColor = "#0A6C93",
@@ -41,7 +43,7 @@ export const ArticleNavigation = ({
     <div className={`border-t pt-8 ${className}`} style={{ borderColor }}>
       <div className="flex flex-col md:flex-row gap-4">
         {previousPost ? (
-          <a href={previousPost.url} className="group flex items-center gap-3 rounded-lg p-3 transition-all hover:bg-muted md:flex-1 border hover:border-accent" style={{ borderColor }}>
+          <a href={previousPost.url} className="group flex items-center gap-3 rounded-lg p-3 transition-all hover:bg-muted md:flex-1 border hover:border-accent" style={{ borderColor, backgroundColor }}>
             <ChevronLeft className="h-5 w-5 flex-shrink-0" style={{ color: accentColor }} />
             {previousPost.image && (
               <div className="relative w-20 h-20 flex-shrink-0 rounded overflow-hidden bg-muted">
@@ -62,7 +64,7 @@ export const ArticleNavigation = ({
         )}
 
         {nextPost ? (
-          <a href={nextPost.url} className="group flex items-center gap-3 rounded-lg p-3 transition-all hover:bg-muted md:flex-1 border hover:border-accent" style={{ borderColor }}>
+          <a href={nextPost.url} className="group flex items-center gap-3 rounded-lg p-3 transition-all hover:bg-muted md:flex-1 border hover:border-accent" style={{ borderColor, backgroundColor }}>
             {nextPost.image && (
               <div className="relative w-20 h-20 flex-shrink-0 rounded overflow-hidden bg-muted">
                 <img src={nextPost.image} alt={nextPost.title} className="w-full h-full object-cover transition-transform group-hover:scale-105" />

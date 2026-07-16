@@ -3229,6 +3229,18 @@ PLASMIC.registerComponent(ArticleNavigation, {
       defaultValue: "#3b82f6",
       description: "Color for article titles on hover",
     },
+    borderColor: {
+      type: "color",
+      displayName: "Border Color",
+      defaultValue: "#0057B8",
+      description: "Border color for the navigation cards",
+    },
+    backgroundColor: {
+      type: "color",
+      displayName: "Background Color",
+      defaultValue: "#F3F4F6",
+      description: "Background color for the navigation cards",
+    },
     className: {
       type: "class",
       displayName: "CSS Class",
