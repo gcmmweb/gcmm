@@ -16,7 +16,6 @@ interface ArticleNavigationProps {
   previousLabel?: string
   nextLabel?: string
   borderColor?: string  
-  backgroundColor?: string
   accentColor?: string
   titleColor?: string
   titleHoverColor?: string
@@ -29,7 +28,6 @@ export const ArticleNavigation = ({
   previousLabel = "Previous Article",
   nextLabel = "Next Article",
   borderColor = "#0057B8", // matches Recent Posts card border
-  backgroundColor = "#F3F4F6", // matches Recent Posts card background
   accentColor = "#0057B8", // amber-600
   titleColor = "#1F2D55", // foreground
   titleHoverColor = "#0A6C93", // primary/blue
@@ -46,8 +44,8 @@ export const ArticleNavigation = ({
         {previousPost ? (
           
             href={previousPost.url}
-            className="group flex items-center gap-3 rounded-lg p-3 transition-all md:flex-1 border hover:border-accent"
-            style={{ borderColor, backgroundColor }}
+            className="group flex items-center gap-3 rounded-lg p-3 transition-all hover:bg-muted md:flex-1 border hover:border-accent"
+            style={{ borderColor }}
           >
             <ChevronLeft
               className="h-5 w-5 flex-shrink-0"
@@ -85,8 +83,8 @@ export const ArticleNavigation = ({
         {nextPost ? (
           
             href={nextPost.url}
-            className="group flex items-center gap-3 rounded-lg p-3 transition-all md:flex-1 border hover:border-accent"
-            style={{ borderColor, backgroundColor }}
+            className="group flex items-center gap-3 rounded-lg p-3 transition-all hover:bg-muted md:flex-1 border hover:border-accent"
+            style={{ borderColor }}
           >
             {nextPost.image && (
               <div className="relative w-20 h-20 flex-shrink-0 rounded overflow-hidden bg-muted">
