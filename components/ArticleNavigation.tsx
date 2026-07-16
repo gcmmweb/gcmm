@@ -15,6 +15,7 @@ interface ArticleNavigationProps {
   }
   previousLabel?: string
   nextLabel?: string
+  borderColor?: string  
   accentColor?: string
   titleColor?: string
   titleHoverColor?: string
@@ -26,9 +27,10 @@ export const ArticleNavigation = ({
   nextPost,
   previousLabel = "Previous Article",
   nextLabel = "Next Article",
-  accentColor = "#d97706", // amber-600
-  titleColor = "#0f172a", // foreground
-  titleHoverColor = "#3b82f6", // primary/blue
+  borderColor = "#e5e7eb", // matches Recent Posts card border
+  accentColor = "#0057B8", // amber-600
+  titleColor = "#1F2D55", // foreground
+  titleHoverColor = "#0A6C93", // primary/blue
   className = "",
 }: ArticleNavigationProps) => {
   if (!previousPost && !nextPost) {
@@ -36,13 +38,14 @@ export const ArticleNavigation = ({
   }
 
   return (
-    <div className={`border-t border-border pt-8 ${className}`}>
+    <div className={`border-t pt-8 ${className}`} style={{ borderColor }}>
       <div className="flex flex-col md:flex-row gap-4">
         {/* Previous Article */}
         {previousPost ? (
           <a
             href={previousPost.url}
-            className="group flex items-center gap-3 rounded-lg p-3 transition-all hover:bg-muted md:flex-1 border border-border hover:border-accent"
+            className="group flex items-center gap-3 rounded-lg p-3 transition-all hover:bg-muted md:flex-1 border hover:border-accent"
+            style={{ borderColor }}
           >
             <ChevronLeft
               className="h-5 w-5 flex-shrink-0"
@@ -80,7 +83,8 @@ export const ArticleNavigation = ({
         {nextPost ? (
           <a
             href={nextPost.url}
-            className="group flex items-center gap-3 rounded-lg p-3 transition-all hover:bg-muted md:flex-1 border border-border hover:border-accent"
+            className="group flex items-center gap-3 rounded-lg p-3 transition-all hover:bg-muted md:flex-1 border hover:border-accent"
+            style={{ borderColor }}
           >
             {nextPost.image && (
               <div className="relative w-20 h-20 flex-shrink-0 rounded overflow-hidden bg-muted">
