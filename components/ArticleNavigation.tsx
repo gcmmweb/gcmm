@@ -45,7 +45,7 @@ export const ArticleNavigation = ({
         {/* Previous Article */}
         {previousPost ? (
           
-            href={previousPost?.url}
+            href={previousPost.url}
             className="group flex items-center gap-3 rounded-lg p-3 transition-all md:flex-1 border hover:border-accent"
             style={{ borderColor, backgroundColor }}
           >
@@ -53,11 +53,11 @@ export const ArticleNavigation = ({
               className="h-5 w-5 flex-shrink-0"
               style={{ color: accentColor }}
             />
-            {previousPost?.image && (
+            {previousPost.image && (
               <div className="relative w-20 h-20 flex-shrink-0 rounded overflow-hidden bg-muted">
                 <img
-                  src={previousPost?.image}
-                  alt={previousPost?.title}
+                  src={previousPost.image}
+                  alt={previousPost.title}
                   className="w-full h-full object-cover transition-transform group-hover:scale-105"
                 />
               </div>
@@ -73,7 +73,7 @@ export const ArticleNavigation = ({
                 className="text-sm font-bold transition-colors line-clamp-2"
                 style={{ color: titleColor }}
               >
-                {previousPost?.title}
+                {previousPost.title}
               </h3>
             </div>
           </a>
@@ -84,15 +84,15 @@ export const ArticleNavigation = ({
         {/* Next Article */}
         {nextPost ? (
           
-            href={nextPost?.url}
+            href={nextPost.url}
             className="group flex items-center gap-3 rounded-lg p-3 transition-all md:flex-1 border hover:border-accent"
             style={{ borderColor, backgroundColor }}
           >
-            {nextPost?.image && (
+            {nextPost.image && (
               <div className="relative w-20 h-20 flex-shrink-0 rounded overflow-hidden bg-muted">
                 <img
-                  src={nextPost?.image}
-                  alt={nextPost?.title}
+                  src={nextPost.image}
+                  alt={nextPost.title}
                   className="w-full h-full object-cover transition-transform group-hover:scale-105"
                 />
               </div>
@@ -108,7 +108,7 @@ export const ArticleNavigation = ({
                 className="text-sm font-bold transition-colors line-clamp-2"
                 style={{ color: titleColor }}
               >
-                {nextPost?.title}
+                {nextPost.title}
               </h3>
             </div>
             <ChevronRight
