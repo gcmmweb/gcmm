@@ -59,6 +59,12 @@ export default async function CatchallPage({ params, searchParams }: Props) {
     notFound();
   }
 
+  // The Plasmic loader matches dynamic routes like /test-only-article/[slug]
+  // and extracts the path parameters for us (e.g. { slug: "canada-day-26" }).
+  // Without passing these down, CMS queries that filter by the slug URL param
+  // receive undefined at runtime and fall back to the first row.
+  const pageMeta = pageData.entryCompMetas[0];
+
   const query = Object.fromEntries(
     Object.entries(resolvedSearchParams ?? {}).map(([key, value]) => [
       key,
@@ -67,6 +73,11 @@ export default async function CatchallPage({ params, searchParams }: Props) {
   );
 
   return (
-    <PlasmicClientPage pathname={pathname} pageData={pageData} query={query} />
+    <PlasmicClientPage
+      pathname={pathname}
+      pageData={pageData}
+      query={query}
+      params={pageMeta?.params}
+    />
   );
 }
