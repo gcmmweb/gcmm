@@ -80,6 +80,16 @@ const nextConfig: NextConfig = {
         destination: "/",
         permanent: true,
       },
+      {
+        source: "/five-life-saving-ambulances-to-kharkiv",
+        destination: "/life-saving-ambulances-to-kharkiv",
+        permanent: true,
+      },
+      {
+        source: "/5000-fire-extinguishers-for-ukraine",
+        destination: "/fire-extinguishers-for-ukraine",
+        permanent: true,
+      },
     ]
   },
 }
