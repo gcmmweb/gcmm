@@ -87,6 +87,8 @@ import { TestimonialCard } from "@/components/TestimonialCard"
 
 import { PhotoCarousel } from "@/components/photo-carousel"
 
+import { ShareButtons } from "@/components/share-buttons"
+
 import { PhotoOverlay } from "@/components/PhotoOverlay"
 
 import { Button } from "@/components/button"
@@ -2868,6 +2870,29 @@ PLASMIC.registerComponent(PhotoCarousel, {
   },
   importPath: "./components/PhotoCarousel",
 });
+
+
+import { ShareButtons } from "./components/ShareButtons"; // adjust path to match where you save the file
+
+PLASMIC.registerComponent(ShareButtons, {
+  name: "ShareButtons",
+  displayName: "Share Buttons",
+  description: "Native share sheet on mobile + copy link, WhatsApp, Facebook, and X icons",
+  props: {
+    className: { type: "string", displayName: "Class Name" },
+    nativeShareLabel: { type: "string", displayName: "Share Button Label", defaultValue: "Share" },
+    showNativeShareButton: { type: "boolean", displayName: "Show Native Share Button", defaultValue: true },
+    iconSize: { type: "string", displayName: "Icon Size", defaultValue: "20px" },
+    buttonSize: { type: "string", displayName: "Button Size", defaultValue: "44px" },
+    iconColor: { type: "string", displayName: "Icon Color", defaultValue: "#1f2937" },
+    iconHoverColor: { type: "string", displayName: "Icon Hover Color", defaultValue: "#374151" },
+    buttonBackgroundColor: { type: "string", displayName: "Button Background", defaultValue: "#ffffff" },
+    buttonHoverBackgroundColor: { type: "string", displayName: "Button Hover Background", defaultValue: "#f3f4f6" },
+    gap: { type: "string", displayName: "Gap Between Buttons", defaultValue: "12px" },
+  },
+  importPath: "./components/ShareButtons", // match the path above
+});
+
 
 PLASMIC.registerComponent(TestimonialCard, {
   name: "TestimonialCard",
