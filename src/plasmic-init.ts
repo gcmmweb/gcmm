@@ -87,7 +87,7 @@ import { TestimonialCard } from "@/components/TestimonialCard"
 
 import { PhotoCarousel } from "@/components/photo-carousel"
 
-import { ShareButtons } from "@/components/share-buttons"
+import { ShareButtons } from "@/components/ShareButtons"
 
 import { PhotoOverlay } from "@/components/PhotoOverlay"
 
@@ -2871,8 +2871,6 @@ PLASMIC.registerComponent(PhotoCarousel, {
   importPath: "./components/PhotoCarousel",
 });
 
-
-import { ShareButtons } from "./components/ShareButtons"; // adjust path to match where you save the file
 
 PLASMIC.registerComponent(ShareButtons, {
   name: "ShareButtons",
