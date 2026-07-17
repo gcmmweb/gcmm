@@ -84,11 +84,25 @@ export function ShareButtons({
   const handleCopy = async () => {
     const { shareUrl } = getShareData()
     try {
-      await navigator.clipboard.writeText(shareUrl)
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(shareUrl)
+      } else {
+        // Fallback for contexts where the modern Clipboard API is
+        // unavailable or blocked (e.g. some embedded preview frames).
+        const textarea = document.createElement("textarea")
+        textarea.value = shareUrl
+        textarea.style.position = "fixed"
+        textarea.style.opacity = "0"
+        document.body.appendChild(textarea)
+        textarea.focus()
+        textarea.select()
+        document.execCommand("copy")
+        document.body.removeChild(textarea)
+      }
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
-    } catch {
-      // Clipboard API unavailable; silently no-op.
+    } catch (err) {
+      console.error("Copy link failed:", err)
     }
   }
 
