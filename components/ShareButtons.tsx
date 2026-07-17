@@ -19,13 +19,7 @@ function FacebookIcon({ size }: { size: string }) {
     </svg>
   )
 }
-function XIcon({ size }: { size: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M13.65 10.62 20.4 3h-1.6l-5.86 6.62L8.26 3H3l7.08 10.02L3 21h1.6l6.2-7 5 7H21l-7.35-10.38Zm-2.2 2.49-.72-1L5.2 4.15h2.46l4.62 6.46.72 1 6 8.4h-2.46l-4.89-6.9Z"/>
-    </svg>
-  )
-}
+
 
 export interface ShareButtonsProps {
   className?: string
@@ -120,12 +114,6 @@ export function ShareButtons({
     openShareWindow(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`)
   }
 
-  const handleX = () => {
-    const { shareUrl, shareTitle } = getShareData()
-    openShareWindow(
-      `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareTitle)}`
-    )
-  }
 
   const iconButtonStyle = (key: string): React.CSSProperties => ({
     width: buttonSize,
@@ -213,15 +201,6 @@ export function ShareButtons({
         <FacebookIcon size={iconSize} />
       </button>
 
-      <button
-        onClick={handleX}
-        onMouseEnter={() => setHoveredKey("x")}
-        onMouseLeave={() => setHoveredKey(null)}
-        aria-label="Share on X"
-        style={iconButtonStyle("x")}
-      >
-        <XIcon size={iconSize} />
-      </button>
     </div>
   )
 }
