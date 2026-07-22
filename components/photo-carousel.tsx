@@ -86,20 +86,24 @@ export function PhotoCarousel({
   const [isRightHovered, setIsRightHovered] = useState(false)
   const [hoveredPhotoIndex, setHoveredPhotoIndex] = useState<number | null>(null)
   const [actualPhotosPerView, setActualPhotosPerView] = useState(photosPerView)
+  const [isNarrowScreen, setIsNarrowScreen] = useState(false)
 
   // Responsive photos per view based on screen size
   useEffect(() => {
     const updatePhotosPerView = () => {
       if (typeof window !== 'undefined') {
         if (window.innerWidth < 640) {
-          // Mobile: 1 photo
+          // Mobile: 1 photo, and width should fill available space
           setActualPhotosPerView(1)
+          setIsNarrowScreen(true)
         } else if (window.innerWidth < 1024) {
           // Tablet: 2 photos
           setActualPhotosPerView(Math.min(2, photosPerView))
+          setIsNarrowScreen(false)
         } else {
-          // Desktop: use prop value
+          // Desktop: use prop value, always respect Photo Width setting
           setActualPhotosPerView(photosPerView)
+          setIsNarrowScreen(false)
         }
       }
     }
@@ -225,7 +229,7 @@ export function PhotoCarousel({
                   onMouseLeave={() => setHoveredPhotoIndex(null)}
                   style={{
                     position: "relative",
-                    width: actualPhotosPerView === 1 ? "100%" : photoWidth,
+                    width: isNarrowScreen ? "100%" : photoWidth,
                     aspectRatio: `${parseInt(photoWidth) || 400} / ${parseInt(photoHeight) || 300}`,
                     flexShrink: 0,
                     borderRadius: borderRadius,
