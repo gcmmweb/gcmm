@@ -2814,6 +2814,13 @@ PLASMIC.registerComponent(PhotoCarousel, {
       description: "Vertical padding for the section",
     },
 
+sectionPaddingX: {
+        type: "string",
+        displayName: "Section Padding X",
+        defaultValue: "40px",
+        description: "Horizontal padding around the photo row, for arrow clearance (e.g., 24px, 40px, 60px)",
+      },
+
     // Photos Data
     photos: {
       type: "array",

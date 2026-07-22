@@ -55,6 +55,7 @@ export function PhotoCarousel({
   autoplayInterval = 3000,
   borderRadius = "12px",
   sectionPaddingY = "80px",
+  sectionPaddingX = "40px",
   arrowSize = "48px",
   arrowIconSize = "24px",
 }: {
@@ -76,6 +77,7 @@ export function PhotoCarousel({
   autoplayInterval?: number
   borderRadius?: string
   sectionPaddingY?: string
+  sectionPaddingX?: string
   arrowSize?: string
   arrowIconSize?: string
 }) {
@@ -210,8 +212,8 @@ export function PhotoCarousel({
               justifyContent: "center",
               alignItems: "center",
               transition: "all 0.5s ease-out",
-              paddingLeft: currentIndex > 0 ? "40px" : "0",
-              paddingRight: currentIndex < maxIndex ? "40px" : "0",
+              paddingLeft: sectionPaddingX,
+              paddingRight: sectionPaddingX,
             }}
           >
             {visiblePhotos.map((photo, index) => {
@@ -224,7 +226,7 @@ export function PhotoCarousel({
                   style={{
                     position: "relative",
                     width: actualPhotosPerView === 1 ? "100%" : photoWidth,
-                    height: photoHeight,
+                    aspectRatio: `${parseInt(photoWidth) || 400} / ${parseInt(photoHeight) || 300}`,
                     flexShrink: 0,
                     borderRadius: borderRadius,
                     overflow: "hidden",
