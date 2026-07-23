@@ -9,6 +9,10 @@ interface Testimonial {
   title?: string
   organization?: string
   location?: string
+  // NEW: each testimony can carry its own "read more" destination.
+  // Leave this blank in the CMS for any testimony that has no full story yet —
+  // the button simply won't render on that slide.
+  readMoreUrl?: string
 }
 
 interface TestimonialSliderProps {
@@ -79,9 +83,11 @@ interface TestimonialSliderProps {
   autoPlayInterval?: number
 
   // Read More Button
+  // NOTE: showReadMore is now a MASTER on/off switch for the whole component.
+  // The actual per-slide visibility is controlled by whether that testimony
+  // has a readMoreUrl set (see Testimonial interface above).
   showReadMore?: boolean
   readMoreText?: string
-  readMoreUrl?: string
   readMoreOpenInNewTab?: boolean
   readMoreFontSize?: string
   readMoreFontWeight?: "normal" | "bold"
@@ -102,6 +108,7 @@ export function TestimonialSlider({
       title: "Ministry Leader",
       organization: "Hope Church International",
       location: "Singapore",
+      readMoreUrl: "",
     },
     {
       quote: "The impact of their work is truly remarkable. We've reached thousands of people who might never have heard our message otherwise.",
@@ -109,6 +116,7 @@ export function TestimonialSlider({
       title: "Pastor",
       organization: "Community Church",
       location: "United States",
+      readMoreUrl: "",
     },
     {
       quote: "Working with GCM has been a game-changer for our ministry. Their expertise in digital media is unmatched.",
@@ -116,6 +124,7 @@ export function TestimonialSlider({
       title: "Communications Director",
       organization: "Faith Ministry",
       location: "Spain",
+      readMoreUrl: "",
     },
   ],
 
@@ -130,16 +139,16 @@ export function TestimonialSlider({
   // Styling
   backgroundColor = "transparent",
   textColor = "#1e293b",
-  accentColor = "#2563eb",
-  arrowColor = "#2563eb",
-  quoteIconColor = "#2563eb",
+  accentColor = "#1F2D55",
+  arrowColor = "#1F2D55",
+  quoteIconColor = "#1F2D55",
   
   // Individual Element Colors
-  nameColor = "#2563eb",
+  nameColor = "#1F2D55",
   titleColor = "#1e293b",
   organizationColor = "#64748b",
   locationColor = "#ffffff",
-  locationBadgeColor = "#2563eb",
+  locationBadgeColor = "#1F2D55",
 
   // Typography - Quote
   quoteFontSize = "1.25rem",
@@ -182,16 +191,15 @@ export function TestimonialSlider({
   autoPlay = false,
   autoPlayInterval = 5000,
 
-  // Read More Button
+  // Read More Button (master switch + shared styling only — URL now lives per-testimony)
   showReadMore = false,
   readMoreText = "Read More",
-  readMoreUrl = "#",
   readMoreOpenInNewTab = false,
   readMoreFontSize = "1rem",
   readMoreFontWeight = "normal",
-  readMoreBackgroundColor = "#2563eb",
+  readMoreBackgroundColor = "#1F2D55",
   readMoreTextColor = "#ffffff",
-  readMoreHoverBackgroundColor = "#1e40af",
+  readMoreHoverBackgroundColor = "#0A6C93",
   readMoreHoverTextColor = "#ffffff",
 
   className = "",
@@ -252,6 +260,10 @@ export function TestimonialSlider({
   }
 
   const currentTestimonial = testimonials[currentIndex]
+
+  // Per-slide check: only render the button if this specific testimony has a URL
+  const currentReadMoreUrl = currentTestimonial.readMoreUrl?.trim()
+  const canShowReadMore = showReadMore && !!currentReadMoreUrl
 
   return (
     <div
@@ -400,8 +412,8 @@ export function TestimonialSlider({
               </div>
             )}
 
-            {/* Read More Button */}
-            {showReadMore && readMoreUrl && (
+            {/* Read More Button — only appears when THIS testimony has a URL */}
+            {canShowReadMore && (
               <div 
                 className="mt-6"
                 style={{ 
@@ -410,7 +422,7 @@ export function TestimonialSlider({
                 }}
               >
                 <a
-                  href={readMoreUrl}
+                  href={currentReadMoreUrl}
                   target={readMoreOpenInNewTab ? "_blank" : undefined}
                   rel={readMoreOpenInNewTab ? "noopener noreferrer" : undefined}
                   className="inline-block px-6 py-3 rounded-lg transition-all duration-200"

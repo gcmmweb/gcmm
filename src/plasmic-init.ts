@@ -994,6 +994,15 @@ PLASMIC.registerComponent(TestimonialSlider, {
             defaultValue: "City, Country",
             description: "Location badge text (e.g., 'Singapore', 'United States')",
           },
+          // NEW: per-testimony Read More destination.
+          // Leave blank for a testimony that has no full story yet —
+          // the button simply won't appear on that slide.
+          readMoreUrl: {
+            type: "string",
+            displayName: "Read More URL",
+            defaultValue: "",
+            description: "Link to this testimony's full story (e.g. a News & Stories CMS article). Leave blank to hide the Read More button on this slide.",
+          },
         },
       },
       defaultValue: [
@@ -1003,6 +1012,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
           title: "Ministry Leader",
           organization: "Hope Church International",
           location: "Singapore",
+          readMoreUrl: "",
         },
         {
           quote: "The impact of their work is truly remarkable. We've reached thousands of people who might never have heard our message otherwise.",
@@ -1010,6 +1020,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
           title: "Pastor",
           organization: "Community Church",
           location: "United States",
+          readMoreUrl: "",
         },
         {
           quote: "Working with GCM has been a game-changer for our ministry. Their expertise in digital media is unmatched.",
@@ -1017,6 +1028,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
           title: "Communications Director",
           organization: "Faith Ministry",
           location: "Spain",
+          readMoreUrl: "",
         },
       ],
     },
@@ -1096,11 +1108,13 @@ PLASMIC.registerComponent(TestimonialSlider, {
     },
 
     // Read More Button
+    // NOTE: this is now just the master on/off switch + shared styling.
+    // The actual URL lives on each testimony (see "Testimonials" above).
     showReadMore: {
       type: "boolean",
       displayName: "Show Read More Button",
       defaultValue: false,
-      description: "Show/hide the Read More button",
+      description: "Master switch for the Read More button. When on, a testimony's button still only appears if that testimony has a Read More URL filled in.",
       section: "Read More Button",
     },
     readMoreText: {
@@ -1108,14 +1122,6 @@ PLASMIC.registerComponent(TestimonialSlider, {
       displayName: "Button Text",
       defaultValue: "Read More",
       description: "Text displayed on the button",
-      section: "Read More Button",
-      hidden: (props) => !props.showReadMore,
-    },
-    readMoreUrl: {
-      type: "string",
-      displayName: "Button URL",
-      defaultValue: "#",
-      description: "Link URL for the button",
       section: "Read More Button",
       hidden: (props) => !props.showReadMore,
     },
@@ -1146,7 +1152,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
     readMoreBackgroundColor: {
       type: "color",
       displayName: "Button Background Color",
-      defaultValue: "#2563eb",
+      defaultValue: "#1F2D55",
       description: "Background color of the button",
       section: "Read More Button",
       hidden: (props) => !props.showReadMore,
@@ -1162,7 +1168,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
     readMoreHoverBackgroundColor: {
       type: "color",
       displayName: "Button Hover Background",
-      defaultValue: "#1e40af",
+      defaultValue: "#0A6C93",
       description: "Background color when hovering",
       section: "Read More Button",
       hidden: (props) => !props.showReadMore,
@@ -1193,28 +1199,28 @@ PLASMIC.registerComponent(TestimonialSlider, {
     accentColor: {
       type: "color",
       displayName: "Accent Color",
-      defaultValue: "#2563eb",
+      defaultValue: "#1F2D55",
       description: "Color for dots (name color is separate below)",
       section: "Colors",
     },
     arrowColor: {
       type: "color",
       displayName: "Arrow Color",
-      defaultValue: "#2563eb",
+      defaultValue: "#1F2D55",
       description: "Color for navigation arrows",
       section: "Colors",
     },
     quoteIconColor: {
       type: "color",
       displayName: "Quote Icon Color",
-      defaultValue: "#2563eb",
+      defaultValue: "#1F2D55",
       description: "Color for the quote icon",
       section: "Colors",
     },
     nameColor: {
       type: "color",
       displayName: "Name Color",
-      defaultValue: "#2563eb",
+      defaultValue: "#1F2D55",
       description: "Color for person's name (e.g., Sarah Chen)",
       section: "Colors - Attribution",
     },
@@ -1242,7 +1248,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
     locationBadgeColor: {
       type: "color",
       displayName: "Location Badge Background Color",
-      defaultValue: "#2563eb",
+      defaultValue: "#1F2D55",
       description: "Background color of the location badge",
       section: "Colors - Attribution",
     },
