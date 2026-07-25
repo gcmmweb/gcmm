@@ -1,12 +1,22 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { Suspense, useEffect, useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 
-export default function SearchPage() {
+function SearchPageInner() {
   const router = useRouter()
-  const [query, setQuery] = useState("")
+  const searchParams = useSearchParams()
+  const initialQuery = searchParams.get("q") || ""
+  const [query, setQuery] = useState(initialQuery)
+
+  // If we arrive here with a search term already in the URL, forward
+  // straight to News & Stories instead of making the person search twice.
+  useEffect(() => {
+    if (initialQuery.trim()) {
+      router.replace(`/news-stories?q=${encodeURIComponent(initialQuery.trim())}`)
+    }
+  }, [initialQuery, router])
 
   function handleSearch() {
     const q = query.trim()
@@ -41,5 +51,13 @@ export default function SearchPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={null}>
+      <SearchPageInner />
+    </Suspense>
   )
 }

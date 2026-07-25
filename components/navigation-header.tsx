@@ -146,7 +146,7 @@ export function NavigationHeader({
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`)
+      router.push(`/news-stories?q=${encodeURIComponent(searchQuery.trim())}`)
       setIsSearchOpen(false)
       setSearchQuery("")
     }
