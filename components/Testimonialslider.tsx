@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Quote, ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface Testimonial {
@@ -208,14 +208,21 @@ export function TestimonialSlider({
   const [isHovering, setIsHovering] = useState(false)
 
   // Auto-play functionality
-  useState(() => {
+  // FIX: this was previously `useState(() => {...})`, which is wrong for side effects.
+  // useState's initializer runs once to compute a value — the cleanup function it
+  // returned was silently discarded, so the interval it created was NEVER cleared.
+  // Every render (including repeated server-side renders) left one more interval
+  // running forever in the background. useEffect is the correct tool here: React
+  // calls the returned cleanup function automatically on unmount / before re-running
+  // the effect, so the timer is properly torn down instead of leaking.
+  useEffect(() => {
     if (autoPlay && testimonials.length > 1) {
       const interval = setInterval(() => {
         setCurrentIndex((prev) => (prev + 1) % testimonials.length)
       }, autoPlayInterval)
       return () => clearInterval(interval)
     }
-  })
+  }, [autoPlay, autoPlayInterval, testimonials.length])
 
   const goToNext = () => {
     setCurrentIndex((prev) => (prev + 1) % testimonials.length)
