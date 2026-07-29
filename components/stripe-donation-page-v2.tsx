@@ -333,6 +333,10 @@ export function StripeDonationPage({
   customAmountPlaceholder = "100",
   termsAndConditionsUrl = "/terms-and-conditions",
 
+  // Background color of the outer section behind the white donation card.
+  // Leave blank to keep the default navy gradient.
+  backgroundColor,
+
   // Preset Amounts — shared across every campaign, unchanged from before
   presetAmount1 = 40,
   presetAmount2 = 70,
@@ -390,6 +394,7 @@ export function StripeDonationPage({
   generousDonationText?: string
   customAmountPlaceholder?: string
   termsAndConditionsUrl?: string
+  backgroundColor?: string
   presetAmount1?: number
   presetAmount2?: number
   presetAmount3?: number
@@ -651,7 +656,10 @@ export function StripeDonationPage({
       )}
       <section
         ref={donationRef}
-        className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center py-20 px-4"
+        className={`flex items-center justify-center py-20 px-4 ${
+          backgroundColor ? "" : "bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900"
+        }`}
+        style={backgroundColor ? { background: backgroundColor } : undefined}
       >
         <div
           className={`transition-all duration-1000 ease-out max-w-2xl w-full ${

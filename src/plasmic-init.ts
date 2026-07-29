@@ -18477,6 +18477,14 @@ PLASMIC.registerComponent(StripeDonationPageV2, {
       defaultValue: "/terms-and-conditions",
       section: "Page Content",
     },
+    backgroundColor: {
+      type: "color",
+      displayName: "Background Color",
+      description:
+        "Solid color for the section behind the white donation card. Leave blank to keep the default navy gradient.",
+      section: "Page Content",
+    },
+
     matchingBannerText: {
       type: "string",
       displayName: "Matching Campaign Banner Text",
