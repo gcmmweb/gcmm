@@ -5420,6 +5420,9 @@ PLASMIC.registerComponent(TimelinePage, {
       ],
       itemType: {
         type: "object",
+        // Shows "1984-1985 - New Voices, New Programs" in the sidebar list
+        // instead of the generic "Item 4", "Item 5", etc.
+        nameFunc: (item) => (item.year ? `${item.year} — ${item.title || "Untitled"}` : "New Event"),
         fields: {
           year: {
             type: "string",
@@ -5530,9 +5533,24 @@ PLASMIC.registerComponent(TimelinePage, {
       defaultValue: true,
       description: "Enable scroll-triggered animations for timeline events",
     },
+
+    // Spacing
+    paddingX: {
+      type: "string",
+      displayName: "Padding X (horizontal)",
+      defaultValue: "24px",
+      description: "Left/right padding for the whole section, e.g. 24px",
+    },
+    paddingY: {
+      type: "string",
+      displayName: "Padding Y (vertical)",
+      defaultValue: "120px",
+      description: "Top/bottom padding for the whole section, e.g. 120px",
+    },
   },
   importPath: "./components/timeline-page",
 });
+
 
 PLASMIC.registerComponent(News2, {
   name: "News2",

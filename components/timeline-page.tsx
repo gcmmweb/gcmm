@@ -27,6 +27,8 @@ interface TimelinePageProps {
   dotColor?: string
   highlightDotColor?: string
   enableAnimations?: boolean
+  paddingX?: string
+  paddingY?: string
   className?: string
 }
 
@@ -46,6 +48,8 @@ export function TimelinePage({
   dotColor = "#666666",
   highlightDotColor = "#F59E0B",
   enableAnimations = true,
+  paddingX = "24px",
+  paddingY = "120px",
   className = "",
 }: TimelinePageProps) {
   const [visibleEvents, setVisibleEvents] = useState<Set<number>>(new Set())
@@ -89,7 +93,7 @@ export function TimelinePage({
       <section
         style={{
           backgroundColor: backgroundColor,
-          padding: "120px 24px",
+          padding: `${paddingY} ${paddingX}`,
         }}
       >
         <div
