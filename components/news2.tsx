@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { ArrowRight, Calendar, Clock } from "lucide-react"
+import { ArrowRight, Calendar, Clock, Share2 } from "lucide-react"
 
 interface Article {
   title: string
@@ -71,35 +71,7 @@ export function News2({
   cardGap = "40px",
   headerMarginBottom = "64px",
 
-  articles = [
-    {
-      title: "Restoring Souls in a Wounded Nation",
-      excerpt: "Discover how communities are finding hope and healing through faith-based initiatives.",
-      image: "/placeholder.svg?height=300&width=400",
-      date: "Dec 15, 2024",
-      readTime: "5 min read",
-      category: "Ministry",
-      url: "/articles/restoring-souls-wounded-nation",
-    },
-    {
-      title: "When a heart remains with the Maithili people",
-      excerpt: "A touching story of dedication and service among the Maithili community.",
-      image: "/placeholder.svg?height=300&width=400",
-      date: "Dec 12, 2024",
-      readTime: "7 min read",
-      category: "Missions",
-      url: "/articles/heart-remains-maithili-people",
-    },
-    {
-      title: "God is doing something new in Egypt",
-      excerpt: "Witnessing transformation and renewal in the heart of the Middle East.",
-      image: "/placeholder.svg?height=300&width=400",
-      date: "Dec 10, 2024",
-      readTime: "6 min read",
-      category: "Global",
-      url: "/articles/god-doing-something-new-egypt",
-    },
-  ],
+  articles = [],
 }: {
   className?: string
   sectionTitle?: string
@@ -155,7 +127,11 @@ export function News2({
   const sectionRef = useRef<HTMLElement>(null)
   const articleRefs = useRef<(HTMLElement | null)[]>([])
 
-  const reversedArticles = [...articles].reverse()
+  // NOTE: previously `[...articles].reverse()` — the .reverse() was a bug.
+  // It silently flipped newest-first CMS data to oldest-first on screen.
+  // Kept the variable name as-is (rather than renaming everywhere) to keep
+  // this a minimal, low-risk diff.
+  const reversedArticles = [...articles]
 
   useEffect(() => {
     const observers: IntersectionObserver[] = []
@@ -395,6 +371,28 @@ export function News2({
                   >
                     <Clock style={{ width: "16px", height: "16px" }} />
                     <span>{article.readTime}</span>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "4px",
+                      color: hoveredCard === index ? metaHoverColor : metaColor,
+                      cursor: "pointer",
+                      transition: "color 0.3s ease-out",
+                    }}
+                    onClick={() => {
+                      const url = window.location.origin + (article.url || "")
+                      if (navigator.share) {
+                        navigator.share({ title: article.title, url })
+                      } else {
+                        navigator.clipboard.writeText(url)
+                        alert("Link copied!")
+                      }
+                    }}
+                    title="Share this article"
+                  >
+                    <Share2 style={{ width: "16px", height: "16px" }} />
                   </div>
                 </div>
 
