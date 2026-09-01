@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { PLASMIC_SERVER } from "@/src/plasmic-init-server";
 import PlasmicClientPage from "./client-page";
+import { SiteUnavailableFallback } from "@/components/SiteUnavailableFallback";
 
 type Props = {
   params: Promise<{ catchall?: string[] }>;
@@ -87,7 +88,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const resolvedParams = await params;
   const pathname = getPathname(resolvedParams?.catchall);
 
-  const pageData = await PLASMIC_SERVER.maybeFetchComponentData(pathname);
+  // FIX: this call used to be unguarded — a Plasmic API timeout here threw
+  // an unhandled error and crashed the whole page before it even reached the
+  // render step below. Metadata is non-critical, so on failure we just skip
+  // it and let the page render with defaults instead of taking the page down.
+  let pageData;
+  try {
+    pageData = await PLASMIC_SERVER.maybeFetchComponentData(pathname);
+  } catch (err) {
+    console.error(`Plasmic metadata fetch failed for ${pathname}:`, err);
+    return {};
+  }
+
   const entryMeta = pageData?.entryCompMetas?.[0];
   const meta = entryMeta?.pageMetadata;
 
@@ -136,7 +148,23 @@ export default async function CatchallPage({ params, searchParams }: Props) {
   const resolvedSearchParams = await searchParams;
   const pathname = getPathname(resolvedParams?.catchall);
 
-  const pageData = await PLASMIC_SERVER.maybeFetchComponentData(pathname);
+  // FIX: this was the actual outage cause — an unguarded call that crashed
+  // to a 500 whenever Plasmic's API was slow or unreachable. Now it degrades
+  // to a lightweight, Plasmic-free fallback page instead of taking the whole
+  // route down for every visitor.
+  let pageData;
+  try {
+    // Test-only hook: append ?simulateOutage=1 to any URL to preview the
+    // fallback page on demand, without waiting for a real Plasmic outage.
+    // Safe to leave in — it does nothing unless that exact param is present.
+    if (resolvedSearchParams?.simulateOutage === "1") {
+      throw new Error("Simulated outage (test hook)");
+    }
+    pageData = await PLASMIC_SERVER.maybeFetchComponentData(pathname);
+  } catch (err) {
+    console.error(`Plasmic fetch failed for ${pathname}:`, err);
+    return <SiteUnavailableFallback pathname={pathname} />;
+  }
 
   if (!pageData) {
     notFound();
