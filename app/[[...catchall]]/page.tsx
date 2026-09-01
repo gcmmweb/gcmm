@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { PLASMIC_SERVER } from "@/src/plasmic-init-server";
 import PlasmicClientPage from "./client-page";
 import { SiteUnavailableFallback } from "@/components/SiteUnavailableFallback";
+import { StripeDonationPage } from "@/components/stripe-donation-page-v2";
 
 type Props = {
   params: Promise<{ catchall?: string[] }>;
@@ -163,6 +164,19 @@ export default async function CatchallPage({ params, searchParams }: Props) {
     pageData = await PLASMIC_SERVER.maybeFetchComponentData(pathname);
   } catch (err) {
     console.error(`Plasmic fetch failed for ${pathname}:`, err);
+
+    // Donations are revenue-critical — don't just apologize, actually let
+    // people give. StripeDonationPage has no Plasmic dependency itself, so
+    // it renders fine even while Plasmic's API is down. It'll show its own
+    // built-in defaults (org info, a single "Where Most Needed" campaign)
+    // rather than whatever specific campaigns are configured in Plasmic
+    // Studio, since fetching that config is exactly what's failing — but a
+    // working donation path beats none. Payment itself goes through our own
+    // /api/stripe-donate-v2 route, which doesn't depend on Plasmic either.
+    if (pathname === "/donate") {
+      return <StripeDonationPage />;
+    }
+
     return <SiteUnavailableFallback pathname={pathname} />;
   }
 
