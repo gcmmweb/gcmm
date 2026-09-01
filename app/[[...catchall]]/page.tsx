@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { PLASMIC_SERVER } from "@/src/plasmic-init-server";
 import PlasmicClientPage from "./client-page";
@@ -153,9 +154,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function CatchallPage({ params, searchParams }: Props) {
+export default async function CatchallPage({ params }: Props) {
   const resolvedParams = await params;
-  const resolvedSearchParams = await searchParams;
   const pathname = getPathname(resolvedParams?.catchall);
 
   // FIX: this was the actual outage cause — an unguarded call that crashed
@@ -164,12 +164,6 @@ export default async function CatchallPage({ params, searchParams }: Props) {
   // route down for every visitor.
   let pageData;
   try {
-    // Test-only hook: append ?simulateOutage=1 to any URL to preview the
-    // fallback page on demand, without waiting for a real Plasmic outage.
-    // Safe to leave in — it does nothing unless that exact param is present.
-    if (resolvedSearchParams?.simulateOutage === "1") {
-      throw new Error("Simulated outage (test hook)");
-    }
     // TEMPORARY DIAGNOSTIC — remove once caching is confirmed working.
     // If revalidate is actually taking effect, this log should appear only
     // once per ~300s per page, NOT on every single page load. Check this
@@ -204,19 +198,22 @@ export default async function CatchallPage({ params, searchParams }: Props) {
   // receive undefined at runtime and fall back to the first row.
   const pageMeta = pageData.entryCompMetas[0];
 
-  const query = Object.fromEntries(
-    Object.entries(resolvedSearchParams ?? {}).map(([key, value]) => [
-      key,
-      Array.isArray(value) ? value[0] ?? "" : value ?? "",
-    ])
-  );
-
+  // FIX: query params used to be read here on the SERVER (via searchParams),
+  // which forced Next.js to treat this whole route as "must render fresh on
+  // every request" — silently defeating the revalidate=300 caching above.
+  // Confirmed empirically via the CACHE TEST log: every single reload was
+  // hitting Plasmic live, not just once per 5 minutes as intended. Query
+  // params are now read inside PlasmicClientPage itself, on the client, so
+  // the server-rendered shell here can actually be cached. The Suspense
+  // wrapper is required by Next.js whenever a client component reads
+  // searchParams, so the static parts around it can still prerender.
   return (
-    <PlasmicClientPage
-      pathname={pathname}
-      pageData={pageData}
-      query={query}
-      params={pageMeta?.params}
-    />
+    <Suspense fallback={null}>
+      <PlasmicClientPage
+        pathname={pathname}
+        pageData={pageData}
+        params={pageMeta?.params}
+      />
+    </Suspense>
   );
 }
