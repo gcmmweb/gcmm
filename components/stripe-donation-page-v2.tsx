@@ -460,8 +460,16 @@ export function StripeDonationPage({
 
   const [detectedCountry, setDetectedCountry] = useState<"US" | "CA" | "">("")
 
-  useEffect(() => {
+   useEffect(() => {
     if (!showLocationNotice) return
+    // Test override: append ?forceCountry=US (or ?forceCountry=CA) to the
+    // URL to preview the modal without a VPN or changing your system clock —
+    // timezone-based detection ignores VPNs entirely.
+    const forced = new URLSearchParams(window.location.search).get("forceCountry")
+    if (forced === "US" || forced === "CA") {
+      setDetectedCountry(forced)
+      return
+    }
     setDetectedCountry(getDetectedCountry())
   }, [showLocationNotice])
 
