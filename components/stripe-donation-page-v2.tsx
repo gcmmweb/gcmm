@@ -4,7 +4,9 @@ import type React from "react"
 import { useEffect, useRef, useState } from "react"
 import { loadStripe } from "@stripe/stripe-js"
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js"
-import { Lock, CheckCircle, AlertCircle, Loader2, Globe, X, Sparkles } from "lucide-react"
+import { Lock, CheckCircle, AlertCircle, Loader2, Globe, Sparkles } from "lucide-react"
+import { LocationNoticeModal } from "./LocationNoticeModal"
+
 
 const US_TIMEZONES = new Set([
   "America/New_York",
@@ -387,7 +389,7 @@ export function StripeDonationPage({
   showLocationNotice = true,
   locationNoticeTitle = "Are you donating from the United States?",
   locationNoticeText = "GCMM is a registered Canadian charity. If you're a US donor looking for a tax-deductible option, please use our US donation partner page instead.",
-  usDonationUrl = "https://donate.gcmm.ca/us",
+  usDonationUrl = "https://www.gcmediaministries.org/donate/",
 }: {
   className?: string
   donateNowHeading?: string
@@ -456,7 +458,6 @@ export function StripeDonationPage({
   const [errorMessage, setErrorMessage] = useState("")
   const [successData, setSuccessData] = useState<any>(null)
 
-  const [showNtbanner, setShowNtbanner] = useState(true)
   const [detectedCountry, setDetectedCountry] = useState<"US" | "CA" | "">("")
 
   useEffect(() => {
@@ -621,39 +622,13 @@ export function StripeDonationPage({
 
   return (
     <main className={`overflow-hidden font-light ${className || ""}`}>
-      {showLocationNotice && detectedCountry === "US" && showNtbanner && (
-        <div className="bg-amber-50 border-b border-amber-200 px-4 py-3">
-          <div className="max-w-2xl mx-auto flex items-start gap-3">
-            <div className="flex-1">
-              <p className="text-amber-900 font-semibold text-sm">{locationNoticeTitle}</p>
-              <p className="text-amber-800 text-sm mt-1">
-                {locationNoticeText}
-                {usDonationUrl && (
-                  <>
-                    {" "}
-                    <a
-                      href={usDonationUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-amber-900 underline font-semibold hover:text-amber-700"
-                    >
-                      Donate via US partner
-                    </a>
-                  </>
-                )}
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setShowNtbanner(false)}
-              className="flex-shrink-0 text-amber-600 hover:text-amber-800 transition-colors"
-              aria-label="Dismiss notice"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-      )}
+      <LocationNoticeModal
+        show={showLocationNotice}
+        detectedCountry={detectedCountry}
+        title={locationNoticeTitle}
+        text={locationNoticeText}
+        partnerUrl={usDonationUrl}
+      />
       <section
         ref={donationRef}
         className={`flex items-center justify-center py-20 px-4 ${
