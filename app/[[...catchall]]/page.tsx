@@ -10,6 +10,15 @@ type Props = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
+// TEST: added per Plasmic's own documented App Router pattern (their
+// nextjs-quickstart docs show this combined with searchParams the same way
+// this file uses it). Caches each page's rendered output for 300s instead
+// of fetching Plasmic live on every visit — meaning most visitors during a
+// Plasmic hiccup would just see the last good cached version instead of
+// hitting the failure at all. NEEDS VERIFICATION on our actual setup before
+// we trust it — see the diagnostic log below.
+export const revalidate = 300;
+
 function getPathname(catchall?: string[]) {
   return "/" + (catchall ? catchall.join("/") : "");
 }
@@ -161,6 +170,11 @@ export default async function CatchallPage({ params, searchParams }: Props) {
     if (resolvedSearchParams?.simulateOutage === "1") {
       throw new Error("Simulated outage (test hook)");
     }
+    // TEMPORARY DIAGNOSTIC — remove once caching is confirmed working.
+    // If revalidate is actually taking effect, this log should appear only
+    // once per ~300s per page, NOT on every single page load. Check this
+    // against Vercel's Logs tab while reloading the same page repeatedly.
+    console.log(`[CACHE TEST] Fetching Plasmic data live for ${pathname} at ${new Date().toISOString()}`);
     pageData = await PLASMIC_SERVER.maybeFetchComponentData(pathname);
   } catch (err) {
     console.error(`Plasmic fetch failed for ${pathname}:`, err);
