@@ -87,6 +87,47 @@ async function fetchArticleMetaBySlug(
   }
 }
 
+// Enumerates every real article slug from the CMS, so generateStaticParams
+// can list actual article paths (not just the "/[slug]" template itself).
+async function fetchAllArticleSlugs(): Promise<string[]> {
+  if (!PLASMIC_CMS_PUBLIC_TOKEN) return [];
+  try {
+    const query = encodeURIComponent(JSON.stringify({ limit: 500 }));
+    const url = `https://data.plasmic.app/api/v1/cms/databases/${PLASMIC_CMS_DATABASE_ID}/tables/newsPosts/query?q=${query}`;
+    const res = await fetch(url, {
+      headers: {
+        "x-plasmic-api-cms-tokens": `${PLASMIC_CMS_DATABASE_ID}:${PLASMIC_CMS_PUBLIC_TOKEN}`,
+      },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data?.rows ?? [])
+      .map((row: any) => row?.data?.slug)
+      .filter(Boolean);
+  } catch (err) {
+    console.warn("Failed to fetch article slugs for generateStaticParams:", err);
+    return [];
+  }
+}
+
+// Tells Next.js every known real path up front, so these become properly
+// cached static routes with working ISR — sidestepping a known Next.js bug
+// (vercel/next.js#62195) where dynamic catch-all routes with NO known params
+// never actually cache, regardless of revalidate/fetchCache settings.
+export async function generateStaticParams(): Promise<{ catchall?: string[] }[]> {
+  const pageModules = await PLASMIC_SERVER.fetchPages();
+  const staticPagePaths = pageModules
+    .filter((mod) => !mod.path.includes("["))
+    .map((mod) => ({
+      catchall: mod.path === "/" ? undefined : mod.path.substring(1).split("/"),
+    }));
+
+  const articleSlugs = await fetchAllArticleSlugs();
+  const articlePaths = articleSlugs.map((slug) => ({ catchall: [slug] }));
+
+  return [...staticPagePaths, ...articlePaths];
+}
+
 // Runs on the SERVER, before the page is ever sent to a browser or crawler
 // (Google, Facebook, WhatsApp, iMessage, etc). For most pages, Plasmic's
 // fetched page data already includes the page's Title/Description/OG Image
@@ -194,7 +235,6 @@ export default async function CatchallPage({ params }: Props) {
   if (!pageData) {
     notFound();
   }
-  
 
   // The Plasmic loader matches dynamic routes like /test-only-article/[slug]
   // and extracts the path parameters for us (e.g. { slug: "canada-day-26" }).
