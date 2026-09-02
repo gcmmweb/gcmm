@@ -18,7 +18,8 @@ type Props = {
 // Plasmic hiccup would just see the last good cached version instead of
 // hitting the failure at all. NEEDS VERIFICATION on our actual setup before
 // we trust it — see the diagnostic log below.
-export const dynamic = 'error';
+export const revalidate = 300;
+export const fetchCache = 'default-cache';
 
 function getPathname(catchall?: string[]) {
   return "/" + (catchall ? catchall.join("/") : "");
@@ -168,8 +169,10 @@ export default async function CatchallPage({ params }: Props) {
     // If revalidate is actually taking effect, this log should appear only
     // once per ~300s per page, NOT on every single page load. Check this
     // against Vercel's Logs tab while reloading the same page repeatedly.
-    console.log(`[CACHE TEST] Fetching Plasmic data live for ${pathname} at ${new Date().toISOString()}`);
+    console.log(`[CACHE TEST] Fetching for ${pathname} at ${new Date().toISOString()}`);
+    const fetchStart = Date.now();
     pageData = await PLASMIC_SERVER.maybeFetchComponentData(pathname);
+    console.log(`[CACHE TEST] Took ${Date.now() - fetchStart}ms for ${pathname}`);
   } catch (err) {
     console.error(`Plasmic fetch failed for ${pathname}:`, err);
 
@@ -191,6 +194,7 @@ export default async function CatchallPage({ params }: Props) {
   if (!pageData) {
     notFound();
   }
+  
 
   // The Plasmic loader matches dynamic routes like /test-only-article/[slug]
   // and extracts the path parameters for us (e.g. { slug: "canada-day-26" }).
