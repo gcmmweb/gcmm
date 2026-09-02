@@ -18,7 +18,8 @@ type Props = {
 // Plasmic hiccup would just see the last good cached version instead of
 // hitting the failure at all. NEEDS VERIFICATION on our actual setup before
 // we trust it — see the diagnostic log below.
-export const revalidate = 300;
+export const revalidate = 300; 
+export const fetchCache = 'default-cache';
 
 function getPathname(catchall?: string[]) {
   return "/" + (catchall ? catchall.join("/") : "");
