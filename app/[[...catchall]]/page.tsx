@@ -204,16 +204,9 @@ export default async function CatchallPage({ params }: Props) {
   // to a 500 whenever Plasmic's API was slow or unreachable. Now it degrades
   // to a lightweight, Plasmic-free fallback page instead of taking the whole
   // route down for every visitor.
-  let pageData;
+    let pageData;
   try {
-    // TEMPORARY DIAGNOSTIC — remove once caching is confirmed working.
-    // If revalidate is actually taking effect, this log should appear only
-    // once per ~300s per page, NOT on every single page load. Check this
-    // against Vercel's Logs tab while reloading the same page repeatedly.
-    console.log(`[CACHE TEST] Fetching for ${pathname} at ${new Date().toISOString()}`);
-    const fetchStart = Date.now();
     pageData = await PLASMIC_SERVER.maybeFetchComponentData(pathname);
-    console.log(`[CACHE TEST] Took ${Date.now() - fetchStart}ms for ${pathname}`);
   } catch (err) {
     console.error(`Plasmic fetch failed for ${pathname}:`, err);
 
