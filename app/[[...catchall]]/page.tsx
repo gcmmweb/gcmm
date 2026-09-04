@@ -22,11 +22,7 @@ export const revalidate = 300;
 export const fetchCache = 'default-cache';
 
 function getPathname(catchall?: string[]) {
-    // Normalize: lowercase + underscores → hyphens so URLs are case-insensitive
-    // and underscore/hyphen variants both work (e.g. Gods_Power == gods-power)
-    const raw = "/" + (catchall ? catchall.join("/") : "");
-    return raw.toLowerCase().replace(/_/g, '-');
-}
+  return "/" + (catchall ? catchall.join("/") : "");
 
 // The CMS database ID is not sensitive (it's a public project identifier).
 // The token, however, must come from an environment variable — never commit
