@@ -22,7 +22,9 @@ export const revalidate = 300;
 export const fetchCache = 'default-cache';
 
 function getPathname(catchall?: string[]) {
-  return "/" + (catchall ? catchall.join("/") : "");
+    const raw = "/" + (catchall ? catchall.join("/") : "");
+    // Normalize: lowercase + underscores → hyphens (CMS slugs are all lowercase-hyphenated)
+    return raw.toLowerCase().replace(/_/g, '-');
 
 // The CMS database ID is not sensitive (it's a public project identifier).
 // The token, however, must come from an environment variable — never commit
