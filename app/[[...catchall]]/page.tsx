@@ -22,7 +22,10 @@ export const revalidate = 300;
 export const fetchCache = 'default-cache';
 
 function getPathname(catchall?: string[]) {
-  return "/" + (catchall ? catchall.join("/") : "");
+    // Normalize: lowercase + underscores → hyphens so URLs are case-insensitive
+    // and underscore/hyphen variants both work (e.g. Gods_Power == gods-power)
+    const raw = "/" + (catchall ? catchall.join("/") : "");
+    return raw.toLowerCase().replace(/_/g, '-');
 }
 
 // The CMS database ID is not sensitive (it's a public project identifier).
