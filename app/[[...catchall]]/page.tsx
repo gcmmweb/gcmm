@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { PLASMIC_SERVER } from "@/src/plasmic-init-server";
 import PlasmicClientPage from "./client-page";
 import { SiteUnavailableFallback } from "@/components/SiteUnavailableFallback";
@@ -202,6 +202,22 @@ export default async function CatchallPage({ params }: Props) {
 const resolvedParams = await params;
 const pathname = getPathname(resolvedParams?.catchall);
 
+// FIX: several old "/donate-*" URLs (donate-sat-tv, etc.) no longer exist
+// as their own pages — all donations now go through the single /donate
+// page with a campaign dropdown. Redirect any old variant straight there
+// in case the old link is still shared/bookmarked anywhere, instead of
+// showing a dead end. Placed before the Plasmic fetch so we don't waste
+// an API call on a URL we're about to redirect away from.
+// NOTE: /donate-test-only is intentionally excluded — that's a real,
+// currently-used internal test page, not a stale link. Do not redirect it.
+if (
+pathname !== "/donate" &&
+pathname !== "/donate-test-only" &&
+pathname.startsWith("/donate-")
+) {
+redirect("/donate");
+}
+
 // FIX: this was the actual outage cause — an unguarded call that crashed
 // to a 500 whenever Plasmic's API was slow or unreachable. Now it degrades
 // to a lightweight, Plasmic-free fallback page instead of taking the whole
@@ -236,6 +252,21 @@ notFound();
 // Without passing these down, CMS queries that filter by the slug URL param
 // receive undefined at runtime and fall back to the first row.
 const pageMeta = pageData.entryCompMetas[0];
+
+// FIX: the Article Template page ("/[slug]") matches ANY single-segment
+// path, even ones with no matching CMS row — e.g. a made-up URL like
+// /some-random-text was rendering an empty template and returning HTTP 200
+// instead of a real 404. This is what Search Console was flagging as
+// "Soft 404" (Sep 2026). Reuses the same CMS lookup already used for
+// metadata below — real articles are unaffected (they have a matching row
+// and pass straight through); only slugs with no matching article now 404.
+const slug = (pageMeta?.params as Record<string, string> | undefined)?.slug;
+if (slug) {
+const articleMeta = await fetchArticleMetaBySlug(slug);
+if (!articleMeta) {
+notFound();
+}
+}
 
 // FIX: query params used to be read here on the SERVER (via searchParams),
 // which forced Next.js to treat this whole route as "must render fresh on
