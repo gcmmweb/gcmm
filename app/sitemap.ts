@@ -1,104 +1,101 @@
 import type { MetadataRoute } from "next";
+import { PLASMIC_SERVER } from "@/src/plasmic-init-server";
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://www.gcmm.ca";
+const baseUrl = "https://www.gcmm.ca";
 
-  return [
-    {
-      url: `${baseUrl}/`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 1.0,
-    },
-    {
-      url: `${baseUrl}/about`,
-      lastModified: new Date(),
-      changeFrequency: "yearly",
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/history`,
-      lastModified: new Date(),
-      changeFrequency: "yearly",
-      priority: 0.5,
-    },
-    {
-      url: `${baseUrl}/team`,
-      lastModified: new Date(),
-      changeFrequency: "yearly",
-      priority: 0.5,
-    },
-    {
-      url: `${baseUrl}/megacitymediacampaigns`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/10-40-media-outreach`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/media-outreach-in-ukraine`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/israel-jewish-ministries`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/ukraineaid`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/50`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/pray`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/donate`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/news-stories`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/signup`,
-      lastModified: new Date(),
-      changeFrequency: "yearly",
-      priority: 0.5,
-    },
-    {
-      url: `${baseUrl}/videos`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.5,
-    },
-    {
-      url: `${baseUrl}/contact`,
-      lastModified: new Date(),
-      changeFrequency: "yearly",
-      priority: 0.5,
-    },
-  ];
+// Same CMS database/credentials pattern already used in
+// app/[[...catchall]]/page.tsx (see fetchAllArticleSlugs there) — kept
+// as a separate, self-contained copy here rather than importing from that
+// file, so this sitemap has no dependency on the catchall route's internals.
+const PLASMIC_CMS_DATABASE_ID = "bYeJVtRFReZ4zCMpwREGgw";
+const PLASMIC_CMS_PUBLIC_TOKEN = process.env.PLASMIC_CMS_PUBLIC_TOKEN;
+
+async function fetchAllArticleSlugs(): Promise<string[]> {
+  if (!PLASMIC_CMS_PUBLIC_TOKEN) return [];
+  try {
+    const query = encodeURIComponent(JSON.stringify({ limit: 500 }));
+    const url = `https://data.plasmic.app/api/v1/cms/databases/${PLASMIC_CMS_DATABASE_ID}/tables/newsPosts/query?q=${query}`;
+    const res = await fetch(url, {
+      headers: {
+        "x-plasmic-api-cms-tokens": `${PLASMIC_CMS_DATABASE_ID}:${PLASMIC_CMS_PUBLIC_TOKEN}`,
+      },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data?.rows ?? [])
+      .map((row: any) => row?.data?.slug)
+      .filter(Boolean);
+  } catch (err) {
+    console.warn("Sitemap: failed to fetch article slugs:", err);
+    return [];
+  }
+}
+
+// Hand-tuned priority/frequency for the pages that matter most. Any real
+// page not listed here (dynamic Plasmic pages, CMS articles) still gets
+// included below automatically, just with sensible defaults instead of
+// custom tuning.
+const PRIORITY_OVERRIDES: Record<
+  string,
+  { priority: number; changeFrequency: NonNullable<MetadataRoute.Sitemap[number]["changeFrequency"]> }
+> = {
+  "/": { priority: 1.0, changeFrequency: "weekly" },
+  "/donate": { priority: 0.9, changeFrequency: "monthly" },
+  "/megacitymediacampaigns": { priority: 0.8, changeFrequency: "monthly" },
+  "/10-40-media-outreach": { priority: 0.8, changeFrequency: "monthly" },
+  "/media-outreach-in-ukraine": { priority: 0.8, changeFrequency: "monthly" },
+  "/israel-jewish-ministries": { priority: 0.8, changeFrequency: "monthly" },
+  "/ukraineaid": { priority: 0.8, changeFrequency: "monthly" },
+  "/50": { priority: 0.8, changeFrequency: "monthly" },
+  "/pray": { priority: 0.7, changeFrequency: "monthly" },
+  "/news-stories": { priority: 0.7, changeFrequency: "weekly" },
+  "/about": { priority: 0.6, changeFrequency: "yearly" },
+  "/history": { priority: 0.5, changeFrequency: "yearly" },
+  "/team": { priority: 0.5, changeFrequency: "yearly" },
+  "/signup": { priority: 0.5, changeFrequency: "yearly" },
+  "/videos": { priority: 0.5, changeFrequency: "monthly" },
+  "/contact": { priority: 0.5, changeFrequency: "yearly" },
+};
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const now = new Date();
+
+  // FIX: this file used to be a hardcoded list of 16 URLs, typed out
+  // manually and already stale — missing all 22 country impact pages and
+  // every real CMS article (Search Console confirmed only 16 discovered
+  // pages, Sep 2026). Now built from the same live sources the site itself
+  // renders from, so it stays accurate as pages/articles are added or
+  // removed instead of needing manual upkeep.
+  let plasmicPaths: string[] = [];
+  try {
+    const pageModules = await PLASMIC_SERVER.fetchPages();
+    // Exclude template routes like "/[slug]" — only real, concrete pages
+    // belong in a sitemap.
+    plasmicPaths = pageModules
+      .map((mod) => mod.path)
+      .filter((path) => !path.includes("["));
+  } catch (err) {
+    console.warn("Sitemap: failed to fetch Plasmic pages:", err);
+  }
+
+  const articleSlugs = await fetchAllArticleSlugs();
+  const articlePaths = articleSlugs.map((slug) => `/${slug}`);
+
+  const allPaths = Array.from(new Set([...plasmicPaths, ...articlePaths]));
+
+  // Safety net: if both fetches above failed, still return a sitemap with
+  // at least the homepage rather than an empty one.
+  if (allPaths.length === 0) {
+    allPaths.push("/");
+  }
+
+  return allPaths.map((path) => {
+    const override = PRIORITY_OVERRIDES[path];
+    return {
+      url: path === "/" ? `${baseUrl}/` : `${baseUrl}${path}`,
+      lastModified: now,
+      changeFrequency: override?.changeFrequency ?? "monthly",
+      priority: override?.priority ?? 0.6,
+    };
+  });
 }
