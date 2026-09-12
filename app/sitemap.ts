@@ -31,6 +31,31 @@ async function fetchAllArticleSlugs(): Promise<string[]> {
   }
 }
 
+// Confirmed with Junita (Sep 2026) as archive/test/not-yet-ready pages that
+// should stay out of the public sitemap — real pages in Plasmic, just not
+// meant for search visibility:
+//   - archive-news-old, news-stories-archive-ignore, donate-old-archieve,
+//     archive-signup: old/archived content
+//   - testpage-2, test: internal test pages
+//   - -ministries: broken/malformed page path (leading hyphen), needs a
+//     real fix later — not urgent, excluded from sitemap for now
+//   - only-believe: built for future use, not live yet
+//   - thank-you: post-donation conversion-tracking page. Deliberately kept
+//     out of search results — if indexed, a visitor could land on it
+//     directly from Google and trigger the donation-tracking pixel without
+//     an actual donation happening, corrupting conversion data.
+const EXCLUDED_PATHS = new Set<string>([
+  "/archive-news-old",
+  "/testpage-2",
+  "/news-stories-archive-ignore",
+  "/donate-old-archieve",
+  "/test",
+  "/archive-signup",
+  "/-ministries",
+  "/only-believe",
+  "/thank-you",
+]);
+
 // Hand-tuned priority/frequency for the pages that matter most. Any real
 // page not listed here (dynamic Plasmic pages, CMS articles) still gets
 // included below automatically, just with sensible defaults instead of
@@ -69,17 +94,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let plasmicPaths: string[] = [];
   try {
     const pageModules = await PLASMIC_SERVER.fetchPages();
-    // Exclude template routes like "/[slug]" — only real, concrete pages
-    // belong in a sitemap.
+    // Exclude template routes like "/[slug]" (only real, concrete pages
+    // belong in a sitemap) and the confirmed archive/test/not-ready pages.
     plasmicPaths = pageModules
       .map((mod) => mod.path)
-      .filter((path) => !path.includes("["));
+      .filter((path) => !path.includes("[") && !EXCLUDED_PATHS.has(path));
   } catch (err) {
     console.warn("Sitemap: failed to fetch Plasmic pages:", err);
   }
 
   const articleSlugs = await fetchAllArticleSlugs();
-  const articlePaths = articleSlugs.map((slug) => `/${slug}`);
+  const articlePaths = articleSlugs
+    .map((slug) => `/${slug}`)
+    .filter((path) => !EXCLUDED_PATHS.has(path));
 
   const allPaths = Array.from(new Set([...plasmicPaths, ...articlePaths]));
 

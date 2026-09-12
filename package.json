@@ -4,14 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
     "@plasmicapp/data-sources-context": "^0.1.22",
-  "@plasmicapp/host": "1.0.231",       
-  "@plasmicapp/loader-nextjs": "^1.0.447",
+    "@plasmicapp/host": "1.0.231",
+    "@plasmicapp/loader-nextjs": "^1.0.447",
     "@plasmicapp/loader-react": "^1.0.404",
     "@radix-ui/react-slot": "^1.2.3",
     "@stripe/react-stripe-js": "^2.4.0",
