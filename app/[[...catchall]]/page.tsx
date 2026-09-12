@@ -260,8 +260,12 @@ const pageMeta = pageData.entryCompMetas[0];
 // "Soft 404" (Sep 2026). Reuses the same CMS lookup already used for
 // metadata below — real articles are unaffected (they have a matching row
 // and pass straight through); only slugs with no matching article now 404.
+// NOTE: /donate-test-only is excluded here too (same reason as the
+// redirect check above) — it's a real, intentionally-built Plasmic page
+// that matches "/[slug]" but isn't backed by a CMS article row, so the
+// CMS lookup below would incorrectly 404 it otherwise.
 const slug = (pageMeta?.params as Record<string, string> | undefined)?.slug;
-if (slug) {
+if (slug && slug !== "donate-test-only") {
 const articleMeta = await fetchArticleMetaBySlug(slug);
 if (!articleMeta) {
 notFound();
