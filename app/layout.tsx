@@ -48,6 +48,37 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "NGO",
+              name: "Great Commission Media Ministries",
+              alternateName: "GCMM",
+              url: "https://www.gcmm.ca",
+              logo: "https://site-assets.plasmic.app/3e92919c1d52a45ac29ef72dbbe92ac8.png",
+              description:
+                "Great Commission Media Ministries shares the Gospel through media, citywide campaigns, outreach in least-reached regions, and humanitarian aid worldwide.",
+              email: "info@gcmm.ca",
+              telephone: "+1-877-674-5630",
+              address: {
+                "@type": "PostalAddress",
+                postOfficeBoxNumber: "14006",
+                addressLocality: "Abbotsford",
+                addressRegion: "BC",
+                postalCode: "V2T 0B4",
+                addressCountry: "CA",
+              },
+              sameAs: [
+                "https://www.facebook.com/greatcommissionmediaministries/",
+                "https://www.instagram.com/greatcommissionmediaministries/",
+                "https://www.youtube.com/@GreatCommissionMediaMinistries/",
+                "https://ca.linkedin.com/company/great-commission-media-ministries",
+              ],
+            }),
+          }}
+        />
         {isProduction && (
           <>
             <Script
