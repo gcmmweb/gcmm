@@ -39,6 +39,7 @@ export const metadata: Metadata = {
     images: ["/og-image.png"],
   },
 };
+const isProduction = process.env.VERCEL_ENV === "production";
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -47,19 +48,23 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-0HKC43KHEE"
-          strategy="afterInteractive"
-        />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-0HKC43KHEE');
-            gtag('config', 'AW-18314681869');
-          `}
-        </Script>
+        {isProduction && (
+          <>
+            <Script
+              src="https://www.googletagmanager.com/gtag/js?id=G-0HKC43KHEE"
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', 'G-0HKC43KHEE');
+                gtag('config', 'AW-18314681869');
+              `}
+            </Script>
+          </>
+        )}
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
