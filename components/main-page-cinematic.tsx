@@ -308,6 +308,26 @@ export function MainPageCinematic({
   const youTubeId = getYouTubeVideoId(videoUrl)
   const vimeoId = getVimeoVideoId(videoUrl)
 
+  // FIX (Sep 2026): previously both the mobile AND desktop hero video blocks
+  // below were always mounted in the DOM at the same time — Tailwind's
+  // `hidden` class only sets display:none, it does not stop the browser
+  // from downloading/buffering a <video> (or an iframe embed). Confirmed
+  // live: the "desktop-only" video was fully buffered even on a mobile-width
+  // viewport, meaning mobile visitors downloaded the entire desktop hero
+  // video for nothing. Now we detect the real viewport in JS and only mount
+  // the actual video/iframe for whichever breakpoint is showing; the other
+  // breakpoint's wrapper just shows the lightweight poster image instead.
+  const [isDesktop, setIsDesktop] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px)")
+    setIsDesktop(mq.matches)
+    setMounted(true)
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches)
+    mq.addEventListener("change", handler)
+    return () => mq.removeEventListener("change", handler)
+  }, [])
+
   const featureCards = [
     {
       icon: BillboardIcon,
@@ -366,76 +386,91 @@ export function MainPageCinematic({
       {/* --- MOBILE: video as a normal block at the top, white background under it --- */}
       <div className="block md:hidden w-full bg-white">
         <div className="w-full aspect-[16/9]">
-          {youTubeId ? (
-            <iframe
-              className="w-full h-full"
-              src={`https://www.youtube.com/embed/${youTubeId}?autoplay=1&mute=1&loop=1&playlist=${youTubeId}&controls=0&modestbranding=1&playsinline=1`}
-              title="Background video"
-              allow="autoplay; encrypted-media; picture-in-picture"
-              allowFullScreen={false}
-            />
-          ) : vimeoId ? (
-<iframe
-  className="w-full h-full"
-  src={`https://player.vimeo.com/video/${vimeoId}?autoplay=1&muted=1&loop=1&background=1&controls=0`}
-  title="Background video"
-  allow="autoplay; fullscreen; picture-in-picture"
-/>
-
-          ) : (
-            <video
-              autoPlay
-              muted
-              loop
-              playsInline
-              className="w-full h-full"
-              poster={videoPosterUrl}
-            >
-              <source src={videoUrl} type="video/mp4" />
-              <img
-                src={videoPosterUrl || "/placeholder.svg"}
-                alt="Mountain landscape"
+          {mounted && !isDesktop ? (
+            youTubeId ? (
+              <iframe
                 className="w-full h-full"
+                src={`https://www.youtube.com/embed/${youTubeId}?autoplay=1&mute=1&loop=1&playlist=${youTubeId}&controls=0&modestbranding=1&playsinline=1`}
+                title="Background video"
+                allow="autoplay; encrypted-media; picture-in-picture"
+                allowFullScreen={false}
               />
-            </video>
+            ) : vimeoId ? (
+              <iframe
+                className="w-full h-full"
+                src={`https://player.vimeo.com/video/${vimeoId}?autoplay=1&muted=1&loop=1&background=1&controls=0`}
+                title="Background video"
+                allow="autoplay; fullscreen; picture-in-picture"
+              />
+            ) : (
+              <video
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="w-full h-full"
+                poster={videoPosterUrl}
+              >
+                <source src={videoUrl} type="video/mp4" />
+                <img
+                  src={videoPosterUrl || "/placeholder.svg"}
+                  alt="Mountain landscape"
+                  className="w-full h-full"
+                />
+              </video>
+            )
+          ) : (
+            <img
+              src={videoPosterUrl || "/placeholder.svg"}
+              alt="Mountain landscape"
+              className="w-full h-full object-cover"
+            />
           )}
         </div>
       </div>
 
       {/* --- DESKTOP / TABLET: video as absolute background with overlay content --- */}
       <div className="hidden md:block absolute inset-0 z-0 overflow-hidden">
-        {youTubeId ? (
-          <iframe
-            className="absolute inset-0 w-full h-full object-cover"
-            src={`https://www.youtube.com/embed/${youTubeId}?autoplay=1&mute=1&loop=1&playlist=${youTubeId}&controls=0&modestbranding=1&playsinline=1`}
-            title="Background video"
-            allow="autoplay; encrypted-media; picture-in-picture"
-            allowFullScreen={false}
-          />
-        ) : vimeoId ? (
-          <iframe
-            className="absolute inset-0 w-full h-full object-cover"
-            src={`https://player.vimeo.com/video/${vimeoId}?autoplay=1&muted=1&loop=1&background=1&controls=0`}
-            title="Background video"
-            allow="autoplay; fullscreen; picture-in-picture"
-            allowFullScreen={false}
-          />
-        ) : (
-          <video
-            autoPlay
-            muted
-            loop
-            playsInline
-            className="w-full h-full object-cover"
-            poster={videoPosterUrl}
-          >
-            <source src={videoUrl} type="video/mp4" />
-            <img
-              src={videoPosterUrl || "/placeholder.svg"}
-              alt="Mountain landscape"
-              className="w-full h-full object-cover"
+        {mounted && isDesktop ? (
+          youTubeId ? (
+            <iframe
+              className="absolute inset-0 w-full h-full object-cover"
+              src={`https://www.youtube.com/embed/${youTubeId}?autoplay=1&mute=1&loop=1&playlist=${youTubeId}&controls=0&modestbranding=1&playsinline=1`}
+              title="Background video"
+              allow="autoplay; encrypted-media; picture-in-picture"
+              allowFullScreen={false}
             />
-          </video>
+          ) : vimeoId ? (
+            <iframe
+              className="absolute inset-0 w-full h-full object-cover"
+              src={`https://player.vimeo.com/video/${vimeoId}?autoplay=1&muted=1&loop=1&background=1&controls=0`}
+              title="Background video"
+              allow="autoplay; fullscreen; picture-in-picture"
+              allowFullScreen={false}
+            />
+          ) : (
+            <video
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="w-full h-full object-cover"
+              poster={videoPosterUrl}
+            >
+              <source src={videoUrl} type="video/mp4" />
+              <img
+                src={videoPosterUrl || "/placeholder.svg"}
+                alt="Mountain landscape"
+                className="w-full h-full object-cover"
+              />
+            </video>
+          )
+        ) : (
+          <img
+            src={videoPosterUrl || "/placeholder.svg"}
+            alt="Mountain landscape"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
         )}
         <div className="absolute inset-0" style={{ backgroundColor: heroOverlayColor }} />
       </div>
