@@ -4,17 +4,18 @@ import { notFound, redirect } from "next/navigation";
 import { PLASMIC_SERVER } from "@/src/plasmic-init-server";
 import PlasmicClientPage from "./client-page";
 import { SiteUnavailableFallback } from "@/components/SiteUnavailableFallback";
-// FIX (Sep 2026): was a static import. Because this catch-all page serves
-// EVERY route on the site, a static import here meant the Stripe donation
-// component (and its module-level loadStripe() call) got bundled into the
-// client JS for every single page, not just /donate. next/dynamic with
-// ssr:false keeps it out of the shared bundle entirely — it's only fetched
-// when this specific fallback branch actually renders.
-import dynamic from "next/dynamic";
-const StripeDonationPage = dynamic(
-  () => import("@/components/stripe-donation-page-v2").then((mod) => mod.StripeDonationPage),
-  { ssr: false }
-);
+// NOTE (Sep 2026): this was briefly changed to a next/dynamic(..., { ssr:
+// false }) import to keep this component's bundle out of every route's
+// shared chunk — but Next.js disallows ssr:false with next/dynamic inside
+// Server Components (this file does server-side data fetching, so it's a
+// Server Component), which broke the production build. Reverted to a plain
+// static import. This is safe: the actual bug (Stripe's JS loading on every
+// page) is fixed inside stripe-donation-page-v2.tsx itself — loadStripe()
+// now only runs lazily, inside a useEffect, once this component actually
+// mounts. Since it only mounts here when pathname === "/donate", that lazy
+// call never fires on other pages regardless of whether this import is
+// static or dynamic.
+import { StripeDonationPage } from "@/components/stripe-donation-page-v2";
 
 type Props = {
   params: Promise<{ catchall?: string[] }>;
