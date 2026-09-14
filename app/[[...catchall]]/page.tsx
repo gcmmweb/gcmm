@@ -31,12 +31,27 @@ function getPathname(catchall?: string[]) {
 // after the move to this site — the Article Template still catches them
 // (matching "/[slug]"), but with no matching CMS row they'd otherwise show
 // wrong/default metadata or 404. Confirmed via Search Console: zero clicks
-// and zero impressions over the full 16-month history for /why-media, so
-// there's no SEO value being preserved here — this is just a courtesy
-// redirect for anyone with an old bookmark or link, not an SEO necessity.
+// and zero impressions over the full 16-month history for these URLs, so
+// there's no SEO value being preserved here — these are courtesy redirects
+// for anyone with an old bookmark or link, not an SEO necessity.
 // Add more old-slug -> new-path pairs here as they're identified.
+//
+// NOTE on the two "gospel"/"egypt" entries below: these aren't actually
+// missing content — the real articles exist in the CMS, just under
+// shorter/different slugs than these old URLs used. Confirmed directly
+// in the CMS (Sep 2026):
+//   - /the-gospel-is-reaching-millions -> real article's actual slug is
+//     "gospel-reaching-millions" (same article, shorter slug)
+//   - /god-is-in-egypt -> no exact match, but a real, topically-matching
+//     article exists at "god-is-doing-something-new-in-egypt"
+// /your-voice-matters was an old feedback survey that no longer exists;
+// redirecting to /contact since that page offers the same "reach out to
+// us" purpose via text or email.
 const LEGACY_REDIRECTS: Record<string, string> = {
   "/why-media": "/about",
+  "/the-gospel-is-reaching-millions": "/gospel-reaching-millions",
+  "/god-is-in-egypt": "/god-is-doing-something-new-in-egypt",
+  "/your-voice-matters": "/contact",
 };
 
 // The CMS database ID is not sensitive (it's a public project identifier).
