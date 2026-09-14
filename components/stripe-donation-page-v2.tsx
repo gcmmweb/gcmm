@@ -2,7 +2,11 @@
 
 import type React from "react"
 import { useEffect, useRef, useState } from "react"
-import { loadStripe } from "@stripe/stripe-js"
+// FIX (Sep 2026): see stripe-donation-page.tsx for the full explanation —
+// the default "@stripe/stripe-js" entry point auto-preloads Stripe's script
+// on import alone, regardless of our own loadStripe() call. "/pure" gives
+// the same loadStripe function without that side effect.
+import { loadStripe } from "@stripe/stripe-js/pure"
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js"
 import { Lock, CheckCircle, AlertCircle, Loader2, Globe, Sparkles } from "lucide-react"
 import { LocationNoticeModal } from "./LocationNoticeModal"

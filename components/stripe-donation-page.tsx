@@ -2,7 +2,16 @@
 
 import type React from "react"
 import { useEffect, useRef, useState } from "react"
-import { loadStripe } from "@stripe/stripe-js"
+// FIX (Sep 2026): the real root cause of Stripe loading sitewide. The
+// default "@stripe/stripe-js" entry point has a documented side effect —
+// it auto-runs loadScript(null) the instant the module is imported,
+// regardless of whether our own loadStripe() call ever fires. That's why
+// our earlier lazy-getter fix didn't help: it only gated OUR call, but the
+// package's own auto-preload fired first, from the bare import statement,
+// via src/plasmic-init.ts's static import of this file on every page.
+// "@stripe/stripe-js/pure" exports the identical loadStripe function
+// without that auto-load behavior.
+import { loadStripe } from "@stripe/stripe-js/pure"
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js"
 import { Lock, CheckCircle, AlertCircle, Loader2, Globe, X } from "lucide-react"
 
