@@ -27,6 +27,18 @@ function getPathname(catchall?: string[]) {
   return raw.toLowerCase().replace(/_/g, '-');
 }
 
+// Old WordPress-era article URLs that were never migrated into the CMS
+// after the move to this site — the Article Template still catches them
+// (matching "/[slug]"), but with no matching CMS row they'd otherwise show
+// wrong/default metadata or 404. Confirmed via Search Console: zero clicks
+// and zero impressions over the full 16-month history for /why-media, so
+// there's no SEO value being preserved here — this is just a courtesy
+// redirect for anyone with an old bookmark or link, not an SEO necessity.
+// Add more old-slug -> new-path pairs here as they're identified.
+const LEGACY_REDIRECTS: Record<string, string> = {
+  "/why-media": "/about",
+};
+
 // The CMS database ID is not sensitive (it's a public project identifier).
 // The token, however, must come from an environment variable — never commit
 // it directly. This should be the PUBLIC/read token, not the secret one.
@@ -235,6 +247,11 @@ export default async function CatchallPage({ params }: Props) {
     pathname.startsWith("/donate-")
   ) {
     redirect("/donate");
+  }
+
+  // Old WordPress-era URLs with no CMS entry (see LEGACY_REDIRECTS above).
+  if (pathname in LEGACY_REDIRECTS) {
+    redirect(LEGACY_REDIRECTS[pathname]);
   }
 
   // FIX: this was the actual outage cause — an unguarded call that crashed
