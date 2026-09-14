@@ -57,18 +57,31 @@ const getDetectedCountry = (): "US" | "CA" | "" => {
 // Initialize Stripe
 const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 
-// Validate the publishable key before initializing Stripe
+// FIX (Sep 2026): loadStripe() used to run here, at module scope — meaning
+// it fired the instant this file was imported, regardless of whether this
+// component ever actually rendered. This turned out to be the real cause of
+// Stripe loading sitewide: src/plasmic-init.ts (needed by every Plasmic
+// page via client-page.tsx) statically imports ALL registered components,
+// including this file, at the top of that one giant module. So merely
+// visiting any page — homepage included — imported this file and fired
+// loadStripe(), even though <StripeDonationPage> (v1) is only actually
+// placed on one archived test page. Now it's a lazy getter, only called
+// from a useEffect once this specific component actually mounts.
 let stripePromise: Promise<any> | null = null
-if (publishableKey) {
-  if (publishableKey.startsWith("pk_")) {
-    stripePromise = loadStripe(publishableKey)
-  } else {
+function getStripePromise(): Promise<any> | null {
+  if (stripePromise) return stripePromise
+  if (!publishableKey) {
+    console.error("CRITICAL: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is not set")
+    return null
+  }
+  if (!publishableKey.startsWith("pk_")) {
     console.error(
       'CRITICAL: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY must start with "pk_" (publishable key), not "sk_" (secret key)',
     )
+    return null
   }
-} else {
-  console.error("CRITICAL: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is not set")
+  stripePromise = loadStripe(publishableKey)
+  return stripePromise
 }
 
 // Stripe Elements styling
@@ -507,6 +520,14 @@ export function StripeDonationPage({
   const [donationVisible, setDonationVisible] = useState(false)
   const [waysVisible, setWaysVisible] = useState(false)
   const [visibleWays, setVisibleWays] = useState<boolean[]>(new Array(3).fill(false))
+
+  // FIX (Sep 2026): triggers the (now lazy) Stripe load only once this
+  // component actually mounts, instead of the old module-scope call that
+  // fired just from this file being imported.
+  const [resolvedStripePromise, setResolvedStripePromise] = useState<Promise<any> | null>(null)
+  useEffect(() => {
+    setResolvedStripePromise(getStripePromise())
+  }, [])
 
   // Build preset amounts array from props
   const presetAmounts = [
@@ -1056,8 +1077,8 @@ export function StripeDonationPage({
             </div>
 
             {/* Stripe Payment Form */}
-            {isFormValid() && stripePromise && (
-              <Elements stripe={stripePromise}>
+            {isFormValid() && resolvedStripePromise && (
+              <Elements stripe={resolvedStripePromise}>
                 <StripePaymentForm
                   donationData={donationForm}
                   emailCustomization={emailCustomization}
@@ -1076,7 +1097,7 @@ export function StripeDonationPage({
               </div>
             )}
 
-            {isFormValid() && (!stripePromise || !publishableKey?.startsWith("pk_")) && (
+            {isFormValid() && (!resolvedStripePromise || !publishableKey?.startsWith("pk_")) && (
               <div className="pt-4">
                 <div className="flex items-center gap-3 p-6 bg-red-50 border border-red-200 rounded-2xl">
                   <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0" />
