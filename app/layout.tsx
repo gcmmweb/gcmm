@@ -48,6 +48,47 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {/* TEMP DIAGNOSTIC (Sep 2026) — remove once the Stripe sitewide-load
+            source is confirmed. Must be the very first element in <head> so
+            it runs before any other script, including Next's own deferred
+            scripts and hydration. Patches document.createElement so that the
+            instant anything sets a <script src> containing "stripe", we log
+            the full call stack to the browser console with a STRIPE_DIAG
+            prefix — that stack trace tells us exactly which module/function
+            triggered it, cutting through the minified bundle. */}
+        <script
+          id="stripe-diag-temp"
+          dangerouslySetInnerHTML={{
+            __html: `
+(function(){
+  try {
+    var origCreate = document.createElement.bind(document);
+    document.createElement = function(tag) {
+      var el = origCreate(tag);
+      if (String(tag).toLowerCase() === 'script') {
+        try {
+          Object.defineProperty(el, 'src', {
+            configurable: true,
+            get: function(){ return el.getAttribute('src'); },
+            set: function(v) {
+              if (String(v).indexOf('stripe') > -1) {
+                console.error('STRIPE_DIAG src=' + v);
+                console.error('STRIPE_DIAG stack=' + (new Error()).stack);
+              }
+              el.setAttribute('src', v);
+            }
+          });
+        } catch(e) {}
+      }
+      return el;
+    };
+  } catch(e) {
+    console.error('STRIPE_DIAG setup failed', e);
+  }
+})();
+`,
+          }}
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
