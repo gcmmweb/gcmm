@@ -170,12 +170,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const resolvedParams = await params;
   const pathname = getPathname(resolvedParams?.catchall);
 
-  // DIAGNOSTIC (temporary — remove after confirming the metadata/noindex
-  // bug root cause, Sep 2026): logs every step of metadata resolution so
-  // we can see exactly what Plasmic returns for a broken slug vs a working
-  // one (canada-day-26), in real Vercel logs rather than guessing from code.
-  console.log(`[META-DIAG] ===== START ${pathname} =====`);
-
   // FIX: this call used to be unguarded — a Plasmic API timeout here threw
   // an unhandled error and crashed the whole page before it even reached the
   // render step below. Metadata is non-critical, so on failure we just skip
@@ -183,26 +177,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   let pageData;
   try {
     pageData = await PLASMIC_SERVER.maybeFetchComponentData(pathname);
-    console.log(`[META-DIAG] ${pathname}: fetch succeeded, pageData present = ${!!pageData}`);
   } catch (err) {
-    console.error(`[META-DIAG] ${pathname}: Plasmic metadata fetch THREW:`, err);
-    console.log(`[META-DIAG] ${pathname}: returning {} due to caught error`);
+    console.error(`Plasmic metadata fetch failed for ${pathname}:`, err);
     return {};
   }
 
   const entryMeta = pageData?.entryCompMetas?.[0];
   const meta = entryMeta?.pageMetadata;
 
-  console.log(`[META-DIAG] ${pathname}: entryCompMetas.length = ${pageData?.entryCompMetas?.length ?? 'pageData is falsy'}`);
-  console.log(`[META-DIAG] ${pathname}: entryMeta present = ${!!entryMeta}, entryMeta.params = ${JSON.stringify(entryMeta?.params)}`);
-  console.log(`[META-DIAG] ${pathname}: meta (pageMetadata) present = ${!!meta}, meta.title = ${JSON.stringify(meta?.title)}, meta.canonical = ${JSON.stringify(meta?.canonical)}`);
-
   // If this route resolved to a page with a "slug" URL parameter, treat it
   // as an article and try to pull real per-article metadata from the CMS.
   const slug = (entryMeta?.params as Record<string, string> | undefined)
     ?.slug;
-
-  console.log(`[META-DIAG] ${pathname}: resolved slug = ${JSON.stringify(slug)}`);
 
   let title = meta?.title || undefined;
   let description = meta?.description || undefined;
@@ -210,7 +196,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (slug) {
     const articleMeta = await fetchArticleMetaBySlug(slug);
-    console.log(`[META-DIAG] ${pathname}: fetchArticleMetaBySlug("${slug}") returned = ${JSON.stringify(articleMeta)}`);
     if (articleMeta) {
       title = articleMeta.title || title;
       description = articleMeta.excerpt || description;
@@ -219,17 +204,26 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   if (!meta && !slug) {
-    console.log(`[META-DIAG] ${pathname}: returning {} because both meta and slug are falsy`);
     return {};
   }
 
-  console.log(`[META-DIAG] ${pathname}: FINAL title = ${JSON.stringify(title)}, description = ${JSON.stringify(description)}, canonical = ${JSON.stringify(meta?.canonical)}`);
-  console.log(`[META-DIAG] ===== END ${pathname} =====`);
+  // FIX (Sep 2026): previously this used Plasmic's static per-page
+  // "canonical" field directly with no per-article override — meaning every
+  // article sharing the "/[slug]" template got the exact same canonical URL
+  // (whatever was hardcoded in that one shared field), regardless of which
+  // article it actually was. Confirmed via Search Console + live testing:
+  // ~76 articles were all self-declaring /canada-day-26 as their canonical.
+  // Now: if Plasmic has an explicit canonical set for this specific page,
+  // respect it (e.g. standalone pages may intentionally point elsewhere).
+  // Otherwise, default to the page's own real URL — the correct, safe
+  // default for any page, and immune to this class of bug going forward
+  // regardless of what is or isn't set in Plasmic's Page Settings.
+  const canonicalUrl = meta?.canonical || `https://www.gcmm.ca${pathname}`;
 
   return {
     title,
     description,
-    alternates: meta?.canonical ? { canonical: meta.canonical } : undefined,
+    alternates: { canonical: canonicalUrl },
     openGraph: {
       title,
       description,
