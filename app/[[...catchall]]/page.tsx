@@ -4,7 +4,17 @@ import { notFound, redirect } from "next/navigation";
 import { PLASMIC_SERVER } from "@/src/plasmic-init-server";
 import PlasmicClientPage from "./client-page";
 import { SiteUnavailableFallback } from "@/components/SiteUnavailableFallback";
-import { StripeDonationPage } from "@/components/stripe-donation-page-v2";
+// FIX (Sep 2026): was a static import. Because this catch-all page serves
+// EVERY route on the site, a static import here meant the Stripe donation
+// component (and its module-level loadStripe() call) got bundled into the
+// client JS for every single page, not just /donate. next/dynamic with
+// ssr:false keeps it out of the shared bundle entirely — it's only fetched
+// when this specific fallback branch actually renders.
+import dynamic from "next/dynamic";
+const StripeDonationPage = dynamic(
+  () => import("@/components/stripe-donation-page-v2").then((mod) => mod.StripeDonationPage),
+  { ssr: false }
+);
 
 type Props = {
   params: Promise<{ catchall?: string[] }>;
