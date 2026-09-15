@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { notFound, redirect } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { PLASMIC_SERVER } from "@/src/plasmic-init-server";
 import PlasmicClientPage from "./client-page";
 import { SiteUnavailableFallback } from "@/components/SiteUnavailableFallback";
@@ -63,6 +63,16 @@ const LEGACY_REDIRECTS: Record<string, string> = {
   "/the-gospel-is-reaching-millions": "/gospel-reaching-millions",
   "/god-is-in-egypt": "/god-is-doing-something-new-in-egypt",
   "/your-voice-matters": "/contact",
+  // Added Sep 2026 (SEO discoverability review): these three were still
+  // being linked to from the old gcmministries.ca domain, which forwards
+  // path-for-path to gcmm.ca — but none of these paths exist here anymore,
+  // so visitors and Google were landing on 404s. /our-work and /impact
+  // have no single dedicated replacement page (impact stories now live as
+  // individual /impact/[country] pages with no hub), so both point to
+  // Mega City Media Campaigns as the closest overview of GCMM's work.
+  "/our-work": "/megacitymediacampaigns",
+  "/impact": "/megacitymediacampaigns",
+  "/news-articles": "/news-stories",
 };
 
 // The CMS database ID is not sensitive (it's a public project identifier).
@@ -266,12 +276,12 @@ export default async function CatchallPage({ params }: Props) {
     pathname !== "/donate-test-only" &&
     pathname.startsWith("/donate-")
   ) {
-    redirect("/donate");
+    permanentRedirect("/donate");
   }
 
   // Old WordPress-era URLs with no CMS entry (see LEGACY_REDIRECTS above).
   if (pathname in LEGACY_REDIRECTS) {
-    redirect(LEGACY_REDIRECTS[pathname]);
+    permanentRedirect(LEGACY_REDIRECTS[pathname]);
   }
 
   // FIX: this was the actual outage cause — an unguarded call that crashed
