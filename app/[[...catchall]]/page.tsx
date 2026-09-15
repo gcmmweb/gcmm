@@ -73,6 +73,12 @@ const LEGACY_REDIRECTS: Record<string, string> = {
   "/our-work": "/megacitymediacampaigns",
   "/impact": "/megacitymediacampaigns",
   "/news-articles": "/news-stories",
+  // Found via the Sep 2026 Search Console Soft 404 validation sweep.
+  "/israel-ministry": "/israel-jewish-ministries",
+  // TEMPORARY: no dedicated Partners page exists yet. Routing to /about for
+  // now so the old link isn't a dead end. Once a real Partners page is
+  // built, update this destination — don't just leave it pointed at /about.
+  "/our-partners": "/about",
 };
 
 // The CMS database ID is not sensitive (it's a public project identifier).
