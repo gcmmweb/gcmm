@@ -13,8 +13,10 @@ import { initPlasmicLoader } from '@plasmicapp/loader-nextjs';
 // Plasmic Studio's page structure), not all 53 at once — see comments at
 // each conversion below.
 import dynamic from 'next/dynamic';
-import MainPage from '@/components/MainPage';
-import ministryImpact from '@/components/ministry-impact';
+// ARCHIVED (Sep 2026): MainPage — was only ever registered via the
+// separate, orphaned lib/plasmic.ts (deleted), never the real init file.
+// ministryImpact — imported here but never registered or used anywhere.
+// Both moved to archive; see commit for full list.
 // LAZY (Sep 2026): 44KB, only rendered on /donate (per app/[[...catchall]]/
 // page.tsx's own conditional). Was loading on every page site-wide.
 const StripeDonationPageV2 = dynamic(() =>
@@ -33,7 +35,6 @@ export const PLASMIC = initPlasmicLoader({
 
 });
 
-import { MainPage2 } from "@/components/MainPage2"; // adjust the import path accordingly
 import { ModernNewsSection } from '@/components/NewsArticles';
 // LAZY (Sep 2026): 18KB, confirmed homepage-only section in Plasmic
 // Studio's own page structure ("Our Vision Section" under the Homepage
@@ -52,14 +53,9 @@ import { ContactForm } from "@/components/contact-form"
 
 import { VideosPage } from "@/components/videos-page"
 
-// LAZY (Sep 2026): 41KB. Confirmed this is never actually registered with
-// Plasmic and never referenced anywhere else in the codebase — dead code
-// that was loading on every page for zero benefit. Left in place (not
-// deleted) in case it's needed later, but now it costs nothing unless used.
-const DonationPage = dynamic(() =>
-  import("@/components/donation-page").then((m) => ({ default: m.DonationPage }))
-);
-import GivingPage from "@/components/donate2"
+// ARCHIVED (Sep 2026): DonationPage and GivingPage (donate2) — both
+// confirmed dead code (never registered with Plasmic, never used anywhere
+// else). Moved to archive.
 
 // LAZY (Sep 2026): 27KB, confirmed homepage-only section in Plasmic Studio's
 // own page structure ("Cinematic Main Page" under the Homepage arena).
