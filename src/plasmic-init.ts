@@ -1,8 +1,25 @@
 // plasmic-init.ts
 import { initPlasmicLoader } from '@plasmicapp/loader-nextjs';
+// PERFORMANCE FIX (Sep 2026): this file statically imports all ~53
+// registered components, so every one of them ships in the JS bundle for
+// every single page — a homepage-only 139KB map component was loading on
+// /about, /contact, every article, everywhere. next/dynamic code-splits a
+// component into its own chunk that only downloads when that component is
+// actually rendered, instead of on every page load. This file is a
+// "use client" component (via client-page.tsx), so default SSR behavior
+// here is safe — no ssr:false needed, which is what caused the earlier
+// Server Component build error elsewhere in this codebase.
+// Converting the largest, single-page components first (confirmed via
+// Plasmic Studio's page structure), not all 53 at once — see comments at
+// each conversion below.
+import dynamic from 'next/dynamic';
 import MainPage from '@/components/MainPage';
 import ministryImpact from '@/components/ministry-impact';
-import { StripeDonationPage as StripeDonationPageV2 } from "@/components/stripe-donation-page-v2"
+// LAZY (Sep 2026): 44KB, only rendered on /donate (per app/[[...catchall]]/
+// page.tsx's own conditional). Was loading on every page site-wide.
+const StripeDonationPageV2 = dynamic(() =>
+  import("@/components/stripe-donation-page-v2").then((m) => ({ default: m.StripeDonationPage }))
+);
 import DonationThankYou from "@/components/donation-thank-you-page"
 
 export const PLASMIC = initPlasmicLoader({
@@ -18,7 +35,12 @@ export const PLASMIC = initPlasmicLoader({
 
 import { MainPage2 } from "@/components/MainPage2"; // adjust the import path accordingly
 import { ModernNewsSection } from '@/components/NewsArticles';
-import { OurVisionSection} from "@/components/our-vision-section"
+// LAZY (Sep 2026): 18KB, confirmed homepage-only section in Plasmic
+// Studio's own page structure ("Our Vision Section" under the Homepage
+// arena). Was loading on every page site-wide.
+const OurVisionSection = dynamic(() =>
+  import("@/components/our-vision-section").then((m) => ({ default: m.OurVisionSection }))
+);
 import { FooterSection } from "@/components/footer-section"
 
 import { MinistriesPage } from "@/components/ministries-page"
@@ -30,12 +52,26 @@ import { ContactForm } from "@/components/contact-form"
 
 import { VideosPage } from "@/components/videos-page"
 
-import { DonationPage } from "@/components/donation-page"
+// LAZY (Sep 2026): 41KB. Confirmed this is never actually registered with
+// Plasmic and never referenced anywhere else in the codebase — dead code
+// that was loading on every page for zero benefit. Left in place (not
+// deleted) in case it's needed later, but now it costs nothing unless used.
+const DonationPage = dynamic(() =>
+  import("@/components/donation-page").then((m) => ({ default: m.DonationPage }))
+);
 import GivingPage from "@/components/donate2"
 
-import { MainPageCinematic } from "@/components/main-page-cinematic"
+// LAZY (Sep 2026): 27KB, confirmed homepage-only section in Plasmic Studio's
+// own page structure ("Cinematic Main Page" under the Homepage arena).
+const MainPageCinematic = dynamic(() =>
+  import("@/components/main-page-cinematic").then((m) => ({ default: m.MainPageCinematic }))
+);
 
-import { StripeDonationPage } from "@/components/stripe-donation-page"
+// LAZY (Sep 2026): 45KB, only used on the archived /donate-test-only page
+// (confirmed earlier this project). Was loading on every page site-wide.
+const StripeDonationPage = dynamic(() =>
+  import("@/components/stripe-donation-page").then((m) => ({ default: m.StripeDonationPage }))
+);
 
 import { NewsletterSignup } from "@/components/newsletter-signup"
 
@@ -43,7 +79,13 @@ import { TransformerBlogPage } from "@/components/transformer-blog-page"
 
 import { TestimonialsSection } from "@/components/testimonials-section"
 
-import { MissionMapPage } from "@/components/MapPage"
+// LAZY (Sep 2026): 139KB — the single largest component in this codebase,
+// over 3x the next biggest. Confirmed homepage-only section in Plasmic
+// Studio's own page structure ("Mission Map Page" under the Homepage
+// arena). Was loading on every page site-wide for no reason.
+const MissionMapPage = dynamic(() =>
+  import("@/components/MapPage").then((m) => ({ default: m.MissionMapPage }))
+);
 
 import { OtherWaysToGive } from "@/components/otherwaystogive"
 
