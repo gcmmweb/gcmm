@@ -408,6 +408,7 @@ export function MainPageCinematic({
                 muted
                 loop
                 playsInline
+                fetchPriority="high"
                 className="w-full h-full"
                 poster={videoPosterUrl}
               >
@@ -423,6 +424,7 @@ export function MainPageCinematic({
             <img
               src={videoPosterUrl || "/placeholder.svg"}
               alt="Mountain landscape"
+              fetchPriority="high"
               className="w-full h-full object-cover"
             />
           )}
@@ -454,6 +456,7 @@ export function MainPageCinematic({
               muted
               loop
               playsInline
+              fetchPriority="high"
               className="w-full h-full object-cover"
               poster={videoPosterUrl}
             >
@@ -469,6 +472,7 @@ export function MainPageCinematic({
           <img
             src={videoPosterUrl || "/placeholder.svg"}
             alt="Mountain landscape"
+            fetchPriority="high"
             className="absolute inset-0 w-full h-full object-cover"
           />
         )}

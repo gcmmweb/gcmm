@@ -57,11 +57,18 @@ import { VideosPage } from "@/components/videos-page"
 // confirmed dead code (never registered with Plasmic, never used anywhere
 // else). Moved to archive.
 
-// LAZY (Sep 2026): 27KB, confirmed homepage-only section in Plasmic Studio's
-// own page structure ("Cinematic Main Page" under the Homepage arena).
-const MainPageCinematic = dynamic(() =>
-  import("@/components/main-page-cinematic").then((m) => ({ default: m.MainPageCinematic }))
-);
+// REVERTED (Sep 2026): tried lazy-loading this (27KB) alongside the other
+// homepage-only sections, but it's the hero — it contains the LCP image.
+// Lazy-loading it delayed hydration of main-page-cinematic.tsx's own
+// mounted-gate, which delays the swap from the initial <img> poster to the
+// final <video poster>. That swap triggers a *second*, low-priority fetch
+// of the same poster image (video posters don't reuse the earlier <img>
+// fetch) — confirmed via PageSpeed as an 1,680ms "resource load delay"
+// phase, driving mobile LCP to 11.7s with the <video poster> (not the fast
+// initial <img>) identified as the actual LCP element. Lazy-loading is
+// still correct for every below-the-fold section; it's specifically wrong
+// for the hero, because delaying hydration of the LCP element delays LCP.
+import { MainPageCinematic } from "@/components/main-page-cinematic";
 
 // REVERTED (Sep 2026): tried lazy-loading this (45KB, only used on the
 // archived /donate-test-only page) alongside the 5 other conversions below,
