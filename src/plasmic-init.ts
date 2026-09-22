@@ -68,7 +68,17 @@ import { VideosPage } from "@/components/videos-page"
 // initial <img>) identified as the actual LCP element. Lazy-loading is
 // still correct for every below-the-fold section; it's specifically wrong
 // for the hero, because delaying hydration of the LCP element delays LCP.
-import { MainPageCinematic } from "@/components/main-page-cinematic";
+// LAZY, re-reverted (Sep 2026): tried static-importing this to fix a slow
+// poster-image fetch, and it DID fix that — but it also pulled this
+// component's framer-motion dependency into the critical initial JS
+// bundle. Measured impact on mobile (PageSpeed, throttled): main-thread
+// work 2.1s -> 4.1s, LCP 11.7s -> 13.0s. The fetch-priority problem is
+// real but belongs in HTML (a <link rel=preload> in the catchall route,
+// scoped to "/"), not solved by moving this component's JS out of the
+// lazy-load bucket.
+const MainPageCinematic = dynamic(() =>
+  import("@/components/main-page-cinematic").then((m) => ({ default: m.MainPageCinematic }))
+);
 
 // REVERTED (Sep 2026): tried lazy-loading this (45KB, only used on the
 // archived /donate-test-only page) alongside the 5 other conversions below,

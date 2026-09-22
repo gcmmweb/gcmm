@@ -354,12 +354,25 @@ export default async function CatchallPage({ params }: Props) {
   // wrapper is required by Next.js whenever a client component reads
   // searchParams, so the static parts around it can still prerender.
   return (
-    <Suspense fallback={null}>
-      <PlasmicClientPage
-        pathname={pathname}
-        pageData={pageData}
-        params={pageMeta?.params}
-      />
-    </Suspense>
+    <>
+      {pathname === "/" && (
+        // Preload the hero poster so the browser starts fetching it the
+        // moment it parses <head> — independent of MainPageCinematic's
+        // lazy-load status or React hydration timing.
+        <link
+          rel="preload"
+          as="image"
+          href="/hero-poster.jpg"
+          fetchPriority="high"
+        />
+      )}
+      <Suspense fallback={null}>
+        <PlasmicClientPage
+          pathname={pathname}
+          pageData={pageData}
+          params={pageMeta?.params}
+        />
+      </Suspense>
+    </>
   );
 }
