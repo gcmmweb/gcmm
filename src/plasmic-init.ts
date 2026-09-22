@@ -67,11 +67,16 @@ const MainPageCinematic = dynamic(() =>
   import("@/components/main-page-cinematic").then((m) => ({ default: m.MainPageCinematic }))
 );
 
-// LAZY (Sep 2026): 45KB, only used on the archived /donate-test-only page
-// (confirmed earlier this project). Was loading on every page site-wide.
-const StripeDonationPage = dynamic(() =>
-  import("@/components/stripe-donation-page").then((m) => ({ default: m.StripeDonationPage }))
-);
+// REVERTED (Sep 2026): tried lazy-loading this (45KB, only used on the
+// archived /donate-test-only page) alongside the 5 other conversions below,
+// but it broke Plasmic's ability to resolve this component's registered
+// props — live error: "Error resolving function params" on
+// /donate-test-only, confirmed not present on any page using the other 5
+// lazy components. Reverted to a static import to restore that page.
+// This component is slated to be archived soon anyway (superseded by
+// StripeDonationPageV2, which has no such issue) — not worth debugging
+// further for a component on its way out.
+import { StripeDonationPage } from "@/components/stripe-donation-page";
 
 import { NewsletterSignup } from "@/components/newsletter-signup"
 
