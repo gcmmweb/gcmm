@@ -268,28 +268,39 @@ export function NavigationHeader({
                         <ChevronDown className="w-4 h-4" />
                       </button>
 
-                      {/* Dropdown Menu */}
-                      <AnimatePresence>
-                        {openDropdown === item && (
-                          <motion.div
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            transition={{ duration: 0.2 }}
-                            className="absolute left-0 mt-0 w-64 bg-white rounded-md shadow-lg overflow-hidden z-50"
+                      {/* Dropdown Menu
+                          SEO (Sep 2026): the menu used to be created only while
+                          hovered (openDropdown === item && ...), so its links
+                          never existed in the server HTML — Google saw none of
+                          the 16 dropdown pages (Team, Videos, Newsletters, all
+                          ministry pages...) linked from the header. The menu is
+                          now always rendered and only hidden visually when
+                          closed; visibility:hidden also keeps closed-menu links
+                          out of keyboard tab order and screen readers. The
+                          visibility change is delayed 0.2s on close so the
+                          fade-out animation still plays. */}
+                      <motion.div
+                        initial={false}
+                        animate={openDropdown === item ? { opacity: 1, y: 0 } : { opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                        style={{
+                          visibility: openDropdown === item ? "visible" : "hidden",
+                          transition: openDropdown === item ? "visibility 0s" : "visibility 0s linear 0.2s",
+                        }}
+                        className={`absolute left-0 mt-0 w-64 bg-white rounded-md shadow-lg overflow-hidden z-50 ${
+                          openDropdown === item ? "pointer-events-auto" : "pointer-events-none"
+                        }`}
+                      >
+                        {getDropdownItems(item).map((dropdownItem) => (
+                          <Link
+                            key={dropdownItem.label}
+                            href={dropdownItem.url}
+                            className="block px-4 py-3 text-gray-800 hover:bg-gray-100 transition-colors text-sm"
                           >
-                            {getDropdownItems(item).map((dropdownItem) => (
-                              <Link
-                                key={dropdownItem.label}
-                                href={dropdownItem.url}
-                                className="block px-4 py-3 text-gray-800 hover:bg-gray-100 transition-colors text-sm"
-                              >
-                                {dropdownItem.label}
-                              </Link>
-                            ))}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
+                            {dropdownItem.label}
+                          </Link>
+                        ))}
+                      </motion.div>
                     </div>
                   ) : (
                     <Link

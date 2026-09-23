@@ -56,6 +56,16 @@ const EXCLUDED_PATHS = new Set<string>([
   "/thank-you",
 ]);
 
+// GCMM convention (Plasmic has no draft/unpublish feature): a path segment
+// starting with "_" (e.g. /impact/_ethiopia) marks a campaign/page that is
+// built but not launched yet. Those must never be advertised to Google —
+// previously /impact/_ethiopia was listed here, inviting it to be indexed.
+// Launching a page = renaming it without the underscore; it then appears in
+// the sitemap automatically.
+function isUnpublishedPath(path: string): boolean {
+  return path.split("/").some((segment) => segment.startsWith("_"));
+}
+
 // Hand-tuned priority/frequency for the pages that matter most. Any real
 // page not listed here (dynamic Plasmic pages, CMS articles) still gets
 // included below automatically, just with sensible defaults instead of
@@ -98,7 +108,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // belong in a sitemap) and the confirmed archive/test/not-ready pages.
     plasmicPaths = pageModules
       .map((mod) => mod.path)
-      .filter((path) => !path.includes("[") && !EXCLUDED_PATHS.has(path));
+      .filter((path) => !path.includes("[") && !EXCLUDED_PATHS.has(path) && !isUnpublishedPath(path));
   } catch (err) {
     console.warn("Sitemap: failed to fetch Plasmic pages:", err);
   }
@@ -106,7 +116,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const articleSlugs = await fetchAllArticleSlugs();
   const articlePaths = articleSlugs
     .map((slug) => `/${slug}`)
-    .filter((path) => !EXCLUDED_PATHS.has(path));
+    .filter((path) => !EXCLUDED_PATHS.has(path) && !isUnpublishedPath(path));
 
   const allPaths = Array.from(new Set([...plasmicPaths, ...articlePaths]));
 
