@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { notFound, permanentRedirect } from "next/navigation";
 import { PLASMIC_SERVER } from "@/src/plasmic-init-server";
 import PlasmicClientPage from "./client-page";
+import type { StoryLink } from "@/components/all-stories-list";
 import { SiteUnavailableFallback } from "@/components/SiteUnavailableFallback";
 // NOTE (Sep 2026): this was briefly changed to a next/dynamic(..., { ssr:
 // false }) import to keep this component's bundle out of every route's
@@ -173,6 +174,50 @@ async function fetchAllArticleSlugs(): Promise<string[]> {
   } catch (err) {
     console.warn("Failed to fetch article slugs for generateStaticParams:", err);
     return [];
+  }
+}
+
+// ALL STORIES LIST (Sep 2026): the article list for the "All Stories List"
+// code component (components/all-stories-list.tsx). Fetched on the server so
+// every article link is in the HTML Google receives. Only fetched for these
+// paths — add a path here before placing the component on another page.
+const ALL_STORIES_PATHS = new Set(["/news-stories", "/all-stories"]);
+
+async function fetchAllStories(): Promise<StoryLink[] | undefined> {
+  if (!PLASMIC_CMS_PUBLIC_TOKEN) return undefined;
+  try {
+    const query = encodeURIComponent(JSON.stringify({ limit: 500 }));
+    const url = `https://data.plasmic.app/api/v1/cms/databases/${PLASMIC_CMS_DATABASE_ID}/tables/newsPosts/query?q=${query}`;
+    const res = await fetch(url, {
+      headers: {
+        "x-plasmic-api-cms-tokens": `${PLASMIC_CMS_DATABASE_ID}:${PLASMIC_CMS_PUBLIC_TOKEN}`,
+      },
+      // Same freshness as the page itself (revalidate = 300): a newly
+      // published article shows up in the list within ~5 minutes.
+      next: { revalidate: 300 },
+    });
+    if (!res.ok) return undefined;
+    const data = await res.json();
+    const fmt = new Intl.DateTimeFormat("en-US", {
+      year: "numeric", month: "short", day: "numeric", timeZone: "UTC",
+    });
+    return (data?.rows ?? [])
+      .map((row: any) => row?.data)
+      .filter((d: any) => d?.slug && d?.title)
+      .sort((a: any, b: any) => String(b.date ?? "").localeCompare(String(a.date ?? "")))
+      .map((d: any) => {
+        const date = d.date ? new Date(d.date) : null;
+        const valid = date && !isNaN(date.getTime());
+        return {
+          slug: String(d.slug),
+          title: String(d.title).trim(),
+          dateLabel: valid ? fmt.format(date) : "",
+          year: valid ? String(date.getUTCFullYear()) : "",
+        };
+      });
+  } catch (err) {
+    console.warn("Failed to fetch article list for All Stories List:", err);
+    return undefined;
   }
 }
 
@@ -362,6 +407,10 @@ export default async function CatchallPage({ params }: Props) {
     }
   }
 
+  // Server-side article list for the "All Stories List" component (only on
+  // the pages that use it — see ALL_STORIES_PATHS).
+  const allStories = ALL_STORIES_PATHS.has(pathname) ? await fetchAllStories() : undefined;
+
   // FIX: query params used to be read here on the SERVER (via searchParams),
   // which forced Next.js to treat this whole route as "must render fresh on
   // every request" — silently defeating the revalidate=300 caching above.
@@ -389,6 +438,7 @@ export default async function CatchallPage({ params }: Props) {
           pathname={pathname}
           pageData={pageData}
           params={pageMeta?.params}
+          allStories={allStories}
         />
       </Suspense>
     </>

@@ -92,6 +92,7 @@ const MainPageCinematic = dynamic(() =>
 import { StripeDonationPage } from "@/components/stripe-donation-page";
 
 import { NewsletterSignup } from "@/components/newsletter-signup"
+import { AllStoriesList } from "@/components/all-stories-list"
 
 import { TransformerBlogPage } from "@/components/transformer-blog-page"
 
@@ -18804,3 +18805,21 @@ PLASMIC.registerComponent(DonationThankYou, {
   importPath: "@/components/donation-thank-you-page",
   isDefaultExport: true,
 } as any);
+
+// ALL STORIES LIST (Sep 2026): server-rendered list of links to every CMS
+// article, so Google can reach all of them (see components/all-stories-list.tsx).
+// Only filled on pages listed in ALL_STORIES_PATHS in app/[[...catchall]]/page.tsx.
+PLASMIC.registerComponent(AllStoriesList, {
+  name: "AllStoriesList",
+  displayName: "All Stories List",
+  description: "Plain links to every published article (crawlable by Google). Fills with real articles on /news-stories and /all-stories on the live site; shows sample rows in Studio.",
+  props: {
+    heading: { type: "string", defaultValue: "All Stories", displayName: "Heading" },
+    showDates: { type: "boolean", defaultValue: true, displayName: "Show dates" },
+    groupByYear: { type: "boolean", defaultValue: false, displayName: "Group by year" },
+    headingColor: { type: "color", defaultValue: "#1F2D55", displayName: "Heading color", section: "Colors" },
+    linkColor: { type: "color", defaultValue: "#1F2D55", displayName: "Link color", section: "Colors" },
+    dateColor: { type: "color", defaultValue: "#6B7890", displayName: "Date color", section: "Colors" },
+  },
+  importPath: "./components/all-stories-list",
+});

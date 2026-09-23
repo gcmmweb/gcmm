@@ -9,6 +9,7 @@ import {
   type ComponentRenderData,
 } from "@plasmicapp/loader-react"
 import { PLASMIC } from "@/src/plasmic-init"
+import { AllStoriesProvider, type StoryLink } from "@/components/all-stories-list"
 
 type Props = {
   pathname: string
@@ -16,13 +17,18 @@ type Props = {
   // URL path parameters (e.g. { slug: "canada-day-26" } for
   // /test-only-article/[slug] pages), matched by the Plasmic loader.
   params?: Record<string, string>
+  // Server-fetched article list for the All Stories List component (only
+  // provided on pages listed in ALL_STORIES_PATHS in page.tsx).
+  allStories?: StoryLink[]
 }
 
-function PlasmicPage({ pathname, pageData, params, query }: Props & { query: Record<string, string> }) {
+function PlasmicPage({ pathname, pageData, params, query, allStories }: Props & { query: Record<string, string> }) {
   return (
     <PlasmicRootProvider loader={PLASMIC} prefetchedData={pageData}>
       <PageParamsProvider route={pathname} params={params} query={query}>
-        <PlasmicComponent component={pathname} />
+        <AllStoriesProvider stories={allStories}>
+          <PlasmicComponent component={pathname} />
+        </AllStoriesProvider>
       </PageParamsProvider>
     </PlasmicRootProvider>
   )
