@@ -61,6 +61,11 @@ type Props = {
   // sections), and it opens with a click or keyboard — no JavaScript needed.
   collapsed?: boolean
   toggleLabel?: string
+  // Styling (Sep 2026): center the toggle under the "View More" button, and
+  // show the opened list on a soft card so it stays readable over photos.
+  toggleAlign?: "left" | "center" | "right"
+  showCard?: boolean
+  panelColor?: string
   headingColor?: string
   linkColor?: string
   dateColor?: string
@@ -102,6 +107,9 @@ export function AllStoriesList({
   groupByYear = false,
   collapsed = true,
   toggleLabel = "Browse all {count} stories",
+  toggleAlign = "left",
+  showCard = false,
+  panelColor = "rgba(255, 255, 255, 0.08)",
   headingColor = "#1F2D55",
   linkColor = "#1F2D55",
   dateColor = "#6B7890",
@@ -124,7 +132,10 @@ export function AllStoriesList({
     : [["", stories]]
 
   const body = (
-    <>
+    <div
+      className={showCard ? "rounded-2xl p-6 md:p-8 text-left" : "text-left"}
+      style={showCard ? { backgroundColor: panelColor, backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)" } : undefined}
+    >
       {groups.map(([year, list]) => (
         <div key={year || "all"} className={groupByYear ? "mb-8" : undefined}>
           {groupByYear && (
@@ -135,7 +146,7 @@ export function AllStoriesList({
           <StoryList stories={list} showDates={showDates} linkColor={linkColor} dateColor={dateColor} />
         </div>
       ))}
-    </>
+    </div>
   )
 
   const headingEl = heading ? (
@@ -158,7 +169,10 @@ export function AllStoriesList({
   return (
     <section className={className} aria-label={heading || "All stories"}>
       {headingEl}
-      <details className="group" open={inStudio || undefined}>
+      <details
+        className={`group ${toggleAlign === "center" ? "text-center" : toggleAlign === "right" ? "text-right" : "text-left"}`}
+        open={inStudio || undefined}
+      >
         <summary
           className="inline-flex items-center gap-2 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden font-medium mb-5 hover:underline"
           style={{ color: headingColor }}
