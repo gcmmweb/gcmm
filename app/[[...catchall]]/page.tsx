@@ -79,6 +79,16 @@ const LEGACY_REDIRECTS: Record<string, string> = {
   // now so the old link isn't a dead end. Once a real Partners page is
   // built, update this destination — don't just leave it pointed at /about.
   "/our-partners": "/about",
+  // Found via the Sep 2026 Search Console "Not found (404)" report.
+  "/news": "/news-stories",
+  // Old WordPress newsletter PDFs still linked from past emails. The
+  // newsletters page is their closest live equivalent.
+  // NOTE: keys must be in getPathname()'s normalized form (lowercase, "_"
+  // turned into "-"), or they will never match.
+  "/wp-content/uploads/2023/11/gcmm-cad-4-pages-newsletter-nov-2023lite.pdf": "/newsletters",
+  "/wp-content/uploads/2024/03/gcmm-cad-8pg-nwltfeb2024-digital.pdf": "/newsletters",
+  "/wp-content/uploads/2024/08/cdn-mm-summer2024digital.pdf": "/newsletters",
+  "/wp-content/uploads/2025/05/gcmm-cdn-may-nwsl-digital.pdf": "/newsletters",
 };
 
 // The CMS database ID is not sensitive (it's a public project identifier).
@@ -288,6 +298,14 @@ export default async function CatchallPage({ params }: Props) {
   // Old WordPress-era URLs with no CMS entry (see LEGACY_REDIRECTS above).
   if (pathname in LEGACY_REDIRECTS) {
     permanentRedirect(LEGACY_REDIRECTS[pathname]);
+  }
+
+  // Old-site country pages: /Country/Impact-India -> /impact/india,
+  // /Country/Impact-South-Sudan -> /impact/southsudan. Found via Search
+  // Console (Sep 2026); pattern-based so other old country links work too.
+  const oldCountryPage = pathname.match(/^\/country\/impact-([a-z-]+)$/i);
+  if (oldCountryPage) {
+    permanentRedirect(`/impact/${oldCountryPage[1].toLowerCase().replace(/-/g, "")}`);
   }
 
   // FIX: this was the actual outage cause — an unguarded call that crashed
