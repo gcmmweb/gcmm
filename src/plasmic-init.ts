@@ -18817,6 +18817,8 @@ PLASMIC.registerComponent(AllStoriesList, {
     heading: { type: "string", defaultValue: "All Stories", displayName: "Heading" },
     showDates: { type: "boolean", defaultValue: true, displayName: "Show dates" },
     groupByYear: { type: "boolean", defaultValue: false, displayName: "Group by year" },
+    collapsed: { type: "boolean", defaultValue: true, displayName: "Collapsed by default", description: "Show one 'Browse all stories' line that opens the list. Always shown open inside Studio." },
+    toggleLabel: { type: "string", defaultValue: "Browse all {count} stories", displayName: "Toggle label", description: "{count} is replaced with the number of stories." },
     headingColor: { type: "color", defaultValue: "#1F2D55", displayName: "Heading color", section: "Colors" },
     linkColor: { type: "color", defaultValue: "#1F2D55", displayName: "Link color", section: "Colors" },
     dateColor: { type: "color", defaultValue: "#6B7890", displayName: "Date color", section: "Colors" },

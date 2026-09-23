@@ -55,6 +55,12 @@ type Props = {
   heading?: string
   showDates?: boolean
   groupByYear?: boolean
+  // Collapsible (Sep 2026): folds the list behind one "Browse all N stories"
+  // line so the page stays short. Uses a native <details> element: the links
+  // are still in the HTML (Google reads and follows links inside collapsed
+  // sections), and it opens with a click or keyboard — no JavaScript needed.
+  collapsed?: boolean
+  toggleLabel?: string
   headingColor?: string
   linkColor?: string
   dateColor?: string
@@ -94,6 +100,8 @@ export function AllStoriesList({
   heading = "All Stories",
   showDates = true,
   groupByYear = false,
+  collapsed = true,
+  toggleLabel = "Browse all {count} stories",
   headingColor = "#1F2D55",
   linkColor = "#1F2D55",
   dateColor = "#6B7890",
@@ -115,13 +123,8 @@ export function AllStoriesList({
       ).sort(([a], [b]) => Number(b) - Number(a))
     : [["", stories]]
 
-  return (
-    <section className={className} aria-label={heading || "All stories"}>
-      {heading && (
-        <h2 className="text-2xl md:text-3xl font-serif mb-6" style={{ color: headingColor }}>
-          {heading}
-        </h2>
-      )}
+  const body = (
+    <>
       {groups.map(([year, list]) => (
         <div key={year || "all"} className={groupByYear ? "mb-8" : undefined}>
           {groupByYear && (
@@ -132,6 +135,48 @@ export function AllStoriesList({
           <StoryList stories={list} showDates={showDates} linkColor={linkColor} dateColor={dateColor} />
         </div>
       ))}
+    </>
+  )
+
+  const headingEl = heading ? (
+    <h2 className="text-2xl md:text-3xl font-serif mb-6" style={{ color: headingColor }}>
+      {heading}
+    </h2>
+  ) : null
+
+  if (!collapsed) {
+    return (
+      <section className={className} aria-label={heading || "All stories"}>
+        {headingEl}
+        {body}
+      </section>
+    )
+  }
+
+  // Always shown open inside Plasmic Studio so the list can be styled.
+  const label = toggleLabel.replace("{count}", String(serverStories?.length ?? stories.length))
+  return (
+    <section className={className} aria-label={heading || "All stories"}>
+      {headingEl}
+      <details className="group" open={inStudio || undefined}>
+        <summary
+          className="inline-flex items-center gap-2 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden font-medium mb-5 hover:underline"
+          style={{ color: headingColor }}
+        >
+          {label}
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 20 20"
+            width="16"
+            height="16"
+            fill="currentColor"
+            className="transition-transform duration-200 group-open:rotate-180"
+          >
+            <path d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" />
+          </svg>
+        </summary>
+        {body}
+      </details>
     </section>
   )
 }
