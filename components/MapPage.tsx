@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { ComposableMap, Geographies, Geography, Marker, ZoomableGroup } from "react-simple-maps"
 import { motion, AnimatePresence } from "framer-motion"
 
@@ -12,8 +12,15 @@ const normalizeColor = (color: string): string => {
   return trimmed
 }
 
-// Using Visionscarto world atlas which specifically includes Crimea as part of Ukraine
-const geoUrl = "https://gisco-services.ec.europa.eu/distribution/v2/countries/geojson/CNTR_RG_60M_2020_4326.geojson"
+// Self-hosted (Sep 2026): this used to hit the EU's GISCO service directly —
+// a 706KB file, fetched fresh on every visit, TWICE (once per render branch
+// below), immediately on mount regardless of whether anyone ever scrolled
+// this far. That's 1.4MB+ of pure map-border data for a section that isn't
+// even in the initial viewport. Now: simplified once (8%, mapshaper — still
+// visually identical at this map's actual display size) down to 160KB,
+// self-hosted, and only fetched once — see the lazy-fetch effect below.
+// Still includes Crimea as part of Ukraine, same as the original source.
+const geoUrl = "/world-countries-simplified.geojson"
 
 interface MissionMapProps {
   className?: string
@@ -2488,6 +2495,34 @@ export function MissionMapPage({
     return () => window.removeEventListener("resize", check)
   }, [])
 
+  // LAZY-LOAD (Sep 2026): fetched once here, in parsed form, then passed
+  // directly to both <Geographies> branches below (instead of each one
+  // fetching geoUrl independently, which is what caused the double-fetch).
+  // The IntersectionObserver defers this fetch until the map is actually
+  // getting close to the viewport (400px early, so it's ready just before
+  // someone scrolls to it) rather than firing immediately on page load.
+  const [geoData, setGeoData] = useState<any>(null)
+  const mapSectionRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const el = mapSectionRef.current
+    if (!el || geoData) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          fetch(geoUrl)
+            .then((res) => res.json())
+            .then(setGeoData)
+            .catch((err) => console.warn("Failed to load map geography:", err))
+          observer.disconnect()
+        }
+      },
+      { rootMargin: "400px" }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [geoData])
+
   // Ministry type colors - in display order
   const MINISTRY_COLORS: Record<string, string> = {
     multipleministries: multipleministriesColor,
@@ -4340,7 +4375,7 @@ const getMinistryKeyFromString = (ministryString: string): string | null => {
 
         <div className="flex flex-col-reverse lg:flex-col gap-6">
           {/* Map */}
-          <div className="relative" style={{ backgroundColor: mapBackgroundColor }}>
+          <div ref={mapSectionRef} className="relative" style={{ backgroundColor: mapBackgroundColor }}>
           <ComposableMap
             projection="geoMercator"
             projectionConfig={{
@@ -4354,7 +4389,8 @@ const getMinistryKeyFromString = (ministryString: string): string | null => {
           >
             {isMobile ? (
             <ZoomableGroup minZoom={1} maxZoom={8}>
-              <Geographies geography={geoUrl}>
+              {geoData && (
+              <Geographies geography={geoData}>
                 {({ geographies }) =>
                   geographies.map((geo) => (
                     <Geography
@@ -4372,6 +4408,7 @@ const getMinistryKeyFromString = (ministryString: string): string | null => {
                   ))
                 }
               </Geographies>
+              )}
 
               {[...visibleCountries].sort((a, b) => (a.id === "israel" ? 1 : b.id === "israel" ? -1 : 0)).map((country) => {
                 const isIsrael = country.id === "israel"
@@ -4401,7 +4438,8 @@ const getMinistryKeyFromString = (ministryString: string): string | null => {
             </ZoomableGroup>
             ) : (
             <>
-              <Geographies geography={geoUrl}>
+              {geoData && (
+              <Geographies geography={geoData}>
                 {({ geographies }) =>
                   geographies.map((geo) => (
                     <Geography
@@ -4419,6 +4457,7 @@ const getMinistryKeyFromString = (ministryString: string): string | null => {
                   ))
                 }
               </Geographies>
+              )}
 
               {[...visibleCountries].sort((a, b) => (a.id === "israel" ? 1 : b.id === "israel" ? -1 : 0)).map((country) => {
                 const isIsrael = country.id === "israel"
