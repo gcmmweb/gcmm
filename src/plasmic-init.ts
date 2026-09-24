@@ -10810,6 +10810,12 @@ PLASMIC.registerComponent(FooterSection, {
       defaultValue: "Canadian Registered Charity: 82864 9467 RR0001",
       description: "The charity registration information text",
     },
+    phone: {
+      type: "string",
+      displayName: "Phone Number",
+      defaultValue: "1-877-674-5630",
+      description: "Displayed as a tap-to-call link in the footer, on every page. Leave blank to hide it.",
+    },
     giveButtonText: {
       type: "string",
       displayName: "Give Button Text",
@@ -10903,6 +10909,12 @@ PLASMIC.registerComponent(FooterSection, {
       displayName: "Charity Text Color",
       defaultValue: "#ffffff",
       description: "Hex color for charity registration text (e.g., #ffffff, #d1d5db)",
+    },
+    phoneTextColor: {
+      type: "string",
+      displayName: "Phone Text Color",
+      defaultValue: "#ffffff",
+      description: "Hex color for the phone number link (e.g., #ffffff, #d1d5db)",
     },
     designerTextColor: {
       type: "string",

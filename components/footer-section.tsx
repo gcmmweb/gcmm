@@ -10,6 +10,12 @@ export function FooterSection({
   slogan = "All Nations. All Media. This Generation.",
   copyrightText = "© 2025 Great Commission Media Ministries.",
   charityText = "Canadian Registered Charity: 82864 9467 RR0001",
+  // Added Sep 2026: the phone number promoted in TV ads had no visible spot
+  // on the site at all — it only lived in the invisible SEO structured data.
+  // The footer is the one place guaranteed to appear on every page, so it
+  // goes here as a real tap-to-call link, same pattern as contact-form.tsx.
+  phone = "1-877-674-5630",
+  phoneTextColor = "#ffffff",
   facebookUrl = "https://facebook.com",
   instagramUrl = "https://instagram.com",
   youtubeUrl = "https://youtube.com",
@@ -49,6 +55,8 @@ export function FooterSection({
   slogan?: string
   copyrightText?: string
   charityText?: string
+  phone?: string
+  phoneTextColor?: string
   facebookUrl?: string
   instagramUrl?: string
   youtubeUrl?: string
@@ -200,6 +208,20 @@ export function FooterSection({
               |
             </span>
             <span style={{ color: charityTextColor }}>{charityText}</span>
+            {phone && (
+              <>
+                <span className="hidden sm:inline" style={{ color: separatorColor }}>
+                  |
+                </span>
+                <a
+                  href={`tel:${phone.replace(/[^\d]/g, "")}`}
+                  style={{ color: phoneTextColor }}
+                  className="hover:underline"
+                >
+                  {phone}
+                </a>
+              </>
+            )}
           </div>
         </div>
       </div>
