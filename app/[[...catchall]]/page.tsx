@@ -105,6 +105,42 @@ const LEGACY_REDIRECTS: Record<string, string> = {
   // so route these old links there instead of a 404.
   "/1980-1989": "/history",
   "/2011-2020": "/history",
+  // Added Sep 2026 (pre-TV-launch review): old gcmministries.ca pages that
+  // still 404 after the domain-level forward to gcmm.ca. Destinations
+  // chosen by closest topical match per the Sep 24 redirect audit -- worth
+  // a skim since a couple are "closest available" rather than exact:
+  // /a-call-to-prayer -> the prayer-themed Ukraine story is the nearest
+  // live match, not a literal renamed page.
+  "/2021-2030": "/history",
+  "/2000-2010": "/history",
+  "/support-radio-ministry-to-russia": "/reaching-russian-speakers",
+  "/a-call-to-prayer": "/national-prayer-breakfast-in-ukraine",
+  "/cairo-egypt-a-door-of-opportunity": "/cairo-egypt-door-of-opportunity",
+  "/news-from-mongolias-evangelism-media-campaign": "/impact/mongolia",
+  "/evangelism-mongolia": "/impact/mongolia",
+  "/when-you-do-this-for-the-least-of-these": "/mongolia-bus-ads-city-dump",
+  "/viewer-response-skyrockets-across-the-middle-east-and-africa":
+    "/middle-east-media-ministry",
+  "/introduce-arab-to-jesus-christ": "/middle-east-media-ministry",
+  "/feedback-from-pastors-about-city-campaign-success":
+    "/megacitymediacampaigns",
+  // Confirmed with Junita (Sep 2026): the newsletter signup form lives at
+  // the bottom of /newsletters, and /rescue-mission-to-frontline-villages
+  // is confirmed as the same Ukraine story as the old frontline URL.
+  "/signup": "/newsletters",
+  "/bringing-the-gospel-to-the-frontlines":
+    "/rescue-mission-to-frontline-villages",
+  // Old newsletter/magazine PDFs from the same gcmministries.ca domain,
+  // same pattern as the wp-content/uploads entries above -- normalized
+  // to getPathname()'s lowercase+hyphen form.
+  "/wp-content/uploads/2024/05/gcmm-cdn-4pgmay24-digital.pdf": "/newsletters",
+  "/wp-content/uploads/2024/07/gcmm-cdn-nwsljune24lite.pdf": "/newsletters",
+  "/wp-content/uploads/2025/02/gcmm-cdn-febmar-nwsl-digital.pdf":
+    "/newsletters",
+  "/wp-content/uploads/2023/08/gcmm-cad-newsletter-july-2023-digitalformat.pdf":
+    "/newsletters",
+  "/wp-content/uploads/2022/09/gcmm-cdn-nwsltr-sept-2022-lite.pdf":
+    "/newsletters",
 };
 
 // The CMS database ID is not sensitive (it's a public project identifier).

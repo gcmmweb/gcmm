@@ -6,7 +6,7 @@ import { Play, ArrowRight, BookOpen, SatelliteDish, Heart } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { motion, useInView } from "framer-motion"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useLayoutEffect, useRef, useState } from "react"
 
 const BillboardIcon = ({ className, style }: { className?: string; style?: React.CSSProperties }) => (
   <svg
@@ -120,10 +120,27 @@ function getVimeoVideoId(url: string | undefined | null): string | null {
 }
 
 // Counter animation hook
+// FIX (Sep 2026, pre-TV-launch SEO review): this used to start every
+// counter at 0 via useState(0), so the number only ever became correct
+// after client JS ran the count-up animation. Google (and anyone/anything
+// that doesn't execute JS) only ever saw "0M+", "0+", "0+" in the actual
+// HTML response -- confirmed live: curl'ing the homepage showed literal
+// `0<!-- -->M+` where "500M+" should be.
+//
+// Fix: seed state with the real `end` value so SSR/first paint has the
+// correct number, then reset to 0 in a layout effect (fires after commit
+// but before the browser paints) so real visitors still see the exact
+// same start-at-0-and-count-up animation as before -- nothing changes
+// visually, only what non-JS clients and crawlers receive.
 function useCounter(end: number, duration = 2) {
-  const [count, setCount] = useState(0)
+  const [count, setCount] = useState(end)
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-100px" })
+
+  useLayoutEffect(() => {
+    setCount(0)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     if (!isInView) return

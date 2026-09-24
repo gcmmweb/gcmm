@@ -395,7 +395,7 @@ PLASMIC.registerComponent(VideosGrid, {
     sectionTitle: {
       type: "string",
       displayName: "Section Title",
-      defaultValue: "More videos from GCM Ministries",
+      defaultValue: "More videos from GCMM",
       description: "Main title for the video grid section",
     },
     sectionSubtitle: {
@@ -9724,7 +9724,7 @@ PLASMIC.registerComponent(VideosPage, {
       moreVideosTitle: {
         type: "string",
         displayName: "More Videos Title",
-        defaultValue: "More videos from GCM Ministries",
+        defaultValue: "More videos from GCMM",
         description: "Title for the additional videos section",
       },
       moreVideosSubtitle: {
@@ -9745,7 +9745,7 @@ PLASMIC.registerComponent(VideosPage, {
         type: "string",
         displayName: "Featured Video Description",
         defaultValue:
-          "Discover how GCM Ministries is reaching nations through strategic media campaigns and compassionate outreach across the globe.",
+          "Discover how GCMM is reaching nations through strategic media campaigns and compassionate outreach across the globe.",
         description: "Description of the featured video",
       },
       featuredVideoUrl: {

@@ -16,7 +16,7 @@ interface VideoItem {
 
 export function VideosGrid({
   className,
-  sectionTitle = "More videos from GCM Ministries",
+  sectionTitle = "More videos from GCMM",
   sectionSubtitle = "missions outreach",
   backgroundColor = "#f8fafc",
   

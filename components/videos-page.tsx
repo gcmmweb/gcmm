@@ -18,12 +18,12 @@ export function VideosPage({
   className,
   pageTitle = "TV & Video",
   pageSubtitle = "A general overview of Great Commission Media Ministries.",
-  moreVideosTitle = "More videos from GCM Ministries",
+  moreVideosTitle = "More videos from GCMM",
   moreVideosSubtitle = "missions outreach",
 
   // Featured Video
   featuredVideoTitle = "Great Commission Media Ministries Overview",
-  featuredVideoDescription = "Discover how GCM Ministries is reaching nations through strategic media campaigns and compassionate outreach across the globe.",
+  featuredVideoDescription = "Discover how GCMM is reaching nations through strategic media campaigns and compassionate outreach across the globe.",
   featuredVideoUrl = "https://www.youtube.com/embed/dQw4w9WgXcQ",
   featuredVideoDuration = "12:45",
   featuredVideoViews = "15,234",
