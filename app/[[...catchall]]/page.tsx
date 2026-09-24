@@ -117,6 +117,13 @@ type ArticleCmsMeta = {
   title?: string;
   excerpt?: string;
   coverImage?: string;
+  // Optional (Sep 2026): lets editors set a search/share-optimized title
+  // without touching the actual on-page headline, which stays whatever
+  // Hannu/John wrote in the "Title" field. Most articles won't set this —
+  // generateMetadata() below falls back to the regular title when it's
+  // empty, so this is purely additive and changes nothing until someone
+  // fills it in.
+  seoTitle?: string;
 };
 
 // Looks up a single News Post row by slug and returns just the fields we
@@ -162,6 +169,7 @@ async function fetchArticleMetaBySlug(
       title: row.title,
       excerpt: row.excerpt,
       coverImage: row.coverImage,
+      seoTitle: row.seoTitle,
     };
   } catch (err) {
     console.warn("Failed to fetch article metadata from CMS:", err);
@@ -294,7 +302,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (slug) {
     const articleMeta = await fetchArticleMetaBySlug(slug);
     if (articleMeta) {
-      title = articleMeta.title || title;
+      // SEO Title (if an editor set one) wins for the meta/social title;
+      // otherwise fall back to the same display title as before.
+      title = articleMeta.seoTitle || articleMeta.title || title;
       description = articleMeta.excerpt || description;
       ogImage = articleMeta.coverImage || ogImage;
     }
