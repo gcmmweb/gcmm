@@ -156,6 +156,7 @@ export function MainPageCinematic({
   heroHighlight = "Ministry Commitment",
   heroSubtitle = "GCM Ministries partners with indigenous churches worldwide to share the Gospel through strategic media campaigns and compassionate outreach.",
   videoUrl = "/clip_1080p.mp4",
+  mobileVideoUrl = "/hero-loop-mobile.mp4",
   videoPosterUrl = "/images/skdimore.jpeg",
   // Hero Colors
   heroOverlayColor = "#00000066",
@@ -236,6 +237,7 @@ export function MainPageCinematic({
   heroHighlight?: string
   heroSubtitle?: string
   videoUrl?: string // MP4 path, YouTube URL, or Vimeo URL
+  mobileVideoUrl?: string // Lightweight MP4 used only in the mobile hero block
   videoPosterUrl?: string
   heroOverlayColor?: string
   heroTitleColor?: string
@@ -307,6 +309,15 @@ export function MainPageCinematic({
 
   const youTubeId = getYouTubeVideoId(videoUrl)
   const vimeoId = getVimeoVideoId(videoUrl)
+
+  // Added Sep 2026: mobile was autoplaying the exact same 1.8MB/25s desktop
+  // hero video, downloaded fetchPriority="high" — the single biggest thing
+  // on the page, competing directly with everything needed to make the page
+  // usable. This is a separate, purpose-made clip for the mobile block only:
+  // 640x360, 6s loop, ~160KB (92% smaller) — same motion/energy, a fraction
+  // of the weight. Defaults to the compressed clip but falls back to the
+  // main videoUrl if this prop is ever cleared in Plasmic.
+  const mobileSource = mobileVideoUrl || videoUrl
 
   // FIX (Sep 2026): previously both the mobile AND desktop hero video blocks
   // below were always mounted in the DOM at the same time — Tailwind's
@@ -412,7 +423,7 @@ export function MainPageCinematic({
                 className="w-full h-full"
                 poster={videoPosterUrl}
               >
-                <source src={videoUrl} type="video/mp4" />
+                <source src={mobileSource} type="video/mp4" />
                 <img
                   src={videoPosterUrl || "/placeholder.svg"}
                   alt="Mountain landscape"

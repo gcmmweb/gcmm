@@ -8755,6 +8755,13 @@ PLASMIC.registerComponent(MainPageCinematic, {
       description:
         "MP4 file path (e.g. /clip_1080p.mp4), YouTube URL (e.g. https://youtu.be/XXXX), or Vimeo URL (e.g. https://vimeo.com/123456789). Videos will loop automatically.",
     },
+    mobileVideoUrl: {
+      type: "string",
+      displayName: "Mobile Background Video (MP4, lightweight)",
+      defaultValue: "/hero-loop-mobile.mp4",
+      description:
+        "Separate, smaller MP4 used only in the mobile hero (phones autoplay this instead of the full desktop video, since phones are on slower connections). Keep this well under 500KB. Leave blank to fall back to the main Background Video above.",
+    },
     videoPosterUrl: {
       type: "string",
       displayName: "Video Poster URL",
