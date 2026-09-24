@@ -90,6 +90,21 @@ const LEGACY_REDIRECTS: Record<string, string> = {
   "/wp-content/uploads/2024/03/gcmm-cad-8pg-nwltfeb2024-digital.pdf": "/newsletters",
   "/wp-content/uploads/2024/08/cdn-mm-summer2024digital.pdf": "/newsletters",
   "/wp-content/uploads/2025/05/gcmm-cdn-may-nwsl-digital.pdf": "/newsletters",
+  // Found via the Sep 2026 Search Console "Soft 404" report: more old
+  // newsletter/magazine PDFs, same pattern as the four above.
+  "/wp-content/uploads/2022/05/gcmm-cdn-nwsltr-may-2022-lite.pdf": "/newsletters",
+  "/wp-content/uploads/2022/11/gcmm-cdn-nov-2022-mag-lite.pdf": "/newsletters",
+  "/wp-content/uploads/2024/12/cdn-gcmm-janmagazine2025digital.pdf": "/newsletters",
+  "/wp-content/uploads/2025/02/gcmm-cdn-ukraineaid-digital.pdf": "/newsletters",
+  "/wp-content/uploads/2025/04/gcmm-cdn-april-2025lite.pdf": "/newsletters",
+  "/wp-content/uploads/2025/11/gcmm-cdn-ukraineupdate-dec2025-lite.pdf": "/newsletters",
+  "/wp-content/uploads/2026/02/gcmm-cdn-feb2026-lite.pdf": "/newsletters",
+  "/wp-content/uploads/2026/04/gcmm-cdn-april2026lite.pdf": "/newsletters",
+  // Old WordPress-era decade-by-decade history pages (e.g. /1980-1989,
+  // /2011-2020). That content now lives as one consolidated /history page,
+  // so route these old links there instead of a 404.
+  "/1980-1989": "/history",
+  "/2011-2020": "/history",
 };
 
 // The CMS database ID is not sensitive (it's a public project identifier).
