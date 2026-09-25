@@ -222,6 +222,7 @@ export function NavigationHeader({
             >
               <Link
                 href={homeUrl}
+                prefetch={false}
                 className="flex items-center hover:opacity-80 transition-opacity duration-200"
                 style={{ gap: `12px` }}
               >
@@ -295,6 +296,7 @@ export function NavigationHeader({
                           <Link
                             key={dropdownItem.label}
                             href={dropdownItem.url}
+                            prefetch={false}
                             className="block px-4 py-3 text-gray-800 hover:bg-gray-100 transition-colors text-sm"
                           >
                             {dropdownItem.label}
@@ -305,6 +307,7 @@ export function NavigationHeader({
                   ) : (
                     <Link
                       href={getNavigationItemUrl(item)}
+                      prefetch={false}
                       className={`transition-colors ${fontWeight} ${fontFamily} ${fontSize} tracking-wide whitespace-nowrap`}
                       style={{
                         color: hoveredItem === item ? hoverTextColor : textColor,
@@ -345,7 +348,7 @@ export function NavigationHeader({
                   animate={{ scale: 1 }}
                   transition={{ duration: 0.5, delay: 1.1, type: "spring", stiffness: 200 }}
                 >
-                  <Link href={donateUrl}>
+                  <Link href={donateUrl} prefetch={false}>
                     <Button
                       className={`cursor-pointer ${fontWeight} ${fontFamily} ${fontSize} tracking-wide`}
                       style={{
@@ -520,6 +523,7 @@ export function NavigationHeader({
                                     <Link
                                       key={dropdownItem.label}
                                       href={dropdownItem.url}
+                                      prefetch={false}
                                       className="block pl-12 pr-6 py-2 text-gray-700 hover:bg-gray-100 transition-colors text-sm"
                                       onClick={closeMobileMenu}
                                     >
@@ -533,6 +537,7 @@ export function NavigationHeader({
                         ) : (
                           <Link
                             href={getNavigationItemUrl(item)}
+                            prefetch={false}
                             className={`block px-6 py-3 text-gray-900 hover:bg-gray-50 hover:text-blue-900 transition-colors ${fontWeight} ${fontFamily} text-base`}
                             onClick={closeMobileMenu}
                           >
@@ -547,7 +552,7 @@ export function NavigationHeader({
                 {/* Mobile Donate Button */}
                 {showDonateButton && (
                   <div className="p-6 border-t border-gray-200">
-                    <Link href={donateUrl} onClick={closeMobileMenu}>
+                    <Link href={donateUrl} prefetch={false} onClick={closeMobileMenu}>
                       <Button
                         className={`w-full ${fontWeight} ${fontFamily} py-3 text-base`}
                         style={{
