@@ -439,6 +439,18 @@ export function MainPageCinematic({
                 fetchPriority="high"
                 className="w-full h-full"
                 poster={videoPosterUrl}
+                onEnded={(e) => {
+                  // SAFETY NET (Sep 2026): reported that the native `loop`
+                  // attribute doesn't always restart playback reliably on
+                  // some mobile browsers (iOS Chrome, and inconsistently
+                  // Safari). This only fires if the browser reaches a true
+                  // "ended" state without looping on its own -- if native
+                  // loop works, this never runs, so it can't conflict with
+                  // or double-trigger anything.
+                  const v = e.currentTarget
+                  v.currentTime = 0
+                  v.play().catch(() => {})
+                }}
               >
                 <source src={mobileSource} type="video/mp4" />
                 <img
@@ -487,6 +499,13 @@ export function MainPageCinematic({
               fetchPriority="high"
               className="w-full h-full object-cover"
               poster={videoPosterUrl}
+              onEnded={(e) => {
+                // SAFETY NET (Sep 2026): see matching comment on the mobile
+                // video above -- only fires if native loop fails.
+                const v = e.currentTarget
+                v.currentTime = 0
+                v.play().catch(() => {})
+              }}
             >
               <source src={videoUrl} type="video/mp4" />
               <img
