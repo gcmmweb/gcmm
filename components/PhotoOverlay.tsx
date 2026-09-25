@@ -201,6 +201,7 @@ export function PhotoOverlay({
             objectPosition: backgroundPosition,
           }}
           priority
+          fetchPriority="high"
           onError={(e) => {
             e.currentTarget.src = "/placeholder.svg?height=600&width=1200"
           }}
