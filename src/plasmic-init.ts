@@ -112,7 +112,12 @@ import { StaffCard } from "@/components/staff-card"
 
 import { JoinOurMissionCTA } from '@/components/join-our-mission-cta'
 
-import { SurveyForm } from "@/components/survey-form"
+// LAZY (Sep 2026): 31KB, not used on /50 (the TV campaign landing page) or
+// nav/header/footer/donation flow. Was loading in the shared bundle on
+// every Plasmic-driven page regardless of use, per real bundle analysis.
+const SurveyForm = dynamic(() =>
+  import("@/components/survey-form").then((m) => ({ default: m.SurveyForm }))
+);
 
 import { BlogPage } from "@/components/blog-page"
 
