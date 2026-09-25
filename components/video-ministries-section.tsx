@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { useState } from "react"
 import Link from "next/link"
 import { Play } from "lucide-react"
 
@@ -108,6 +108,12 @@ export const VideoMinistriesSection: React.FC<VideoMinistriesSectionProps> = ({
   reverseOnMobile = false,
 }) => {
   const youTubeId = getYouTubeVideoId(videoUrl)
+  // FACADE (Sep 2026): don't load the ~1.7MB YouTube player iframe until
+  // someone actually clicks play -- confirmed via DebugBear/PageSpeed that
+  // the eager iframe (even with autoplay=0) was costing real transfer size
+  // and main-thread CPU time on every page load, whether anyone watched
+  // the video or not.
+  const [isPlaying, setIsPlaying] = useState(false)
   const vimeoId = getVimeoVideoId(videoUrl)
   const isDirectVideo = !!(videoUrl && !youTubeId && !vimeoId)
 
@@ -201,13 +207,34 @@ export const VideoMinistriesSection: React.FC<VideoMinistriesSectionProps> = ({
               style={{ aspectRatio: videoAspectRatio, backgroundColor: "#000000" }}
             >
               {youTubeId ? (
-                <iframe
-                  src={`https://www.youtube.com/embed/${youTubeId}?autoplay=0&rel=0`}
-                  title="Video"
-                  className="absolute inset-0 w-full h-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
+                isPlaying ? (
+                  <iframe
+                    src={`https://www.youtube.com/embed/${youTubeId}?autoplay=1&rel=0`}
+                    title="Video"
+                    className="absolute inset-0 w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setIsPlaying(true)}
+                    aria-label="Play video"
+                    className="group absolute inset-0 w-full h-full cursor-pointer border-0 p-0"
+                  >
+                    <img
+                      src={`https://i.ytimg.com/vi/${youTubeId}/hqdefault.jpg`}
+                      alt=""
+                      loading="lazy"
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                    <span className="absolute inset-0 flex items-center justify-center bg-black/20 transition-colors group-hover:bg-black/30">
+                      <span className="flex h-16 w-16 items-center justify-center rounded-full bg-red-600 transition-transform group-hover:scale-110">
+                        <Play className="ml-1 h-7 w-7 fill-white text-white" />
+                      </span>
+                    </span>
+                  </button>
+                )
               ) : vimeoId ? (
                 <iframe
                   src={`https://player.vimeo.com/video/${vimeoId}?autoplay=0`}
