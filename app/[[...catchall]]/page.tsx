@@ -307,6 +307,34 @@ export async function generateStaticParams(): Promise<{ catchall?: string[] }[]>
 // pages with a resolved "slug" param, we instead look up that specific
 // article's own title/excerpt/coverImage from the CMS and use those, so
 // each article gets its own correct social-share preview.
+// Articles confirmed (Sep 2026) to be cross-published verbatim on
+// gcmediaministries.org (the US site). Used to add hreflang tags so
+// Google shows the right country's version instead of splitting ranking
+// signal between two self-canonicalizing copies of the same content.
+// To add a newly cross-published article later: add one line here.
+const US_CROSS_PUBLISHED_SLUGS: Record<string, string> = {
+  "convoy-of-mercy": "https://www.gcmediaministries.org/convoy-of-mercy/",
+  "god-is-at-work-in-israel": "https://www.gcmediaministries.org/god-is-at-work-in-israel/",
+  "gospel-buses-follow-jesus-footsteps": "https://www.gcmediaministries.org/gospel-buses-follow-jesus-footsteps/",
+  "in-unity-for-peace": "https://www.gcmediaministries.org/in-unity-for-peace/",
+  "israel-at-78": "https://www.gcmediaministries.org/israel-at-78/",
+  "messiah-in-israel": "https://www.gcmediaministries.org/messiah-in-israel/",
+  "national-prayer-breakfast-in-ukraine": "https://www.gcmediaministries.org/national-prayer-breakfast-in-ukraine/",
+  "recovery-from-trauma-israel": "https://www.gcmediaministries.org/recovery-from-trauma-israel/",
+  "russia-religious-freedom": "https://www.gcmediaministries.org/russia-religious-freedom/",
+  "standing-with-jewish-communities-in-a-time-of-war": "https://www.gcmediaministries.org/standing-with-jewish-communities-in-a-time-of-war/",
+  "the-gospel-still-reaches-iran": "https://www.gcmediaministries.org/the-gospel-still-reaches-iran/",
+  "trauma-evangelism-book-israel": "https://www.gcmediaministries.org/trauma-evangelism-book-israel/",
+  "trauma-recovery-book-ukraine-israel": "https://www.gcmediaministries.org/trauma-recovery-book-ukraine-israel/",
+  "ukraine-independence-day-2026": "https://www.gcmediaministries.org/ukraine-independence-day-2026/",
+  "celebration-service-surprises": "https://www.gcmediaministries.org/celebration-service-surprises/",
+  "moldova-media-campaign": "https://www.gcmediaministries.org/moldova-media-campaign/",
+  "national-radio-day-great-commission-media": "https://www.gcmediaministries.org/national-radio-day-great-commission-media/",
+  "ukraine-trauma-book": "https://www.gcmediaministries.org/ukraine-trauma-book/",
+  "ukraineaid-summer-2026": "https://www.gcmediaministries.org/ukraineaid-summer-2026/",
+  "war-in-the-middle-east": "https://www.gcmediaministries.org/war-in-the-middle-east/",
+};
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const resolvedParams = await params;
   const pathname = getPathname(resolvedParams?.catchall);
@@ -363,10 +391,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // regardless of what is or isn't set in Plasmic's Page Settings.
   const canonicalUrl = meta?.canonical || `https://www.gcmm.ca${pathname}`;
 
+  // If this article is one of the confirmed cross-published pieces, add
+  // hreflang tags pointing both directions (en-CA to this page, en-US to
+  // the matching gcmediaministries.org article) plus x-default.
+  const usUrl = slug ? US_CROSS_PUBLISHED_SLUGS[slug] : undefined;
+  const languageAlternates = usUrl
+    ? { "en-CA": canonicalUrl, "en-US": usUrl, "x-default": usUrl }
+    : undefined;
+
   return {
     title,
     description,
-    alternates: { canonical: canonicalUrl },
+    alternates: {
+      canonical: canonicalUrl,
+      ...(languageAlternates ? { languages: languageAlternates } : {}),
+    },
     openGraph: {
       title,
       description,
