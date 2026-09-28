@@ -3,6 +3,28 @@
 import { useState, useEffect } from 'react'
 import { Quote, ChevronLeft, ChevronRight } from 'lucide-react'
 
+// Only the site's actual brand fonts are offered here, so this component
+// can't accidentally pull in an extra Google Font the way a free-text
+// Tailwind class name could.
+const QUOTE_FONT_STACKS: Record<string, string> = {
+  Nunito: '"Nunito", sans-serif',
+  Poppins: '"Poppins", sans-serif',
+  Georgia: "Georgia, serif",
+  // The site's loaded web font is specifically the "Lexend Peta" variant,
+  // not the base "Lexend" family - matching that exactly avoids loading
+  // a second, separate Lexend font by mistake.
+  Lexend: '"Lexend Peta", sans-serif',
+}
+
+function shuffleArray<T>(array: T[]): T[] {
+  const result = [...array]
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[result[i], result[j]] = [result[j], result[i]]
+  }
+  return result
+}
+
 interface Testimonial {
   quote: string
   name: string
@@ -46,7 +68,7 @@ interface TestimonialSliderProps {
   quoteLineHeight?: string
   quoteFontWeight?: "normal" | "bold"
   quoteFontStyle?: "normal" | "italic"
-  quoteFont?: string
+  quoteFont?: "Nunito" | "Poppins" | "Georgia" | "Lexend"
 
   // Typography - Attribution
   nameFontSize?: string
@@ -81,6 +103,9 @@ interface TestimonialSliderProps {
   showDots?: boolean
   autoPlay?: boolean
   autoPlayInterval?: number
+  // Shuffles the testimonial order once per page load (client-side only).
+  // Off by default so existing usages keep their current fixed order.
+  randomizeOrder?: boolean
 
   // Read More Button
   // NOTE: showReadMore is now a MASTER on/off switch for the whole component.
@@ -155,7 +180,7 @@ export function TestimonialSlider({
   quoteLineHeight = "1.8",
   quoteFontWeight = "normal",
   quoteFontStyle = "normal",
-  quoteFont = "font-sans",
+  quoteFont = "Nunito",
 
   // Typography - Attribution
   nameFontSize = "1.125rem",
@@ -190,6 +215,7 @@ export function TestimonialSlider({
   showDots = true,
   autoPlay = false,
   autoPlayInterval = 5000,
+  randomizeOrder = false,
 
   // Read More Button (master switch + shared styling only — URL now lives per-testimony)
   showReadMore = false,
@@ -207,6 +233,19 @@ export function TestimonialSlider({
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isHovering, setIsHovering] = useState(false)
 
+  // Display order for the testimonials. Starts as the original CMS order
+  // (so the server render and the client's first render match, avoiding a
+  // hydration mismatch), then - if Randomize Order is on - gets shuffled
+  // client-side right after mount.
+  const [orderedTestimonials, setOrderedTestimonials] = useState(testimonials)
+
+  useEffect(() => {
+    setOrderedTestimonials(
+      randomizeOrder && testimonials.length > 1 ? shuffleArray(testimonials) : testimonials
+    )
+    setCurrentIndex(0)
+  }, [randomizeOrder, testimonials])
+
   // Auto-play functionality
   // FIX: this was previously `useState(() => {...})`, which is wrong for side effects.
   // useState's initializer runs once to compute a value — the cleanup function it
@@ -216,20 +255,20 @@ export function TestimonialSlider({
   // calls the returned cleanup function automatically on unmount / before re-running
   // the effect, so the timer is properly torn down instead of leaking.
   useEffect(() => {
-    if (autoPlay && testimonials.length > 1) {
+    if (autoPlay && orderedTestimonials.length > 1) {
       const interval = setInterval(() => {
-        setCurrentIndex((prev) => (prev + 1) % testimonials.length)
+        setCurrentIndex((prev) => (prev + 1) % orderedTestimonials.length)
       }, autoPlayInterval)
       return () => clearInterval(interval)
     }
-  }, [autoPlay, autoPlayInterval, testimonials.length])
+  }, [autoPlay, autoPlayInterval, orderedTestimonials.length])
 
   const goToNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % testimonials.length)
+    setCurrentIndex((prev) => (prev + 1) % orderedTestimonials.length)
   }
 
   const goToPrevious = () => {
-    setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length)
+    setCurrentIndex((prev) => (prev - 1 + orderedTestimonials.length) % orderedTestimonials.length)
   }
 
   const goToSlide = (index: number) => {
@@ -262,11 +301,11 @@ export function TestimonialSlider({
     }
   }
 
-  if (!testimonials || testimonials.length === 0) {
+  if (!orderedTestimonials || orderedTestimonials.length === 0) {
     return null
   }
 
-  const currentTestimonial = testimonials[currentIndex]
+  const currentTestimonial = orderedTestimonials[currentIndex]
 
   // Per-slide check: only render the button if this specific testimony has a URL
   const currentReadMoreUrl = currentTestimonial.readMoreUrl?.trim()
@@ -321,7 +360,7 @@ export function TestimonialSlider({
       >
         <div className="flex items-center testimonial-flex-container">
           {/* Left Arrow */}
-          {showArrows && testimonials.length > 1 && (
+          {showArrows && orderedTestimonials.length > 1 && (
             <button
               onClick={goToPrevious}
               className="flex-shrink-0 testimonial-arrow rounded-full transition-all hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2"
@@ -361,8 +400,9 @@ export function TestimonialSlider({
             )}
 
             <blockquote
-              className={`${quoteFont} mb-6`}
+              className="mb-6"
               style={{
+                fontFamily: QUOTE_FONT_STACKS[quoteFont] ?? QUOTE_FONT_STACKS.Nunito,
                 fontSize: quoteFontSize,
                 lineHeight: quoteLineHeight,
                 fontWeight: quoteFontWeight,
@@ -448,9 +488,9 @@ export function TestimonialSlider({
             )}
 
             {/* Dots Navigation */}
-            {showDots && testimonials.length > 1 && (
+            {showDots && orderedTestimonials.length > 1 && (
               <div className="flex gap-2 mt-8" style={{ justifyContent: alignment === "center" ? "center" : alignment === "right" ? "flex-end" : "flex-start" }}>
-                {testimonials.map((_, index) => (
+                {orderedTestimonials.map((_, index) => (
                   <button
                     key={index}
                     onClick={() => goToSlide(index)}
@@ -467,7 +507,7 @@ export function TestimonialSlider({
           </div>
 
           {/* Right Arrow */}
-          {showArrows && testimonials.length > 1 && (
+          {showArrows && orderedTestimonials.length > 1 && (
             <button
               onClick={goToNext}
               className="flex-shrink-0 testimonial-arrow rounded-full transition-all hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2"

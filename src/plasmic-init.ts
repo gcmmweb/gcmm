@@ -1169,6 +1169,13 @@ PLASMIC.registerComponent(TestimonialSlider, {
       description: "Time between slides in milliseconds (e.g., 5000 = 5 seconds)",
       section: "Navigation",
     },
+    randomizeOrder: {
+      type: "boolean",
+      displayName: "Randomize Order",
+      defaultValue: false,
+      description: "Show testimonials in a random order each time the page loads, instead of the order they're listed in below",
+      section: "Navigation",
+    },
 
     // Read More Button
     // NOTE: this is now just the master on/off switch + shared styling.
@@ -1318,10 +1325,11 @@ PLASMIC.registerComponent(TestimonialSlider, {
 
     // Typography - Quote
     quoteFont: {
-      type: "string",
+      type: "choice",
       displayName: "Quote Font Family",
-      defaultValue: "font-sans",
-      description: "Tailwind font class (e.g., font-serif, font-sans)",
+      options: ["Nunito", "Poppins", "Georgia", "Lexend"],
+      defaultValue: "Nunito",
+      description: "Limited to the site's brand fonts so this component can't accidentally load an extra Google Font.",
       section: "Typography - Quote",
     },
     quoteFontSize: {
