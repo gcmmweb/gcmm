@@ -260,6 +260,7 @@ export function TimelinePage({
                             <img
                               src={event.image || "/placeholder.svg?height=400&width=400"}
                               alt={`Ministry work in ${year}`}
+                              loading="lazy"
                               style={{
                                 width: "100%",
                                 height: "100%",
