@@ -532,6 +532,8 @@ export function StripeDonationPage({
           isMatching: selectedCampaign.isMatching,
           matchMultiplier: selectedCampaign.matchMultiplier,
           matchEmailText: selectedCampaign.matchEmailText,
+          // Internal code (e.g. "mcmc"). Goes to Stripe metadata only, never shown to donors.
+          campaignId: selectedCampaign.campaignId,
         }
       : undefined,
   }
@@ -612,13 +614,26 @@ export function StripeDonationPage({
     })
 
     // LIVE — redirects to the real thank-you page after a successful donation.
-    const params = new URLSearchParams()
-    if (redirectCampaignId) params.set("campaign", redirectCampaignId)
-    if (redirectAmount) params.set("amount", redirectAmount)
-    if (redirectFrequency) params.set("frequency", redirectFrequency)
-    if (redirectName) params.set("name", redirectName)
+    // The gift details travel in this tab's session storage, NOT the web address:
+    // that keeps the donor's name and the internal campaign ID out of the URL
+    // (and out of Google Analytics page addresses), and gives the thank-you page
+    // a Stripe payment ID so one gift is only ever counted once.
+    try {
+      const donationRecord = {
+        tx: result?.payment_intent_id || `local-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+        campaignId: redirectCampaignId || "",
+        campaignName: selectedCampaign?.name || "",
+        amount: Number(redirectAmount) || 0,
+        frequency: redirectFrequency || "one-time",
+        name: redirectName || "",
+      }
+      window.sessionStorage.setItem("gcmm_donation", JSON.stringify(donationRecord))
+    } catch {
+      // Storage blocked (e.g. strict private mode): the thank-you page simply
+      // shows its generic version and skips analytics. The gift itself is fine.
+    }
 
-    window.location.href = `/thank-you?${params.toString()}`
+    window.location.href = "/thank-you"
   }
 
   const handlePaymentError = (error: string) => {

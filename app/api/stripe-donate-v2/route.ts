@@ -162,6 +162,7 @@ interface CampaignData {
   matchMultiplier?: number // e.g. 2 = donation is doubled
   matchEmailText?: string // Customizable matched-amount message. Merge tags: {amount}, {matchedAmount}
   signatureTitleOverride?: string // Optional: overrides the global signature title for THIS campaign only (e.g. UkraineAid adds "| UkraineAid")
+  campaignId?: string // Internal short code (e.g. "mcmc"). Stored in Stripe metadata, never shown to donors.
 }
 
 interface EmailCustomization {
@@ -442,6 +443,10 @@ export async function POST(request: NextRequest) {
     }
 
     const campaignName = email_customization?.campaign?.name || "General Ministry Support"
+    // Comes from the browser, so keep it to safe characters and a sane length.
+    const campaignId = String(email_customization?.campaign?.campaignId || "")
+      .replace(/[^a-zA-Z0-9_-]/g, "")
+      .slice(0, 60)
 
     let paymentMethod
     try {
@@ -486,7 +491,7 @@ export async function POST(request: NextRequest) {
           },
           payment_method: payment_method_id,
           invoice_settings: { default_payment_method: payment_method_id },
-          metadata: { campaign: campaignName, account_id: account_id || "" },
+          metadata: { campaign: campaignName, campaign_id: campaignId, account_id: account_id || "" },
         })
 
         const orgName = email_customization?.organizationName || "Great Commission Media Ministries"
@@ -506,6 +511,7 @@ export async function POST(request: NextRequest) {
             frequency: "monthly",
             comment: comment || "",
             campaign: campaignName,
+            campaign_id: campaignId,
             account_id: account_id || "",
           },
         })
@@ -526,6 +532,7 @@ export async function POST(request: NextRequest) {
             frequency: "monthly",
             comment: comment || "",
             campaign: campaignName,
+            campaign_id: campaignId,
             account_id: account_id || "",
           },
         })
@@ -632,6 +639,7 @@ export async function POST(request: NextRequest) {
         frequency: frequency || "one-time",
         comment: comment || "",
         campaign: campaignName,
+        campaign_id: campaignId,
         account_id: account_id || "",
       },
       shipping: {

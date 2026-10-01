@@ -82,6 +82,8 @@ const LEGACY_REDIRECTS: Record<string, string> = {
   "/our-partners": "/about",
   // Found via the Sep 2026 Search Console "Not found (404)" report.
   "/news": "/news-stories",
+  // Old return address named in the payment code; the real page is /thank-you.
+  "/donation-success": "/thank-you",
   // Old WordPress newsletter PDFs still linked from past emails. The
   // newsletters page is their closest live equivalent.
   // NOTE: keys must be in getPathname()'s normalized form (lowercase, "_"
@@ -402,6 +404,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description,
+    // The thank-you page shouldn't appear in Google search results.
+    ...(pathname === "/thank-you" ? { robots: { index: false, follow: false } } : {}),
     alternates: {
       canonical: canonicalUrl,
       ...(languageAlternates ? { languages: languageAlternates } : {}),

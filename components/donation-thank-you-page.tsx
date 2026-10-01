@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { CheckCircle, Mail, Heart } from "lucide-react"
 
@@ -24,6 +24,17 @@ export interface DonationThankYouProps {
   newsletterUrl?: string
 }
 
+// What the donation form leaves in this browser tab (session storage) right
+// after a successful gift. It never appears in the web address.
+interface DonationRecord {
+  tx: string // Stripe payment ID — used so one gift is only counted once
+  campaignId: string
+  campaignName: string
+  amount: number
+  frequency: string
+  name: string
+}
+
 const FALLBACK_HEADLINE = "Your generosity is already at work."
 const FALLBACK_PHOTO = "/images/thank-you-default.jpg"
 const FALLBACK_COLOR = "#1D9E75"
@@ -39,10 +50,25 @@ export default function DonationThankYou({
   const searchParams = useSearchParams()
 
   // These come from the URL, e.g. /thank-you?campaign=ukraineaid&amount=50&frequency=monthly&name=Junita
-  const campaignId = searchParams?.get("campaign") ?? ""
-  const amount = searchParams?.get("amount") ?? ""
-  const frequency = searchParams?.get("frequency") ?? ""
-  const donorName = searchParams?.get("name") ?? ""
+  // Read the gift details the donation form left in this tab. Done in an
+  // effect (not during render) so the server and browser HTML always match.
+  const [record, setRecord] = useState<DonationRecord | null>(null)
+  useEffect(() => {
+    try {
+      const raw = window.sessionStorage.getItem("gcmm_donation")
+      if (raw) setRecord(JSON.parse(raw))
+    } catch {
+      // Storage unavailable or unreadable: just show the generic page.
+    }
+  }, [])
+
+  // Display values: the donation record when present; otherwise the old URL
+  // parameters (kept so old links / Studio preview still render). URL
+  // parameters are display-only — they are NEVER used for analytics.
+  const campaignId = record?.campaignId ?? searchParams?.get("campaign") ?? ""
+  const amount = record ? String(record.amount || "") : searchParams?.get("amount") ?? ""
+  const frequency = record?.frequency ?? searchParams?.get("frequency") ?? ""
+  const donorName = record?.name ?? searchParams?.get("name") ?? ""
 
   const matched = campaigns.find(
   (c) => c.campaignId && c.campaignId.toLowerCase() === campaignId.toLowerCase()
@@ -59,25 +85,57 @@ export default function DonationThankYou({
       }).format(Number(amount))
     : null
 
-  // Fires once per page load. This is what lets GA4 (and later, Google Ads
-  // via an imported conversion) see BOTH the dollar value AND which campaign
-  // it came from — the layout.tsx gtag config alone only sees a page view.
+  // Sends ONE standard GA4 "purchase" event per gift. Why this shape:
+  //  - Google Analytics loads lazily (after the page is idle), so we WAIT for
+  //    it (up to ~20s) instead of checking once and giving up.
+  //  - Only a real donation record from the form triggers it (a typed-in or
+  //    shared URL can't create fake donations).
+  //  - transaction_id (the Stripe payment ID) + a saved "already sent" flag
+  //    mean refreshing or revisiting the page never counts the gift twice.
+  //  - "purchase" with value + currency is what makes GA4 show dollar totals.
   useEffect(() => {
-    if (typeof window === "undefined") return
-    const gtag = (window as any).gtag
-    if (typeof gtag !== "function") return
-    if (!amount || !campaignId) return
+    if (!record || !record.tx || !(Number(record.amount) > 0)) return
+    const trackedKey = `gcmm_tracked_${record.tx}`
+    try {
+      if (window.localStorage.getItem(trackedKey)) return
+    } catch {
+      // Storage blocked: carry on; transaction_id still protects against repeats in GA4.
+    }
 
-    gtag("event", "donation_completed", {
-      value: Number(amount),
-      currency: "CAD",
-      campaign_id: campaignId,
-      frequency: frequency || "unknown",
-    })
-    // Only re-fire if the actual donation details change — not on every
-    // re-render — so a single page load only ever counts as one donation.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [amount, campaignId, frequency])
+    let tries = 0
+    const timer = window.setInterval(() => {
+      const gtag = (window as any).gtag
+      if (typeof gtag === "function") {
+        window.clearInterval(timer)
+        try {
+          if (window.localStorage.getItem(trackedKey)) return
+          window.localStorage.setItem(trackedKey, "1")
+        } catch {
+          // ignore
+        }
+        const value = Number(record.amount)
+        const id = record.campaignId || "general"
+        gtag("event", "purchase", {
+          transaction_id: record.tx,
+          value,
+          currency: "CAD",
+          items: [
+            {
+              item_id: id,
+              item_name: record.campaignName || id,
+              price: value,
+              quantity: 1,
+            },
+          ],
+          campaign_id: id,
+          frequency: record.frequency || "unknown",
+        })
+      } else if (++tries > 80) {
+        window.clearInterval(timer)
+      }
+    }, 250)
+    return () => window.clearInterval(timer)
+  }, [record])
 
   const frequencyLabel =
     frequency === "monthly" ? "Monthly" : frequency === "one-time" ? "One-time" : null
