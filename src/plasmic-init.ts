@@ -159,6 +159,8 @@ import { TextSection1 } from "@/components/TextSection1"
 
 import { ContentSection } from "@/components/ContentSection"
 
+import { CardGrid } from "@/components/CardGrid"
+
 import { TestimonialQuote } from "@/components/Testimonialquote"
 
 import { TestimonialSlider} from "@/components/Testimonialslider"
@@ -2078,6 +2080,264 @@ PLASMIC.registerComponent(ContentSection, {
     },
   },
   importPath: "./components/ContentSection",
+});
+
+PLASMIC.registerComponent(CardGrid, {
+  name: "CardGrid",
+  displayName: "Card Grid",
+  description:
+    "Optional heading block above a grid of cards. Add cards with + Add item. Marker can be numbers, icons or none. Leave any text blank and it disappears with no gap.",
+  props: {
+    className: {
+      type: "class",
+      displayName: "CSS Class",
+    },
+
+    // ---- Heading block (all optional) ----
+    eyebrow: {
+      type: "string",
+      displayName: "Eyebrow (small label above heading)",
+      section: "Heading block",
+    },
+    heading: {
+      type: "string",
+      displayName: "Heading",
+      section: "Heading block",
+    },
+    headingLevel: {
+      type: "choice",
+      displayName: "Heading level",
+      description:
+        "Use H2 for most sections. Card headings automatically sit one level below it.",
+      options: [
+        { value: "h1", label: "H1 (main page title)" },
+        { value: "h2", label: "H2 (section)" },
+        { value: "h3", label: "H3 (sub-section)" },
+      ],
+      defaultValue: "h2",
+      section: "Heading block",
+    },
+    lead: {
+      type: "string",
+      control: "large",
+      displayName: "Lead line (text under heading)",
+      section: "Heading block",
+    },
+
+    // ---- Cards ----
+    cards: {
+      type: "array",
+      displayName: "Cards",
+      description: "Click + Add item for each card. Each card is named by its heading.",
+      section: "Cards",
+      defaultValue: [
+        { heading: "Card heading", text: "Describe this card in a sentence or two." },
+        { heading: "Card heading", text: "Describe this card in a sentence or two." },
+        { heading: "Card heading", text: "Describe this card in a sentence or two." },
+      ],
+      itemType: {
+        type: "object",
+        nameFunc: (item: any) => item.heading || "New card",
+        fields: {
+          heading: {
+            type: "string",
+            displayName: "Heading",
+          },
+          text: {
+            type: "string",
+            control: "large",
+            displayName: "Text",
+          },
+          icon: {
+            type: "imageUrl",
+            displayName: "Icon (image or SVG file)",
+            description: "Only shown when Marker is set to Icon.",
+          },
+          link: {
+            type: "string",
+            displayName: "Link (optional)",
+            description: "Makes the whole card clickable. e.g. /donate or https://...",
+          },
+        },
+      },
+    },
+    marker: {
+      type: "choice",
+      displayName: "Marker",
+      description: "Number fills in 01, 02, 03 automatically. Icon uses each card's icon.",
+      options: [
+        { value: "number", label: "Number (01, 02, 03)" },
+        { value: "icon", label: "Icon" },
+        { value: "none", label: "None" },
+      ],
+      defaultValue: "number",
+      section: "Cards",
+    },
+
+    // ---- Layout ----
+    columns: {
+      type: "choice",
+      displayName: "Columns",
+      description: "Cards stack to one column on phones.",
+      options: [
+        { value: "1", label: "1" },
+        { value: "2", label: "2" },
+        { value: "3", label: "3" },
+      ],
+      defaultValue: "2",
+      section: "Layout",
+    },
+    hoverEffect: {
+      type: "choice",
+      displayName: "Hover effect",
+      description: "Light lift when a visitor hovers a card. Not shown on phones.",
+      options: [
+        { value: "lift", label: "Lift" },
+        { value: "none", label: "None" },
+      ],
+      defaultValue: "lift",
+      section: "Layout",
+    },
+    alignment: {
+      type: "choice",
+      displayName: "Text alignment",
+      options: [
+        { value: "left", label: "Left" },
+        { value: "center", label: "Center" },
+      ],
+      defaultValue: "left",
+      section: "Layout",
+    },
+    spaceY: {
+      type: "choice",
+      displayName: "Space above & below",
+      options: [
+        { value: "none", label: "None" },
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "large",
+      section: "Layout",
+    },
+    spaceX: {
+      type: "choice",
+      displayName: "Space left & right",
+      options: [
+        { value: "none", label: "None" },
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "medium",
+      section: "Layout",
+    },
+
+    // ---- Colors (pick a Style Token or any color; blank = automatic brand colors) ----
+    backgroundColor: {
+      type: "color",
+      displayName: "Background color",
+      description: "Blank = Soft Neutral",
+      section: "Colors",
+    },
+    cardColor: {
+      type: "color",
+      displayName: "Card color",
+      description: "Blank = white",
+      section: "Colors",
+    },
+    borderColor: {
+      type: "color",
+      displayName: "Card border color",
+      description: "Blank = soft navy line",
+      section: "Colors",
+    },
+    headingColor: {
+      type: "color",
+      displayName: "Heading color",
+      description: "Blank = Primary Blue",
+      section: "Colors",
+    },
+    textColor: {
+      type: "color",
+      displayName: "Text color",
+      description: "Blank = automatic",
+      section: "Colors",
+    },
+    eyebrowColor: {
+      type: "color",
+      displayName: "Eyebrow color",
+      description: "Blank = Primary Blue",
+      section: "Colors",
+    },
+    markerColor: {
+      type: "color",
+      displayName: "Marker circle color",
+      description: "Blank = light blue tint",
+      section: "Colors",
+    },
+    markerTextColor: {
+      type: "color",
+      displayName: "Marker number color",
+      description: "Blank = Primary Blue",
+      section: "Colors",
+    },
+
+    // ---- Text style ----
+    headingFont: {
+      type: "choice",
+      displayName: "Heading font",
+      options: [
+        { value: "georgia", label: "Georgia" },
+        { value: "nunito", label: "Nunito" },
+        { value: "poppins", label: "Poppins" },
+        { value: "lexend", label: "Lexend" },
+        { value: "site", label: "Site default" },
+      ],
+      defaultValue: "georgia",
+      section: "Text style",
+    },
+    headingSize: {
+      type: "choice",
+      displayName: "Heading size",
+      options: [
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "large",
+      section: "Text style",
+    },
+    headingWeight: {
+      type: "choice",
+      displayName: "Heading weight",
+      options: [
+        { value: "regular", label: "Regular" },
+        { value: "medium", label: "Medium" },
+        { value: "semibold", label: "Semibold" },
+        { value: "bold", label: "Bold" },
+      ],
+      defaultValue: "bold",
+      section: "Text style",
+    },
+    cardTitleFont: {
+      type: "choice",
+      displayName: "Card heading font",
+      options: [
+        { value: "site", label: "Site default (Nunito)" },
+        { value: "georgia", label: "Georgia" },
+        { value: "nunito", label: "Nunito" },
+        { value: "poppins", label: "Poppins" },
+        { value: "lexend", label: "Lexend" },
+      ],
+      defaultValue: "site",
+      section: "Text style",
+    },
+  },
+  importPath: "./components/CardGrid",
 });
 
 PLASMIC.registerComponent(Button, {
