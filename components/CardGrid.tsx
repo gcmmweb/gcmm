@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { formatInline } from "@/lib/inline-format"
+import { EYEBROW_STYLES, type EyebrowSizeChoice } from "@/lib/eyebrow-sizes"
 import type { CSSProperties, ReactNode } from "react"
 
 /**
@@ -84,6 +85,7 @@ interface CardGridProps {
   markerTextColor?: string
 
   // Text style
+  eyebrowSize?: EyebrowSizeChoice
   headingFont?: FontChoice
   headingSize?: SizeChoice
   headingWeight?: WeightChoice
@@ -202,6 +204,7 @@ export function CardGrid({
   markerTextColor,
 
   // Text style
+  eyebrowSize = "normal",
   headingFont = "georgia",
   headingSize = "large",
   headingWeight = "bold",
@@ -229,6 +232,7 @@ export function CardGrid({
   const colMarker = markerColor || "rgba(51, 104, 150, 0.12)"
   const colMarkerText = markerTextColor || BLUE
 
+  const eyebrowStyle = EYEBROW_STYLES[eyebrowSize] ?? EYEBROW_STYLES.normal
   const SectionHeading = headingLevel
   // Cards sit one level under the section heading; with no section heading
   // they take the section's own level so the page outline never skips a step.
@@ -423,9 +427,9 @@ export function CardGrid({
                 style={{
                   margin: 0,
                   color: colEyebrow,
-                  fontSize: "0.8125rem",
-                  fontWeight: 700,
-                  letterSpacing: "0.14em",
+                  fontSize: eyebrowStyle.fontSize,
+                  fontWeight: eyebrowStyle.fontWeight,
+                  letterSpacing: eyebrowStyle.letterSpacing,
                   textTransform: "uppercase",
                 }}
               >

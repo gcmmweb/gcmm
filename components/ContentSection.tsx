@@ -3,6 +3,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import { formatInline } from "@/lib/inline-format"
+import { EYEBROW_STYLES, type EyebrowSizeChoice } from "@/lib/eyebrow-sizes"
 
 /**
  * ContentSection — one reusable section for heroes and text blocks.
@@ -31,7 +32,6 @@ type Level = "h1" | "h2" | "h3"
 type Align = "left" | "center" | "right"
 type ImagePosition = "above" | "below" | "behind"
 type SizeChoice = "small" | "medium" | "large" | "xl"
-type EyebrowSizeChoice = "small" | "normal" | "large" | "xl"
 type WeightChoice = "regular" | "medium" | "semibold" | "bold"
 type FontChoice = "site" | "georgia" | "nunito" | "poppins" | "lexend"
 type SpaceChoice = "none" | "small" | "medium" | "large" | "xl"
@@ -111,20 +111,6 @@ const BODY_SIZES: Record<SizeChoice, string> = {
   medium: "clamp(1rem, 2vw, 1.125rem)",
   large: "clamp(1.0625rem, 2.2vw, 1.25rem)",
   xl: "clamp(1.125rem, 2.5vw, 1.375rem)",
-}
-
-// Eyebrow (small label above the heading). Named sizes so every page uses
-// the same scale. "normal" is the original size, so existing sections do
-// not change. Bigger sizes get a little less letter-spacing (and xl a
-// slightly lighter weight) so large uppercase text does not look stretched.
-const EYEBROW_STYLES: Record<
-  EyebrowSizeChoice,
-  { fontSize: string; fontWeight: number; letterSpacing: string }
-> = {
-  small: { fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.14em" },
-  normal: { fontSize: "0.8125rem", fontWeight: 700, letterSpacing: "0.14em" },
-  large: { fontSize: "clamp(1rem, 2vw, 1.5rem)", fontWeight: 700, letterSpacing: "0.1em" },
-  xl: { fontSize: "clamp(1.125rem, 3vw, 2rem)", fontWeight: 600, letterSpacing: "0.06em" },
 }
 
 const WEIGHTS: Record<WeightChoice, number> = {
