@@ -78,7 +78,7 @@ const PRIORITY_OVERRIDES: Record<
   "/about": { priority: 0.6, changeFrequency: "yearly" },
   "/history": { priority: 0.5, changeFrequency: "yearly" },
   "/team": { priority: 0.5, changeFrequency: "yearly" },
-  "/signup": { priority: 0.5, changeFrequency: "yearly" },
+  "/newsletters": { priority: 0.5, changeFrequency: "yearly" },
   "/videos": { priority: 0.5, changeFrequency: "monthly" },
   "/contact": { priority: 0.5, changeFrequency: "yearly" },
 };

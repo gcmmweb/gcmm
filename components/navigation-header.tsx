@@ -66,7 +66,7 @@ export function NavigationHeader({
     { label: "Pray", url: "/pray" },
     { label: "Donate", url: "/donate-involved" },
     { label: "News & Stories (Newsletter hub)", url: "/news-stories" },
-    { label: "Newsletter sign-up", url: "/newsletter-signup" },
+    { label: "Newsletter sign-up", url: "/newsletters" },
     { label: "Contact us", url: "/contact-us" },
   ],
   onMobileMenuClick,

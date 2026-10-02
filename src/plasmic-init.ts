@@ -7780,8 +7780,6 @@ PLASMIC.registerComponent(SurveyForm, {
   importPath: "./components/survey-form",
 });
 
-// Register the NewsletterSignup component
-
 PLASMIC.registerComponent(TermsAndConditionsPage, {
   name: "TermsAndConditionsPage",
   displayName: "Terms and Conditions Page",
@@ -9343,7 +9341,7 @@ PLASMIC.registerComponent(NavigationHeader, {
         { label: "Pray", url: "/pray" },
         { label: "Donate", url: "/donate-involved" },
         { label: "News & Stories (Newsletter hub)", url: "/news-stories" },
-        { label: "Newsletter sign-up", url: "/newsletter-signup" },
+        { label: "Newsletter sign-up", url: "/newsletters" },
         { label: "Contact us", url: "/contact-us" },
       ],
       displayName: "Get involved - Dropdown Items",
