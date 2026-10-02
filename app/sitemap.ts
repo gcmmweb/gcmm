@@ -2,6 +2,8 @@ import type { MetadataRoute } from "next";
 import { PLASMIC_SERVER } from "@/src/plasmic-init-server";
 import { isNoIndexPath } from "@/lib/indexing";
 
+export const revalidate = 3600;
+
 const baseUrl = "https://www.gcmm.ca";
 
 // Same CMS database/credentials pattern already used in
