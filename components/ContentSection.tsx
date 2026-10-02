@@ -2,6 +2,7 @@
 
 import Image from "next/image"
 import Link from "next/link"
+import { formatInline } from "@/lib/inline-format"
 
 /**
  * ContentSection — one reusable section for heroes and text blocks.
@@ -300,7 +301,7 @@ export function ContentSection({
               textTransform: "uppercase",
             }}
           >
-            {eyebrowText}
+            {formatInline(eyebrowText)}
           </p>
         )}
 
@@ -316,7 +317,7 @@ export function ContentSection({
               textWrap: "balance",
             }}
           >
-            {headingText}
+            {formatInline(headingText)}
           </Heading>
         )}
 
@@ -329,7 +330,7 @@ export function ContentSection({
               lineHeight: 1.45,
             }}
           >
-            {leadText}
+            {formatInline(leadText)}
           </p>
         )}
 
@@ -344,7 +345,7 @@ export function ContentSection({
               textWrap: "pretty",
             }}
           >
-            {bodyText}
+            {formatInline(bodyText)}
           </p>
         )}
 

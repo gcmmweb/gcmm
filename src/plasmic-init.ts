@@ -1803,11 +1803,13 @@ PLASMIC.registerComponent(ContentSection, {
     eyebrow: {
       type: "string",
       displayName: "Eyebrow (small label above heading)",
+      description: "Format words: **bold**, *italic*, ***bold and italic***. Example: Help **one person** discover the *mission*.",
       section: "Content",
     },
     heading: {
       type: "string",
       displayName: "Heading",
+      description: "Format words: **bold**, *italic*, ***bold and italic***. Example: Help **one person** discover the *mission*.",
       defaultValue: "Your heading here",
       section: "Content",
     },
@@ -1827,12 +1829,14 @@ PLASMIC.registerComponent(ContentSection, {
       type: "string",
       control: "large",
       displayName: "Lead line (large text under heading)",
+      description: "Format words: **bold**, *italic*, ***bold and italic***. Example: Help **one person** discover the *mission*.",
       section: "Content",
     },
     body: {
       type: "string",
       control: "large",
       displayName: "Body text",
+      description: "Format words: **bold**, *italic*, ***bold and italic***. Example: Help **one person** discover the *mission*.",
       section: "Content",
     },
 
@@ -2097,11 +2101,13 @@ PLASMIC.registerComponent(CardGrid, {
     eyebrow: {
       type: "string",
       displayName: "Eyebrow (small label above heading)",
+      description: "Format words: **bold**, *italic*, ***bold and italic***. Example: Help **one person** discover the *mission*.",
       section: "Heading block",
     },
     heading: {
       type: "string",
       displayName: "Heading",
+      description: "Format words: **bold**, *italic*, ***bold and italic***. Example: Help **one person** discover the *mission*.",
       section: "Heading block",
     },
     headingLevel: {
@@ -2121,6 +2127,7 @@ PLASMIC.registerComponent(CardGrid, {
       type: "string",
       control: "large",
       displayName: "Lead line (text under heading)",
+      description: "Format words: **bold**, *italic*, ***bold and italic***. Example: Help **one person** discover the *mission*.",
       section: "Heading block",
     },
 
@@ -2142,11 +2149,13 @@ PLASMIC.registerComponent(CardGrid, {
           heading: {
             type: "string",
             displayName: "Heading",
+            description: "Format words: **bold**, *italic*, ***bold and italic***. Example: Help **one person** discover the *mission*.",
           },
           text: {
             type: "string",
             control: "large",
             displayName: "Text",
+            description: "Format words: **bold**, *italic*, ***bold and italic***. Example: Help **one person** discover the *mission*.",
           },
           icon: {
             type: "imageUrl",

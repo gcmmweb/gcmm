@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { formatInline } from "@/lib/inline-format"
 import type { CSSProperties, ReactNode } from "react"
 
 /**
@@ -278,7 +279,7 @@ export function CardGrid({
               lineHeight: 1.3,
             }}
           >
-            {title}
+            {formatInline(title)}
           </CardTitle>
         )}
 
@@ -292,7 +293,7 @@ export function CardGrid({
               whiteSpace: "pre-line",
             }}
           >
-            {body}
+            {formatInline(body)}
           </p>
         )}
       </div>
@@ -375,7 +376,7 @@ export function CardGrid({
                   textTransform: "uppercase",
                 }}
               >
-                {eyebrowText}
+                {formatInline(eyebrowText)}
               </p>
             )}
 
@@ -391,7 +392,7 @@ export function CardGrid({
                   textWrap: "balance",
                 }}
               >
-                {headingText}
+                {formatInline(headingText)}
               </SectionHeading>
             )}
 
@@ -406,7 +407,7 @@ export function CardGrid({
                   textWrap: "pretty",
                 }}
               >
-                {leadText}
+                {formatInline(leadText)}
               </p>
             )}
           </div>
