@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { notFound, permanentRedirect } from "next/navigation";
 import { PLASMIC_SERVER } from "@/src/plasmic-init-server";
+import { isNoIndexPath } from "@/lib/indexing";
 import PlasmicClientPage from "./client-page";
 import type { StoryLink } from "@/components/all-stories-list";
 import { SiteUnavailableFallback } from "@/components/SiteUnavailableFallback";
@@ -404,8 +405,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description,
-    // The thank-you page shouldn't appear in Google search results.
-    ...(pathname === "/thank-you" ? { robots: { index: false, follow: false } } : {}),
+    // Test/sandbox pages (any "_" path segment) and listed pages such as
+    // /thank-you shouldn't appear in Google search results. See lib/indexing.ts.
+    ...(isNoIndexPath("/" + (resolvedParams?.catchall?.join("/") ?? "")) || isNoIndexPath(pathname)
+      ? { robots: { index: false, follow: false } }
+      : {}),
     alternates: {
       canonical: canonicalUrl,
       ...(languageAlternates ? { languages: languageAlternates } : {}),

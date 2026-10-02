@@ -93,7 +93,6 @@ import { AllStoriesList } from "@/components/all-stories-list"
 
 import { TransformerBlogPage } from "@/components/transformer-blog-page"
 
-import { TestimonialsSection } from "@/components/testimonials-section"
 
 // LAZY (Sep 2026): 139KB — the single largest component in this codebase,
 // over 3x the next biggest. Confirmed homepage-only section in Plasmic
@@ -109,7 +108,6 @@ import { StaffGrid } from "@/components/staff-grid"
 
 import { StaffCard } from "@/components/staff-card"
 
-import { JoinOurMissionCTA } from '@/components/join-our-mission-cta'
 
 // LAZY (Sep 2026): 31KB, not used on /50 (the TV campaign landing page) or
 // nav/header/footer/donation flow. Was loading in the shared bundle on
@@ -139,7 +137,6 @@ import { AboutUsPage } from "@/components/about-us"
 
 import { Ministry2} from "@/components/ministry2"
 
-import { StayConnected } from "@/components/StayConnected"
 
 import { RecentPosts } from "@/components/RecentPosts"
 
@@ -159,6 +156,10 @@ import { IconCard } from "@/components/icongrid"
 
 import { TextSection1 } from "@/components/TextSection1"
 
+import { ContentSection } from "@/components/ContentSection"
+
+import { CardGrid } from "@/components/CardGrid"
+
 import { TestimonialQuote } from "@/components/Testimonialquote"
 
 import { TestimonialSlider} from "@/components/Testimonialslider"
@@ -171,222 +172,11 @@ import { MinistryVideo } from "@/components/ministry-video"
 
 import { VideosGrid } from "@/components/videos-grid"
 
-import { MinistryFeatures } from "@/components/ministry-features"
 
 import { MinistriesSection } from "@/components/ministries-section"
 
 import { VideoMinistriesSection } from "@/components/video-ministries-section"
 
-PLASMIC.registerComponent(MinistryFeatures, {
-  name: "MinistryFeatures",
-  displayName: "Ministry Features Section",
-  description: "Displays five ministry feature cards with images, icons, and links",
-  props: {
-    feature1Title: {
-      type: "string",
-      displayName: "Feature 1 - Title",
-      defaultValue: "Mega City Media Campaigns",
-    },
-    feature1Subtitle: {
-      type: "string",
-      displayName: "Feature 1 - Subtitle",
-      defaultValue: "How do you evangelize to a whole city?",
-    },
-    feature1Description: {
-      type: "string",
-      displayName: "Feature 1 - Description",
-      defaultValue:
-        "Through 30-day Mega City Media Campaigns, GCMM partners with local churches to bring evangelism to an unprecedented scale—saturating cities with the Gospel through TV, radio, billboards, and digital media, fulfilling the Great Commission, one city at a time.",
-    },
-    feature1Image: {
-      type: "imageUrl",
-      displayName: "Feature 1 - Image",
-      defaultValue: "/city-media-campaign-billboard.jpg",
-    },
-    feature1Link: {
-      type: "string",
-      displayName: "Feature 1 - Link",
-      defaultValue: "/campaigns",
-    },
-    feature2Title: {
-      type: "string",
-      displayName: "Feature 2 - Title",
-      defaultValue: "Media Outreach to the 10/40 Window",
-    },
-    feature2Subtitle: {
-      type: "string",
-      displayName: "Feature 2 - Subtitle",
-      defaultValue: "Reaching Hearts Behind Closed Doors",
-    },
-    feature2Description: {
-      type: "string",
-      displayName: "Feature 2 - Description",
-      defaultValue:
-        "GCMM reaches millions in the Arabic world through satellite TV and social media—broadcasting in 7 languages via 18 satellites. With 1,300 programs produced annually and 200,000 monthly viewer interactions, we provide personal discipleship and partner with underground churches.",
-    },
-    feature2Image: {
-      type: "imageUrl",
-      displayName: "Feature 2 - Image",
-      defaultValue: "/satellite-dish-broadcasting.jpg",
-    },
-    feature2Link: {
-      type: "string",
-      displayName: "Feature 2 - Link",
-      defaultValue: "/arabic-ministry",
-    },
-    feature3Title: {
-      type: "string",
-      displayName: "Feature 3 - Title",
-      defaultValue: "Recovery from Trauma",
-    },
-    feature3Subtitle: {
-      type: "string",
-      displayName: "Feature 3 - Subtitle",
-      defaultValue: "Restoring Souls in a Wounded Nation",
-    },
-    feature3Description: {
-      type: "string",
-      displayName: "Feature 3 - Description",
-      defaultValue:
-        "GCMM's Christ-centred book, Recovery from Trauma, brings healing through Psalm 23, expert guidance, and real-life stories. Created with Ukrainian Christian psychologists, it offers peace to a hurting nation—meeting spiritual hunger with Gospel hope.",
-    },
-    feature3Image: {
-      type: "imageUrl",
-      displayName: "Feature 3 - Image",
-      defaultValue: "/healing-book-recovery.jpg",
-    },
-    feature3Link: {
-      type: "string",
-      displayName: "Feature 3 - Link",
-      defaultValue: "/trauma-recovery",
-    },
-    feature4Title: {
-      type: "string",
-      displayName: "Feature 4 - Title",
-      defaultValue: "Israel Jewish Ministry",
-    },
-    feature4Subtitle: {
-      type: "string",
-      displayName: "Feature 4 - Subtitle",
-      defaultValue: "Blessing Israel, Reaching the Jewish People",
-    },
-    feature4Description: {
-      type: "string",
-      displayName: "Feature 4 - Description",
-      defaultValue:
-        "GCMM is committed to blessing Israel and the Jewish people through media outreach, humanitarian aid, and education. We produce media for Jews in Israel and beyond, support refugees and new immigrants, and host healing camps for youth.",
-    },
-    feature4Image: {
-      type: "imageUrl",
-      displayName: "Feature 4 - Image",
-      defaultValue: "/jerusalem-israel-ministry.jpg",
-    },
-    feature4Link: {
-      type: "string",
-      displayName: "Feature 4 - Link",
-      defaultValue: "/israel-ministry",
-    },
-    feature5Title: {
-      type: "string",
-      displayName: "Feature 5 - Title",
-      defaultValue: "Humanitarian Aid to Ukraine",
-    },
-    feature5Subtitle: {
-      type: "string",
-      displayName: "Feature 5 - Subtitle",
-      defaultValue: "Faith in Action: Serving Ukraine in Its Darkest Hour",
-    },
-    feature5Description: {
-      type: "string",
-      displayName: "Feature 5 - Description",
-      defaultValue:
-        "In war-torn Ukraine, GCMM brings life-saving aid and the love of Christ. We've delivered over 5,000 tons of food, medical supplies, ambulances, and 12,000 wood-burning stoves, working through local churches and 400 chaplains.",
-    },
-    feature5Image: {
-      type: "imageUrl",
-      displayName: "Feature 5 - Image",
-      defaultValue: "/humanitarian-aid-supplies.jpg",
-    },
-    feature5Link: {
-      type: "string",
-      displayName: "Feature 5 - Link",
-      defaultValue: "/ukraine-aid",
-    },
-    cardBgColor: {
-      type: "string",
-      displayName: "Card Background Color",
-      defaultValue: "#ffffff",
-      description: "Hex color for feature card background",
-    },
-    cardBorderColor: {
-      type: "string",
-      displayName: "Card Border Color",
-      defaultValue: "#e5e7eb",
-      description: "Hex color for feature card border",
-    },
-    iconBgColor: {
-      type: "string",
-      displayName: "Icon Background Color",
-      defaultValue: "#f1f5f9",
-      description: "Hex color for icon background",
-    },
-    iconColor: {
-      type: "string",
-      displayName: "Icon Color",
-      defaultValue: "#334155",
-      description: "Hex color for icon",
-    },
-    titleColor: {
-      type: "string",
-      displayName: "Title Color",
-      defaultValue: "#0f172a",
-      description: "Hex color for card title",
-    },
-    subtitleColor: {
-      type: "string",
-      displayName: "Subtitle Color",
-      defaultValue: "#475569",
-      description: "Hex color for card subtitle",
-    },
-    descriptionColor: {
-      type: "string",
-      displayName: "Description Color",
-      defaultValue: "#475569",
-      description: "Hex color for card description",
-    },
-    buttonBorderColor: {
-      type: "string",
-      displayName: "Button Border Color",
-      defaultValue: "#e5e7eb",
-      description: "Hex color for button border",
-    },
-    buttonTextColor: {
-      type: "string",
-      displayName: "Button Text Color",
-      defaultValue: "#000000",
-      description: "Hex color for button text",
-    },
-    buttonHoverBgColor: {
-      type: "string",
-      displayName: "Button Hover Background Color",
-      defaultValue: "#f9fafb",
-      description: "Hex color for button background on hover",
-    },
-    sectionBgColor: {
-      type: "string",
-      displayName: "Section Background Color",
-      defaultValue: "#ffffff",
-      description: "Hex color for section background",
-    },
-    sectionPaddingY: {
-      type: "number",
-      displayName: "Section Vertical Padding",
-      defaultValue: 96,
-      description: "Vertical padding for section in pixels (e.g., 64, 96, 128)",
-    },
-  },
-  importPath: "./components/ministry-features",
-});
 
 PLASMIC.registerComponent(VideosGrid, {
   name: "VideosGrid",
@@ -1997,6 +1787,666 @@ PLASMIC.registerComponent(TextSection1, {
   importPath: "./components/TextSection1",
 });
 
+PLASMIC.registerComponent(ContentSection, {
+  name: "ContentSection",
+  displayName: "Content Section",
+  description:
+    "Hero or text block. Photo can go above, below or behind the text (with a color overlay). Leave any text field blank and it disappears with no gap.",
+  props: {
+    className: {
+      type: "class",
+      displayName: "CSS Class",
+    },
+
+    // ---- Content ----
+    eyebrow: {
+      type: "string",
+      displayName: "Eyebrow (small label above heading)",
+      description: "Format words: **bold**, *italic*, ***bold and italic***. Example: Help **one person** discover the *mission*.",
+      section: "Content",
+    },
+    heading: {
+      type: "string",
+      displayName: "Heading",
+      description: "Format words: **bold**, *italic*, ***bold and italic***. Example: Help **one person** discover the *mission*.",
+      defaultValue: "Your heading here",
+      section: "Content",
+    },
+    headingLevel: {
+      type: "choice",
+      displayName: "Heading level",
+      description: "Use H1 only ONCE per page (the main title). Everything else H2.",
+      options: [
+        { value: "h1", label: "H1 (main page title)" },
+        { value: "h2", label: "H2 (section)" },
+        { value: "h3", label: "H3 (sub-section)" },
+      ],
+      defaultValue: "h2",
+      section: "Content",
+    },
+    lead: {
+      type: "string",
+      control: "large",
+      displayName: "Lead line (large text under heading)",
+      description: "Format words: **bold**, *italic*, ***bold and italic***. Example: Help **one person** discover the *mission*.",
+      section: "Content",
+    },
+    body: {
+      type: "string",
+      control: "large",
+      displayName: "Body text",
+      description: "Format words: **bold**, *italic*, ***bold and italic***. Example: Help **one person** discover the *mission*.",
+      section: "Content",
+    },
+
+    // ---- Button (only shows when BOTH text and link are filled) ----
+    buttonText: {
+      type: "string",
+      displayName: "Button text",
+      section: "Button",
+    },
+    buttonLink: {
+      type: "string",
+      displayName: "Button link",
+      description: "e.g. /contact, #interest-form, mailto:info@gcmm.ca",
+      section: "Button",
+    },
+    trackingLabel: {
+      type: "string",
+      displayName: "Tracking label (optional)",
+      description: "Short name for analytics, e.g. ambassador-hero. Leave blank if not needed.",
+      section: "Button",
+    },
+
+    // ---- Image ----
+    showImage: {
+      type: "boolean",
+      displayName: "Show image",
+      defaultValue: true,
+      section: "Image",
+    },
+    image: {
+      type: "imageUrl",
+      displayName: "Image",
+      section: "Image",
+    },
+    imageAlt: {
+      type: "string",
+      displayName: "Image description (alt text)",
+      description: "Describe the photo for screen readers and Google. Leave blank only for decorative images.",
+      section: "Image",
+    },
+    imagePosition: {
+      type: "choice",
+      displayName: "Image position",
+      options: [
+        { value: "below", label: "Below the text" },
+        { value: "above", label: "Above the text" },
+        { value: "behind", label: "Behind the text (with overlay)" },
+      ],
+      defaultValue: "below",
+      section: "Image",
+    },
+    imageHeight: {
+      type: "choice",
+      displayName: "Image height",
+      options: [
+        { value: "short", label: "Short" },
+        { value: "medium", label: "Medium" },
+        { value: "tall", label: "Tall" },
+      ],
+      defaultValue: "medium",
+      section: "Image",
+    },
+    loadEagerly: {
+      type: "boolean",
+      displayName: "Photo is visible without scrolling",
+      description: "Turn on for ONE photo per page: the one you can see before scrolling. Leave off for all other photos.",
+      defaultValue: false,
+      section: "Image",
+    },
+    overlayColor: {
+      type: "color",
+      displayName: "Overlay color",
+      description: "Blank = brand navy",
+      hidden: (props) => props.imagePosition !== "behind",
+      section: "Image",
+    },
+    overlayStrength: {
+      type: "number",
+      displayName: "Overlay strength (0-100)",
+      min: 0,
+      max: 100,
+      defaultValue: 60,
+      hidden: (props) => props.imagePosition !== "behind",
+      section: "Image",
+    },
+
+    // ---- Layout ----
+    alignment: {
+      type: "choice",
+      displayName: "Text alignment",
+      options: ["left", "center", "right"],
+      defaultValue: "left",
+      section: "Layout",
+    },
+    contentWidth: {
+      type: "choice",
+      displayName: "Text width",
+      options: [
+        { value: "narrow", label: "Narrow" },
+        { value: "medium", label: "Medium" },
+        { value: "wide", label: "Wide" },
+      ],
+      defaultValue: "medium",
+      section: "Layout",
+    },
+    spaceY: {
+      type: "choice",
+      displayName: "Space above & below",
+      options: [
+        { value: "none", label: "None" },
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "large",
+      section: "Layout",
+    },
+    spaceTop: {
+      type: "choice",
+      displayName: "Space above (optional)",
+      description: "Changes only the top space. Leave unset to follow 'Space above & below'.",
+      options: [
+        { value: "none", label: "None" },
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      section: "Layout",
+    },
+    spaceBottom: {
+      type: "choice",
+      displayName: "Space below (optional)",
+      description: "Changes only the bottom space. Leave unset to follow 'Space above & below'.",
+      options: [
+        { value: "none", label: "None" },
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      section: "Layout",
+    },
+    spaceX: {
+      type: "choice",
+      displayName: "Space left & right",
+      options: [
+        { value: "none", label: "None" },
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "medium",
+      section: "Layout",
+    },
+
+    // ---- Colors (pick a Style Token or any color; blank = automatic brand colors) ----
+    backgroundColor: {
+      type: "color",
+      displayName: "Background color",
+      description: "Blank = white",
+      section: "Colors",
+    },
+    textColor: {
+      type: "color",
+      displayName: "Text color",
+      description: "Blank = automatic",
+      section: "Colors",
+    },
+    headingColor: {
+      type: "color",
+      displayName: "Heading color",
+      description: "Blank = Deep Navy (white when the photo is behind the text)",
+      section: "Colors",
+    },
+    eyebrowColor: {
+      type: "color",
+      displayName: "Eyebrow color",
+      description: "Blank = automatic",
+      section: "Colors",
+    },
+    buttonColor: {
+      type: "color",
+      displayName: "Button color",
+      description: "Blank = Amber",
+      section: "Colors",
+    },
+    buttonTextColor: {
+      type: "color",
+      displayName: "Button text color",
+      description: "Blank = Deep Navy",
+      section: "Colors",
+    },
+
+    // ---- Text style ----
+    headingFont: {
+      type: "choice",
+      displayName: "Heading font",
+      options: [
+        { value: "georgia", label: "Georgia" },
+        { value: "nunito", label: "Nunito" },
+        { value: "poppins", label: "Poppins" },
+        { value: "lexend", label: "Lexend" },
+        { value: "site", label: "Site default" },
+      ],
+      defaultValue: "georgia",
+      section: "Text style",
+    },
+    headingSize: {
+      type: "choice",
+      displayName: "Heading size",
+      options: [
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "large",
+      section: "Text style",
+    },
+    headingWeight: {
+      type: "choice",
+      displayName: "Heading weight",
+      options: [
+        { value: "regular", label: "Regular" },
+        { value: "medium", label: "Medium" },
+        { value: "semibold", label: "Semibold" },
+        { value: "bold", label: "Bold" },
+      ],
+      defaultValue: "bold",
+      section: "Text style",
+    },
+    bodyFont: {
+      type: "choice",
+      displayName: "Body font",
+      options: [
+        { value: "site", label: "Site default (Nunito)" },
+        { value: "georgia", label: "Georgia" },
+        { value: "nunito", label: "Nunito" },
+        { value: "poppins", label: "Poppins" },
+        { value: "lexend", label: "Lexend" },
+      ],
+      defaultValue: "site",
+      section: "Text style",
+    },
+    bodySize: {
+      type: "choice",
+      displayName: "Body size",
+      options: [
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "medium",
+      section: "Text style",
+    },
+    bodyWeight: {
+      type: "choice",
+      displayName: "Body weight",
+      options: [
+        { value: "regular", label: "Regular" },
+        { value: "medium", label: "Medium" },
+        { value: "semibold", label: "Semibold" },
+        { value: "bold", label: "Bold" },
+      ],
+      defaultValue: "regular",
+      section: "Text style",
+    },
+  },
+  importPath: "./components/ContentSection",
+});
+
+PLASMIC.registerComponent(CardGrid, {
+  name: "CardGrid",
+  displayName: "Card Grid",
+  description:
+    "Optional heading block above a grid of cards. Add cards with + Add item. Marker can be numbers, icons or none. Leave any text blank and it disappears with no gap.",
+  props: {
+    className: {
+      type: "class",
+      displayName: "CSS Class",
+    },
+
+    // ---- Heading block (all optional) ----
+    eyebrow: {
+      type: "string",
+      displayName: "Eyebrow (small label above heading)",
+      description: "Format words: **bold**, *italic*, ***bold and italic***. Example: Help **one person** discover the *mission*.",
+      section: "Heading block",
+    },
+    heading: {
+      type: "string",
+      displayName: "Heading",
+      description: "Format words: **bold**, *italic*, ***bold and italic***. Example: Help **one person** discover the *mission*.",
+      section: "Heading block",
+    },
+    headingLevel: {
+      type: "choice",
+      displayName: "Heading level",
+      description:
+        "Use H2 for most sections. Card headings automatically sit one level below it.",
+      options: [
+        { value: "h1", label: "H1 (main page title)" },
+        { value: "h2", label: "H2 (section)" },
+        { value: "h3", label: "H3 (sub-section)" },
+      ],
+      defaultValue: "h2",
+      section: "Heading block",
+    },
+    lead: {
+      type: "string",
+      control: "large",
+      displayName: "Lead line (text under heading)",
+      description: "Format words: **bold**, *italic*, ***bold and italic***. Example: Help **one person** discover the *mission*.",
+      section: "Heading block",
+    },
+
+    // ---- Cards ----
+    cards: {
+      type: "array",
+      displayName: "Cards",
+      description: "Click + Add item for each card. Each card is named by its heading.",
+      section: "Cards",
+      defaultValue: [
+        { heading: "Card heading", text: "Describe this card in a sentence or two." },
+        { heading: "Card heading", text: "Describe this card in a sentence or two." },
+        { heading: "Card heading", text: "Describe this card in a sentence or two." },
+      ],
+      itemType: {
+        type: "object",
+        nameFunc: (item: any) => item.heading || "New card",
+        fields: {
+          heading: {
+            type: "string",
+            displayName: "Heading",
+            description: "Format words: **bold**, *italic*, ***bold and italic***. Example: Help **one person** discover the *mission*.",
+          },
+          text: {
+            type: "string",
+            control: "large",
+            displayName: "Text",
+            description: "Format words: **bold**, *italic*, ***bold and italic***. Example: Help **one person** discover the *mission*.",
+          },
+          icon: {
+            type: "imageUrl",
+            displayName: "Icon (image or SVG file)",
+            description: "Only shown when Marker is set to Icon.",
+          },
+          link: {
+            type: "string",
+            displayName: "Link (optional)",
+            description: "Makes the whole card clickable. e.g. /donate or https://...",
+          },
+        },
+      },
+    },
+    marker: {
+      type: "choice",
+      displayName: "Marker",
+      description: "Number fills in 01, 02, 03 automatically. Icon uses each card's icon.",
+      options: [
+        { value: "number", label: "Number (01, 02, 03)" },
+        { value: "icon", label: "Icon" },
+        { value: "none", label: "None" },
+      ],
+      defaultValue: "number",
+      section: "Cards",
+    },
+    markerPosition: {
+      type: "choice",
+      displayName: "Marker position",
+      description: "Show the number or icon above the card text, or beside it on the left.",
+      options: [
+        { value: "above", label: "Above the text" },
+        { value: "beside", label: "Beside the text (left)" },
+      ],
+      defaultValue: "above",
+      section: "Cards",
+    },
+
+    // ---- Layout ----
+    columns: {
+      type: "choice",
+      displayName: "Columns",
+      description: "Cards stack to one column on phones.",
+      options: [
+        { value: "1", label: "1" },
+        { value: "2", label: "2" },
+        { value: "3", label: "3" },
+      ],
+      defaultValue: "2",
+      section: "Layout",
+    },
+    hoverEffect: {
+      type: "choice",
+      displayName: "Hover effect",
+      description: "Light lift when a visitor hovers a card. Not shown on phones.",
+      options: [
+        { value: "lift", label: "Lift" },
+        { value: "none", label: "None" },
+      ],
+      defaultValue: "lift",
+      section: "Layout",
+    },
+    alignment: {
+      type: "choice",
+      displayName: "Text alignment",
+      options: [
+        { value: "left", label: "Left" },
+        { value: "center", label: "Center" },
+      ],
+      defaultValue: "left",
+      section: "Layout",
+    },
+    contentWidth: {
+      type: "choice",
+      displayName: "Heading block width",
+      description: "How wide the eyebrow, heading and lead line can run. Cards always use the full width.",
+      options: [
+        { value: "narrow", label: "Narrow" },
+        { value: "medium", label: "Medium" },
+        { value: "wide", label: "Wide" },
+      ],
+      defaultValue: "medium",
+      section: "Layout",
+    },
+    spaceY: {
+      type: "choice",
+      displayName: "Space above & below",
+      options: [
+        { value: "none", label: "None" },
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "large",
+      section: "Layout",
+    },
+    spaceTop: {
+      type: "choice",
+      displayName: "Space above (optional)",
+      description: "Changes only the top space. Leave unset to follow 'Space above & below'.",
+      options: [
+        { value: "none", label: "None" },
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      section: "Layout",
+    },
+    spaceBottom: {
+      type: "choice",
+      displayName: "Space below (optional)",
+      description: "Changes only the bottom space. Leave unset to follow 'Space above & below'.",
+      options: [
+        { value: "none", label: "None" },
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      section: "Layout",
+    },
+    spaceX: {
+      type: "choice",
+      displayName: "Space left & right",
+      options: [
+        { value: "none", label: "None" },
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "medium",
+      section: "Layout",
+    },
+
+    // ---- Colors (pick a Style Token or any color; blank = automatic brand colors) ----
+    backgroundColor: {
+      type: "color",
+      displayName: "Background color",
+      description: "Blank = Soft Neutral",
+      section: "Colors",
+    },
+    cardColor: {
+      type: "color",
+      displayName: "Card color",
+      description: "Blank = white",
+      section: "Colors",
+    },
+    borderColor: {
+      type: "color",
+      displayName: "Card border color",
+      description: "Blank = soft navy line",
+      section: "Colors",
+    },
+    headingColor: {
+      type: "color",
+      displayName: "Heading color",
+      description: "Blank = Deep Navy",
+      section: "Colors",
+    },
+    textColor: {
+      type: "color",
+      displayName: "Lead line color",
+      description: "Color of the lead line under the heading. Blank = automatic",
+      section: "Colors",
+    },
+    cardHeadingColor: {
+      type: "color",
+      displayName: "Card heading color",
+      description: "Color of each card's heading (Pray, Share...). Blank = Deep Navy",
+      section: "Colors",
+    },
+    cardTextColor: {
+      type: "color",
+      displayName: "Card text color",
+      description: "Color of the text inside each card. Blank = automatic",
+      section: "Colors",
+    },
+    eyebrowColor: {
+      type: "color",
+      displayName: "Eyebrow color",
+      description: "Blank = Primary Blue",
+      section: "Colors",
+    },
+    markerColor: {
+      type: "color",
+      displayName: "Marker circle color",
+      description: "Blank = light blue tint",
+      section: "Colors",
+    },
+    markerTextColor: {
+      type: "color",
+      displayName: "Marker number color",
+      description: "Blank = Primary Blue",
+      section: "Colors",
+    },
+
+    // ---- Text style ----
+    headingFont: {
+      type: "choice",
+      displayName: "Heading font",
+      options: [
+        { value: "georgia", label: "Georgia" },
+        { value: "nunito", label: "Nunito" },
+        { value: "poppins", label: "Poppins" },
+        { value: "lexend", label: "Lexend" },
+        { value: "site", label: "Site default" },
+      ],
+      defaultValue: "georgia",
+      section: "Text style",
+    },
+    headingSize: {
+      type: "choice",
+      displayName: "Heading size",
+      options: [
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "large",
+      section: "Text style",
+    },
+    headingWeight: {
+      type: "choice",
+      displayName: "Heading weight",
+      options: [
+        { value: "regular", label: "Regular" },
+        { value: "medium", label: "Medium" },
+        { value: "semibold", label: "Semibold" },
+        { value: "bold", label: "Bold" },
+      ],
+      defaultValue: "bold",
+      section: "Text style",
+    },
+    cardTitleFont: {
+      type: "choice",
+      displayName: "Card heading font",
+      options: [
+        { value: "site", label: "Site default (Nunito)" },
+        { value: "georgia", label: "Georgia" },
+        { value: "nunito", label: "Nunito" },
+        { value: "poppins", label: "Poppins" },
+        { value: "lexend", label: "Lexend" },
+      ],
+      defaultValue: "site",
+      section: "Text style",
+    },
+    cardTextSize: {
+      type: "choice",
+      displayName: "Card text size",
+      options: [
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "medium",
+      section: "Text style",
+    },
+  },
+  importPath: "./components/CardGrid",
+});
+
 PLASMIC.registerComponent(Button, {
   name: "Button",
   displayName: "Button",
@@ -3497,107 +3947,6 @@ PLASMIC.registerComponent(RecentPosts, {
   importPath: "./components/RecentPosts",
 });
 
-PLASMIC.registerComponent(StayConnected, {
-  name: "StayConnected",
-  displayName: "Stay Connected",
-  description: "Newsletter signup section with optional name field and customizable styling",
-  props: {
-    className: {
-      type: "string",
-      displayName: "Class Name",
-      description: "Additional CSS classes",
-    },
-
-    title: {
-      type: "string",
-      displayName: "Title",
-      defaultValue: "Stay Connected With Us",
-    },
-    description: {
-      type: "string",
-      displayName: "Description",
-      defaultValue: "Subscribe to our newsletter and never miss an update on our latest content.",
-    },
-    
-    showNameField: {
-      type: "boolean",
-      displayName: "Show Name Field",
-      defaultValue: true,
-      description: "Display the name input field",
-    },
-    namePlaceholder: {
-      type: "string",
-      displayName: "Name Placeholder",
-      defaultValue: "Enter your name",
-      description: "Placeholder text for name field",
-    },
-    emailPlaceholder: {
-      type: "string",
-      displayName: "Email Placeholder",
-      defaultValue: "Enter your email",
-      description: "Placeholder text for email field",
-    },
-    buttonText: {
-      type: "string",
-      displayName: "Button Text",
-      defaultValue: "Subscribe",
-    },
-
-    backgroundColor: {
-      type: "string",
-      displayName: "Background Color",
-      defaultValue: "#ffffff",
-      description: "Section background color",
-    },
-    titleColor: {
-      type: "string",
-      displayName: "Title Color",
-      defaultValue: "#1f2937",
-    },
-    descriptionColor: {
-      type: "string",
-      displayName: "Description Color",
-      defaultValue: "#4b5563",
-    },
-    inputBackground: {
-      type: "string",
-      displayName: "Input Background",
-      defaultValue: "#ffffff",
-    },
-    inputBorderColor: {
-      type: "string",
-      displayName: "Input Border Color",
-      defaultValue: "#e5e7eb",
-    },
-    inputTextColor: {
-      type: "string",
-      displayName: "Input Text Color",
-      defaultValue: "#1f2937",
-    },
-    buttonBackground: {
-      type: "string",
-      displayName: "Button Background",
-      defaultValue: "#2563eb",
-    },
-    buttonHoverBackground: {
-      type: "string",
-      displayName: "Button Hover Background",
-      defaultValue: "#1d4ed8",
-    },
-    buttonTextColor: {
-      type: "string",
-      displayName: "Button Text Color",
-      defaultValue: "#ffffff",
-    },
-
-    sectionPaddingY: {
-      type: "string",
-      displayName: "Section Padding Y",
-      defaultValue: "80px",
-    },
-  },
-  importPath: "./components/StayConnected",
-});
 
 PLASMIC.registerComponent(Ministry2, {
   name: "Ministry2",
@@ -8011,219 +8360,6 @@ PLASMIC.registerComponent(MainPageCinematic, {
   importPath: "./components/main-page-cinematic",
 });
 
-PLASMIC.registerComponent(JoinOurMissionCTA, {
-  name: "JoinOurMissionCTA",
-  displayName: "Join Our Mission CTA",
-  description: "A newsletter signup section for joining the mission with customizable colors and content",
-  props: {
-    className: {
-      type: "class",
-      displayName: "CSS Class",
-      description: "Custom CSS classes for styling in Plasmic",
-    },
-
-    // Colors
-    backgroundColor: {
-      type: "string",
-      displayName: "Background Color",
-      defaultValue: "#0f172a",
-      description: "Hex color for section background (e.g., #0f172a, #1e293b)",
-    },
-    titleColor: {
-      type: "string",
-      displayName: "Title Color",
-      defaultValue: "#ffffff",
-      description: "Hex color for title text",
-    },
-    highlightColor: {
-      type: "string",
-      displayName: "Highlight Color",
-      defaultValue: "#ffffff",
-      description: "Hex color for highlighted title text",
-    },
-    descriptionColor: {
-      type: "string",
-      displayName: "Description Color",
-      defaultValue: "#e2e8f0",
-      description: "Hex color for description text",
-    },
-
-    inputBgColor: {
-      type: "string",
-      displayName: "Input Background Color",
-      defaultValue: "#1e293b",
-      description: "Hex color for input field backgrounds",
-    },
-    inputBorderColor: {
-      type: "string",
-      displayName: "Input Border Color",
-      defaultValue: "#334155",
-      description: "Hex color for input field borders",
-    },
-    inputTextColor: {
-      type: "string",
-      displayName: "Input Text Color",
-      defaultValue: "#ffffff",
-      description: "Hex color for input field text",
-    },
-    inputPlaceholderColor: {
-      type: "string",
-      displayName: "Input Placeholder Color",
-      defaultValue: "#94a3b8",
-      description: "Hex color for input field placeholder text",
-    },
-    labelColor: {
-      type: "string",
-      displayName: "Label Color",
-      defaultValue: "#e2e8f0",
-      description: "Hex color for form labels",
-    },
-
-    buttonBgColor: {
-      type: "string",
-      displayName: "Button Background Color",
-      defaultValue: "#ffffff",
-      description: "Hex color for button background",
-    },
-    buttonTextColor: {
-      type: "string",
-      displayName: "Button Text Color",
-      defaultValue: "#000000",
-      description: "Hex color for button text",
-    },
-    buttonHoverBgColor: {
-      type: "string",
-      displayName: "Button Hover Background Color",
-      defaultValue: "#e5e5e5",
-      description: "Hex color for button background on hover",
-    },
-
-    // Spacing & Layout
-    paddingY: {
-      type: "number",
-      displayName: "Vertical Padding",
-      defaultValue: 96,
-      description: "Vertical padding for the section in pixels (e.g., 64, 96, 128)",
-    },
-    paddingX: {
-      type: "number",
-      displayName: "Horizontal Padding",
-      defaultValue: 24,
-      description: "Horizontal padding for the section in pixels (e.g., 16, 24, 32)",
-    },
-    maxWidth: {
-      type: "string",
-      displayName: "Max Width",
-      defaultValue: "640px",
-      description: "Maximum width of content container (e.g., 640px, 768px, 1024px)",
-    },
-    fullBleed: {
-      type: "boolean",
-      displayName: "Full Bleed",
-      defaultValue: false,
-      description: "Enable full bleed layout (extends to edges)",
-    },
-
-    ctaTitle: {
-      type: "string",
-      displayName: "CTA Title",
-      defaultValue: "Join Our",
-      description: "First part of the CTA title",
-    },
-    ctaHighlight: {
-      type: "string",
-      displayName: "CTA Highlight",
-      defaultValue: "Mission",
-      description: "Highlighted part of the CTA title",
-    },
-    ctaDescription: {
-      type: "string",
-      displayName: "CTA Description",
-      defaultValue:
-        "Subscribe to our newsletter to receive updates on our global ministry work, testimonies from the field, and ways you can be part of spreading the Gospel worldwide.",
-      description: "Description text for the newsletter signup",
-    },
-
-    firstNameLabel: {
-      type: "string",
-      displayName: "First Name Label",
-      defaultValue: "First Name",
-      description: "Label for first name field",
-    },
-    firstNamePlaceholder: {
-      type: "string",
-      displayName: "First Name Placeholder",
-      defaultValue: "John",
-      description: "Placeholder for first name field",
-    },
-    lastNameLabel: {
-      type: "string",
-      displayName: "Last Name Label",
-      defaultValue: "Last Name",
-      description: "Label for last name field",
-    },
-    lastNamePlaceholder: {
-      type: "string",
-      displayName: "Last Name Placeholder",
-      defaultValue: "Doe",
-      description: "Placeholder for last name field",
-    },
-    emailLabel: {
-      type: "string",
-      displayName: "Email Label",
-      defaultValue: "Email Address",
-      description: "Label for email field",
-    },
-    emailPlaceholder: {
-      type: "string",
-      displayName: "Email Placeholder",
-      defaultValue: "john@example.com",
-      description: "Placeholder for email field",
-    },
-
-    buttonText: {
-      type: "string",
-      displayName: "Button Text",
-      defaultValue: "Subscribe to Newsletter",
-      description: "Text for the submit button",
-    },
-    buttonSubmittingText: {
-      type: "string",
-      displayName: "Button Submitting Text",
-      defaultValue: "Subscribing...",
-      description: "Text shown while submitting",
-    },
-
-    successTitle: {
-      type: "string",
-      displayName: "Success Title",
-      defaultValue: "Thank You!",
-      description: "Title shown after successful submission",
-    },
-    successMessage: {
-      type: "string",
-      displayName: "Success Message",
-      defaultValue:
-        "Check your email to confirm your subscription. We'll keep you updated on our ministry work and global outreach efforts.",
-      description: "Message shown after successful submission",
-    },
-
-    privacyText: {
-      type: "string",
-      displayName: "Privacy Text",
-      defaultValue: "We respect your privacy. Unsubscribe at any time.",
-      description: "Privacy notice text below form",
-    },
-    mailchimpUrl: {
-      type: "string",
-      displayName: "Mailchimp Form URL",
-      defaultValue:
-        "https://GCMM.us4.list-manage.com/subscribe/post?u=318fc9b1880100b326b3ddf87&amp;id=b03a1478c0&amp;f_id=00f81feaf0",
-      description: "Your Mailchimp form submission URL",
-    },
-  },
-  importPath: "./components/join-our-mission-cta",
-});
 
 
 PLASMIC.registerComponent(OtherWaysToGive, {
@@ -16006,568 +16142,6 @@ surinameLearnMoreUrl: {
 
 
 // Register the Testimonials Section component
-PLASMIC.registerComponent(TestimonialsSection, {
-  name: "TestimonialsSection",
-  description: "A highly customizable testimonials and impact stories section for ministry organizations",
-  props: {
-    className: {
-      type: "class",
-      displayName: "Custom CSS Classes",
-      description: "Additional CSS classes for custom styling and full bleed layouts",
-    },
-    
-    // Layout Configuration
-    layout: {
-      type: "choice",
-      displayName: "Layout Style",
-      options: ["grid", "carousel", "masonry", "featured"],
-      defaultValue: "grid",
-      description: "Choose the layout style for testimonials display",
-      section: "Layout",
-    },
-    columns: {
-      type: "choice",
-      displayName: "Grid Columns",
-      options: [1, 2, 3, 4],
-      defaultValue: 2,
-      description: "Number of columns in grid layout",
-      section: "Layout",
-    },
-    
-    // Section Visibility
-    showHeader: {
-      type: "boolean",
-      displayName: "Show Header Section",
-      defaultValue: true,
-      description: "Whether to display the header section with title and description",
-      section: "Visibility",
-    },
-    showStats: {
-      type: "boolean",
-      displayName: "Show Statistics",
-      defaultValue: true,
-      description: "Whether to display the impact statistics section",
-      section: "Visibility",
-    },
-    showCTA: {
-      type: "boolean",
-      displayName: "Show Call-to-Action",
-      defaultValue: true,
-      description: "Whether to display the call-to-action section at the bottom",
-      section: "Visibility",
-    },
-    
-    // Header Content
-    headerTitle: {
-      type: "string",
-      displayName: "Header Title",
-      defaultValue: "Stories of Impact",
-      description: "Main title for the testimonials section",
-      section: "Header Content",
-    },
-    headerSubtitle: {
-      type: "string",
-      displayName: "Header Subtitle",
-      defaultValue: "Transforming Communities Worldwide",
-      description: "Subtitle text displayed below the main title",
-      section: "Header Content",
-    },
-    headerDescription: {
-      type: "string",
-      displayName: "Header Description",
-      defaultValue: "See how Great Commission Media Ministries is partnering with local churches and organizations to share the Gospel through strategic media campaigns and compassionate outreach.",
-      description: "Detailed description text for the header section",
-      section: "Header Content",
-    },
-    
-    stats: {
-      type: "object",
-      displayName: "Statistics Data",
-      defaultValue: [
-        { value: "45+", label: "Countries Reached" },
-        { value: "2M+", label: "Lives Impacted" },
-        { value: "500+", label: "Partner Churches" },
-        { value: "25", label: "Years of Ministry" },
-      ],
-      description: "Array of statistics with value and label properties",
-      section: "Statistics",
-    },
-    
-    // Call-to-Action Content
-    ctaTitle: {
-      type: "string",
-      displayName: "CTA Title",
-      defaultValue: "Ready to Make an Impact?",
-      description: "Title for the call-to-action section",
-      section: "Call to Action",
-    },
-    ctaDescription: {
-      type: "string",
-      displayName: "CTA Description",
-      defaultValue: "Join thousands of ministry leaders who are transforming their communities through strategic media ministry.",
-      description: "Description text for the call-to-action section",
-      section: "Call to Action",
-    },
-    ctaButtonText: {
-      type: "string",
-      displayName: "CTA Button Text",
-      defaultValue: "Partner With Us",
-      description: "Text displayed on the call-to-action button",
-      section: "Call to Action",
-    },
-    ctaButtonUrl: {
-      type: "string",
-      displayName: "CTA Button URL",
-      defaultValue: "#contact",
-      description: "URL for the call-to-action button link",
-      section: "Call to Action",
-    },
-    
-    // Testimonies
-    showTestimony1: {
-      type: "boolean",
-      displayName: "Show Testimony 1",
-      defaultValue: true,
-      section: "Testimony 1",
-    },
-    testimony1Name: {
-      type: "string",
-      displayName: "Name",
-      defaultValue: "Sarah Chen",
-      section: "Testimony 1",
-      hidden: (props: any) => !props.showTestimony1,
-    },
-    testimony1Title: {
-      type: "string",
-      displayName: "Title",
-      defaultValue: "Ministry Leader",
-      section: "Testimony 1",
-      hidden: (props: any) => !props.showTestimony1,
-    },
-    testimony1Organization: {
-      type: "string",
-      displayName: "Organization",
-      defaultValue: "Hope Church International",
-      section: "Testimony 1",
-      hidden: (props: any) => !props.showTestimony1,
-    },
-    testimony1Location: {
-      type: "string",
-      displayName: "Location",
-      defaultValue: "Singapore",
-      section: "Testimony 1",
-      hidden: (props: any) => !props.showTestimony1,
-    },
-    testimony1Quote: {
-      type: "string",
-      displayName: "Quote",
-      defaultValue: "Through GCM's media campaigns, we've seen a 300% increase in engagement with our community outreach programs. Their strategic approach to digital ministry has transformed how we connect with people.",
-      section: "Testimony 1",
-      hidden: (props: any) => !props.showTestimony1,
-    },
-    testimony1Statistic: {
-      type: "string",
-      displayName: "Statistic",
-      defaultValue: "300%",
-      section: "Testimony 1",
-      hidden: (props: any) => !props.showTestimony1,
-    },
-    testimony1StatisticLabel: {
-      type: "string",
-      displayName: "Statistic Label",
-      defaultValue: "increase in engagement",
-      section: "Testimony 1",
-      hidden: (props: any) => !props.showTestimony1,
-    },
-
-    showTestimony2: {
-      type: "boolean",
-      displayName: "Show Testimony 2",
-      defaultValue: true,
-      section: "Testimony 2",
-    },
-    testimony2Name: {
-      type: "string",
-      displayName: "Name",
-      defaultValue: "Pastor Michael Rodriguez",
-      section: "Testimony 2",
-      hidden: (props: any) => !props.showTestimony2,
-    },
-    testimony2Title: {
-      type: "string",
-      displayName: "Title",
-      defaultValue: "Senior Pastor",
-      section: "Testimony 2",
-      hidden: (props: any) => !props.showTestimony2,
-    },
-    testimony2Organization: {
-      type: "string",
-      displayName: "Organization",
-      defaultValue: "Nueva Vida Church",
-      section: "Testimony 2",
-      hidden: (props: any) => !props.showTestimony2,
-    },
-    testimony2Location: {
-      type: "string",
-      displayName: "Location",
-      defaultValue: "Mexico City, Mexico",
-      section: "Testimony 2",
-      hidden: (props: any) => !props.showTestimony2,
-    },
-    testimony2Quote: {
-      type: "string",
-      displayName: "Quote",
-      defaultValue: "The impact has been incredible. What once took months of planning now happens in weeks, and our message reaches thousands more people across Latin America.",
-      section: "Testimony 2",
-      hidden: (props: any) => !props.showTestimony2,
-    },
-    testimony2Statistic: {
-      type: "string",
-      displayName: "Statistic",
-      defaultValue: "15,000+",
-      section: "Testimony 2",
-      hidden: (props: any) => !props.showTestimony2,
-    },
-    testimony2StatisticLabel: {
-      type: "string",
-      displayName: "Statistic Label",
-      defaultValue: "people reached monthly",
-      section: "Testimony 2",
-      hidden: (props: any) => !props.showTestimony2,
-    },
-
-    showTestimony3: {
-      type: "boolean",
-      displayName: "Show Testimony 3",
-      defaultValue: true,
-      section: "Testimony 3",
-    },
-    testimony3Name: {
-      type: "string",
-      displayName: "Name",
-      defaultValue: "Dr. Amara Okafor",
-      section: "Testimony 3",
-      hidden: (props: any) => !props.showTestimony3,
-    },
-    testimony3Title: {
-      type: "string",
-      displayName: "Title",
-      defaultValue: "Director of Missions",
-      section: "Testimony 3",
-      hidden: (props: any) => !props.showTestimony3,
-    },
-    testimony3Organization: {
-      type: "string",
-      displayName: "Organization",
-      defaultValue: "African Gospel Network",
-      section: "Testimony 3",
-      hidden: (props: any) => !props.showTestimony3,
-    },
-    testimony3Location: {
-      type: "string",
-      displayName: "Location",
-      defaultValue: "Lagos, Nigeria",
-      section: "Testimony 3",
-      hidden: (props: any) => !props.showTestimony3,
-    },
-    testimony3Quote: {
-      type: "string",
-      displayName: "Quote",
-      defaultValue: "GCM's culturally sensitive approach to media ministry has helped us share the Gospel effectively across 12 African nations. The results speak for themselves.",
-      section: "Testimony 3",
-      hidden: (props: any) => !props.showTestimony3,
-    },
-    testimony3Statistic: {
-      type: "string",
-      displayName: "Statistic",
-      defaultValue: "12",
-      section: "Testimony 3",
-      hidden: (props: any) => !props.showTestimony3,
-    },
-    testimony3StatisticLabel: {
-      type: "string",
-      displayName: "Statistic Label",
-      defaultValue: "nations impacted",
-      section: "Testimony 3",
-      hidden: (props: any) => !props.showTestimony3,
-    },
-
-    showTestimony4: {
-      type: "boolean",
-      displayName: "Show Testimony 4",
-      defaultValue: true,
-      section: "Testimony 4",
-    },
-    testimony4Name: {
-      type: "string",
-      displayName: "Name",
-      defaultValue: "Rev. James Thompson",
-      section: "Testimony 4",
-      hidden: (props: any) => !props.showTestimony4,
-    },
-    testimony4Title: {
-      type: "string",
-      displayName: "Title",
-      defaultValue: "Missionary",
-      section: "Testimony 4",
-      hidden: (props: any) => !props.showTestimony4,
-    },
-    testimony4Organization: {
-      type: "string",
-      displayName: "Organization",
-      defaultValue: "Global Harvest Ministry",
-      section: "Testimony 4",
-      hidden: (props: any) => !props.showTestimony4,
-    },
-    testimony4Location: {
-      type: "string",
-      displayName: "Location",
-      defaultValue: "Mumbai, India",
-      section: "Testimony 4",
-      hidden: (props: any) => !props.showTestimony4,
-    },
-    testimony4Quote: {
-      type: "string",
-      displayName: "Quote",
-      defaultValue: "The training and resources provided have equipped our local teams to create compelling content that resonates with our communities. We've seen unprecedented growth.",
-      section: "Testimony 4",
-      hidden: (props: any) => !props.showTestimony4,
-    },
-    testimony4Statistic: {
-      type: "string",
-      displayName: "Statistic",
-      defaultValue: "85%",
-      section: "Testimony 4",
-      hidden: (props: any) => !props.showTestimony4,
-    },
-    testimony4StatisticLabel: {
-      type: "string",
-      displayName: "Statistic Label",
-      defaultValue: "growth in local participation",
-      section: "Testimony 4",
-      hidden: (props: any) => !props.showTestimony4,
-    },
-    
-    // Colors
-    backgroundColor: {
-      type: "color",
-      displayName: "Background Color",
-      defaultValue: "#0f172a",
-      description: "Color for section background",
-      section: "Colors",
-    },
-    headerTextColor: {
-      type: "color",
-      displayName: "Header Text Color",
-      defaultValue: "#ffffff",
-      description: "Color for header text",
-      section: "Colors",
-    },
-    cardBackgroundColor: {
-      type: "color",
-      displayName: "Card Background Color",
-      defaultValue: "#1e293b",
-      description: "Color for testimonial card background",
-      section: "Colors",
-    },
-    cardTextColor: {
-      type: "color",
-      displayName: "Card Quote Text Color",
-      defaultValue: "#f1f5f9",
-      description: "Color for testimonial quote text",
-      section: "Colors",
-    },
-    accentColor: {
-      type: "color",
-      displayName: "Accent Color",
-      defaultValue: "#fbbf24",
-      description: "Color for accent elements like statistics",
-      section: "Colors",
-    },
-    borderColor: {
-      type: "color",
-      displayName: "Border Color",
-      defaultValue: "#334155",
-      description: "Color for card borders",
-      section: "Colors",
-    },
-    nameColor: {
-      type: "color",
-      displayName: "Name Color",
-      defaultValue: "#ffffff",
-      description: "Color for person's name (e.g., Sarah Chen)",
-      section: "Colors - Card Details",
-    },
-    titleColor: {
-      type: "color",
-      displayName: "Title Color",
-      defaultValue: "#fbbf24",
-      description: "Color for person's title (e.g., Ministry Leader)",
-      section: "Colors - Card Details",
-    },
-    organizationColor: {
-      type: "color",
-      displayName: "Organization Color",
-      defaultValue: "#94a3b8",
-      description: "Color for organization name (e.g., Hope Church International)",
-      section: "Colors - Card Details",
-    },
-    locationColor: {
-      type: "color",
-      displayName: "Location Color",
-      defaultValue: "#64748b",
-      description: "Color for location (e.g., Singapore)",
-      section: "Colors - Card Details",
-    },
-    
-    // Typography - Fonts
-    headerFont: {
-      type: "choice",
-      displayName: "Header Font Family",
-      options: [
-        { value: "sans", label: "Sans Serif (System)" },
-        { value: "serif", label: "Serif (Georgia)" },
-        { value: "mono", label: "Monospace" },
-        { value: "inter", label: "Inter" },
-        { value: "roboto", label: "Roboto" },
-        { value: "open-sans", label: "Open Sans" },
-        { value: "lato", label: "Lato" },
-        { value: "montserrat", label: "Montserrat" },
-        { value: "poppins", label: "Poppins" },
-        { value: "playfair", label: "Playfair Display" },
-        { value: "merriweather", label: "Merriweather" },
-      ],
-      defaultValue: "sans",
-      description: "Font family for headers",
-      section: "Typography - Fonts",
-    },
-    bodyFont: {
-      type: "choice",
-      displayName: "Body Font Family",
-      options: [
-        { value: "sans", label: "Sans Serif (System)" },
-        { value: "serif", label: "Serif (Georgia)" },
-        { value: "mono", label: "Monospace" },
-        { value: "inter", label: "Inter" },
-        { value: "roboto", label: "Roboto" },
-        { value: "open-sans", label: "Open Sans" },
-        { value: "lato", label: "Lato" },
-        { value: "montserrat", label: "Montserrat" },
-        { value: "poppins", label: "Poppins" },
-      ],
-      defaultValue: "sans",
-      description: "Font family for body text and quotes",
-      section: "Typography - Fonts",
-    },
-    nameFont: {
-      type: "choice",
-      displayName: "Name Font Family",
-      options: [
-        { value: "sans", label: "Sans Serif (System)" },
-        { value: "serif", label: "Serif (Georgia)" },
-        { value: "mono", label: "Monospace" },
-        { value: "inter", label: "Inter" },
-        { value: "roboto", label: "Roboto" },
-        { value: "open-sans", label: "Open Sans" },
-        { value: "lato", label: "Lato" },
-        { value: "montserrat", label: "Montserrat" },
-        { value: "poppins", label: "Poppins" },
-        { value: "playfair", label: "Playfair Display" },
-        { value: "merriweather", label: "Merriweather" },
-      ],
-      defaultValue: "sans",
-      description: "Font family for person names on cards",
-      section: "Typography - Fonts",
-    },
-    
-    // Typography - Sizes
-    headerFontSize: {
-      type: "number",
-      displayName: "Header Font Size (px)",
-      defaultValue: 48,
-      description: "Font size for main header in pixels",
-      section: "Typography - Sizes",
-    },
-    subtitleFontSize: {
-      type: "number",
-      displayName: "Subtitle Font Size (px)",
-      defaultValue: 20,
-      description: "Font size for subtitle text in pixels",
-      section: "Typography - Sizes",
-    },
-    bodyFontSize: {
-      type: "number",
-      displayName: "Body Font Size (px)",
-      defaultValue: 16,
-      description: "Font size for body text in pixels",
-      section: "Typography - Sizes",
-    },
-    cardTitleFontSize: {
-      type: "number",
-      displayName: "Card Name Font Size (px)",
-      defaultValue: 18,
-      description: "Font size for testimonial card names in pixels",
-      section: "Typography - Sizes",
-    },
-    statValueFontSize: {
-      type: "number",
-      displayName: "Stat Value Font Size (px)",
-      defaultValue: 36,
-      description: "Font size for statistic values in pixels",
-      section: "Typography - Sizes",
-    },
-    statLabelFontSize: {
-      type: "number",
-      displayName: "Stat Label Font Size (px)",
-      defaultValue: 14,
-      description: "Font size for statistic labels in pixels",
-      section: "Typography - Sizes",
-    },
-    
-    // Visual Elements
-    showQuoteIcon: {
-      type: "boolean",
-      displayName: "Show Quote Icons",
-      defaultValue: true,
-      description: "Whether to display quote icons on testimonial cards",
-      section: "Visual Elements",
-    },
-    showStatistics: {
-      type: "boolean",
-      displayName: "Show Individual Statistics",
-      defaultValue: true,
-      description: "Whether to display individual statistics on testimonial cards",
-      section: "Visual Elements",
-    },
-    
-    // Card Styling
-    cardStyle: {
-      type: "choice",
-      displayName: "Card Style",
-      options: ["minimal", "bordered", "shadow", "elevated"],
-      defaultValue: "elevated",
-      description: "Visual style for testimonial cards",
-      section: "Card Style",
-    },
-    
-    // Animation & Interaction
-    enableHover: {
-      type: "boolean",
-      displayName: "Enable Hover Effects",
-      defaultValue: true,
-      description: "Whether to enable hover animations on cards",
-      section: "Animation",
-    },
-    animationDelay: {
-      type: "number",
-      displayName: "Animation Delay (ms)",
-      defaultValue: 0,
-      description: "Delay before animations start in milliseconds",
-      section: "Animation",
-    },
-  },
-  importPath: "./components/testimonials-section",
-});
 
 PLASMIC.registerComponent(MinistriesSection, {
   name: "MinistriesSection",

@@ -207,6 +207,9 @@ async function sendConfirmationEmail(
     const orgEmail = ec?.organizationEmail || "info@gcmm.ca"
     const orgAddress = ec?.organizationAddress || "PO Box 14006, Abbotsford, BC V2T 0B4"
     const charityNumber = ec?.organizationCharityNumber || "82864 9467 RR0001"
+    const orgWebsite = "https://www.gcmm.ca"
+    // Tags visits that come from the receipt email so Google Analytics can count them
+    const orgWebsiteLink = `${orgWebsite}/?utm_source=receipt&utm_medium=email&utm_campaign=donation-receipt`
     const signatureName = ec?.signatureName || "Dr. Hannu Haukka"
     // Per-campaign override takes priority (e.g. UkraineAid adds "| UkraineAid"),
     // falls back to the shared global title otherwise.
@@ -313,7 +316,8 @@ async function sendConfirmationEmail(
               </p>
               <p style="color: #94a3b8; margin: 0; font-size: 13px; line-height: 1.5;">
                 Registered Canadian Charity: ${escapeHtml(charityNumber)}<br>
-                ${escapeHtml(orgAddress)}
+                ${escapeHtml(orgAddress)}<br>
+                <a href="${escapeHtml(orgWebsiteLink)}" style="color: #336896; text-decoration: underline;">www.gcmm.ca</a>
               </p>
             </div>
           </div>
