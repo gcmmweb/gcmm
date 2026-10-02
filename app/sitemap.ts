@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { PLASMIC_SERVER } from "@/src/plasmic-init-server";
+import { isNoIndexPath } from "@/lib/indexing";
 
 const baseUrl = "https://www.gcmm.ca";
 
@@ -44,17 +45,8 @@ async function fetchAllArticleSlugs(): Promise<string[]> {
 //     out of search results — if indexed, a visitor could land on it
 //     directly from Google and trigger the donation-tracking pixel without
 //     an actual donation happening, corrupting conversion data.
-const EXCLUDED_PATHS = new Set<string>([
-  "/archive-news-old",
-  "/testpage-2",
-  "/news-stories-archive-ignore",
-  "/donate-old-archieve",
-  "/test",
-  "/archive-signup",
-  "/-ministries",
-  "/only-believe",
-  "/thank-you",
-]);
+// The list of excluded paths now lives in lib/indexing.ts (shared with the
+// noindex meta tag in app/[[...catchall]]/page.tsx).
 
 // GCMM convention (Plasmic has no draft/unpublish feature): a path segment
 // starting with "_" (e.g. /impact/_ethiopia) marks a campaign/page that is
@@ -62,9 +54,6 @@ const EXCLUDED_PATHS = new Set<string>([
 // previously /impact/_ethiopia was listed here, inviting it to be indexed.
 // Launching a page = renaming it without the underscore; it then appears in
 // the sitemap automatically.
-function isUnpublishedPath(path: string): boolean {
-  return path.split("/").some((segment) => segment.startsWith("_"));
-}
 
 // Hand-tuned priority/frequency for the pages that matter most. Any real
 // page not listed here (dynamic Plasmic pages, CMS articles) still gets
@@ -108,7 +97,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // belong in a sitemap) and the confirmed archive/test/not-ready pages.
     plasmicPaths = pageModules
       .map((mod) => mod.path)
-      .filter((path) => !path.includes("[") && !EXCLUDED_PATHS.has(path) && !isUnpublishedPath(path));
+      .filter((path) => !path.includes("[") && !isNoIndexPath(path));
   } catch (err) {
     console.warn("Sitemap: failed to fetch Plasmic pages:", err);
   }
@@ -116,7 +105,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const articleSlugs = await fetchAllArticleSlugs();
   const articlePaths = articleSlugs
     .map((slug) => `/${slug}`)
-    .filter((path) => !EXCLUDED_PATHS.has(path) && !isUnpublishedPath(path));
+    .filter((path) => !isNoIndexPath(path));
 
   const allPaths = Array.from(new Set([...plasmicPaths, ...articlePaths]));
 
