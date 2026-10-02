@@ -30,6 +30,7 @@ const PAGE_MAX_WIDTH = "1280px"
 type Level = "h1" | "h2" | "h3"
 type CardLevel = "h1" | "h2" | "h3" | "h4"
 type Align = "left" | "center"
+type WidthChoice = "narrow" | "medium" | "wide"
 type MarkerChoice = "none" | "number" | "icon"
 type ColumnsChoice = "1" | "2" | "3"
 type HoverChoice = "lift" | "none"
@@ -60,6 +61,7 @@ interface CardGridProps {
   columns?: ColumnsChoice
   hoverEffect?: HoverChoice
   alignment?: Align
+  contentWidth?: WidthChoice
 
   // Spacing
   spaceY?: SpaceChoice
@@ -71,6 +73,8 @@ interface CardGridProps {
   borderColor?: string
   headingColor?: string
   textColor?: string
+  cardHeadingColor?: string
+  cardTextColor?: string
   eyebrowColor?: string
   markerColor?: string
   markerTextColor?: string
@@ -127,6 +131,12 @@ const COLUMN_CLASSES: Record<ColumnsChoice, string> = {
   "3": "grid-cols-1 md:grid-cols-2 lg:grid-cols-3",
 }
 
+const CONTENT_WIDTHS: Record<WidthChoice, string> = {
+  narrow: "640px",
+  medium: "800px",
+  wide: "1100px",
+}
+
 const NEXT_LEVEL: Record<Level, CardLevel> = {
   h1: "h2",
   h2: "h3",
@@ -158,6 +168,7 @@ export function CardGrid({
   columns = "2",
   hoverEffect = "lift",
   alignment = "left",
+  contentWidth = "medium",
 
   // Spacing
   spaceY = "large",
@@ -169,6 +180,8 @@ export function CardGrid({
   borderColor,
   headingColor,
   textColor,
+  cardHeadingColor,
+  cardTextColor,
   eyebrowColor,
   markerColor,
   markerTextColor,
@@ -194,6 +207,8 @@ export function CardGrid({
   const colBorder = borderColor || "rgba(31, 45, 85, 0.12)"
   const colHeading = headingColor || BLUE
   const colText = textColor || SLATE
+  const colCardHeading = cardHeadingColor || NAVY
+  const colCardText = cardTextColor || SLATE
   const colEyebrow = eyebrowColor || BLUE
   const colMarker = markerColor || "rgba(51, 104, 150, 0.12)"
   const colMarkerText = markerTextColor || BLUE
@@ -272,7 +287,7 @@ export function CardGrid({
           <CardTitle
             style={{
               margin: 0,
-              color: NAVY,
+              color: colCardHeading,
               fontFamily: FONT_STACKS[cardTitleFont],
               fontSize: "clamp(1.125rem, 2vw, 1.375rem)",
               fontWeight: 700,
@@ -287,7 +302,7 @@ export function CardGrid({
           <p
             style={{
               margin: title ? "0.5rem 0 0" : 0,
-              color: colText,
+              color: colCardText,
               fontSize: "1rem",
               lineHeight: 1.65,
               whiteSpace: "pre-line",
@@ -360,7 +375,7 @@ export function CardGrid({
               alignItems: centered ? "center" : "flex-start",
               textAlign: centered ? "center" : "left",
               gap: "clamp(0.75rem, 1.5vw, 1.25rem)",
-              maxWidth: "800px",
+              maxWidth: CONTENT_WIDTHS[contentWidth],
               marginLeft: centered ? "auto" : 0,
               marginRight: centered ? "auto" : 0,
             }}

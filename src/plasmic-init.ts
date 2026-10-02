@@ -2217,6 +2217,18 @@ PLASMIC.registerComponent(CardGrid, {
       defaultValue: "left",
       section: "Layout",
     },
+    contentWidth: {
+      type: "choice",
+      displayName: "Heading block width",
+      description: "How wide the eyebrow, heading and lead line can run. Cards always use the full width.",
+      options: [
+        { value: "narrow", label: "Narrow" },
+        { value: "medium", label: "Medium" },
+        { value: "wide", label: "Wide" },
+      ],
+      defaultValue: "medium",
+      section: "Layout",
+    },
     spaceY: {
       type: "choice",
       displayName: "Space above & below",
@@ -2271,8 +2283,20 @@ PLASMIC.registerComponent(CardGrid, {
     },
     textColor: {
       type: "color",
-      displayName: "Text color",
-      description: "Blank = automatic",
+      displayName: "Lead line color",
+      description: "Color of the lead line under the heading. Blank = automatic",
+      section: "Colors",
+    },
+    cardHeadingColor: {
+      type: "color",
+      displayName: "Card heading color",
+      description: "Color of each card's heading (Pray, Share...). Blank = Deep Navy",
+      section: "Colors",
+    },
+    cardTextColor: {
+      type: "color",
+      displayName: "Card text color",
+      description: "Color of the text inside each card. Blank = automatic",
       section: "Colors",
     },
     eyebrowColor: {
