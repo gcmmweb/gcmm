@@ -157,6 +157,8 @@ import { IconCard } from "@/components/icongrid"
 
 import { TextSection1 } from "@/components/TextSection1"
 
+import { ContentSection } from "@/components/ContentSection"
+
 import { TestimonialQuote } from "@/components/Testimonialquote"
 
 import { TestimonialSlider} from "@/components/Testimonialslider"
@@ -1782,6 +1784,300 @@ PLASMIC.registerComponent(TextSection1, {
     },
   },
   importPath: "./components/TextSection1",
+});
+
+PLASMIC.registerComponent(ContentSection, {
+  name: "ContentSection",
+  displayName: "Content Section",
+  description:
+    "Hero or text block. Photo can go above, below or behind the text (with a color overlay). Leave any text field blank and it disappears with no gap.",
+  props: {
+    className: {
+      type: "class",
+      displayName: "CSS Class",
+    },
+
+    // ---- Content ----
+    eyebrow: {
+      type: "string",
+      displayName: "Eyebrow (small label above heading)",
+      section: "Content",
+    },
+    heading: {
+      type: "string",
+      displayName: "Heading",
+      defaultValue: "Your heading here",
+      section: "Content",
+    },
+    headingLevel: {
+      type: "choice",
+      displayName: "Heading level",
+      description: "Use H1 only ONCE per page (the main title). Everything else H2.",
+      options: [
+        { value: "h1", label: "H1 (main page title)" },
+        { value: "h2", label: "H2 (section)" },
+        { value: "h3", label: "H3 (sub-section)" },
+      ],
+      defaultValue: "h2",
+      section: "Content",
+    },
+    lead: {
+      type: "string",
+      control: "large",
+      displayName: "Lead line (large text under heading)",
+      section: "Content",
+    },
+    body: {
+      type: "string",
+      control: "large",
+      displayName: "Body text",
+      section: "Content",
+    },
+
+    // ---- Button (only shows when BOTH text and link are filled) ----
+    buttonText: {
+      type: "string",
+      displayName: "Button text",
+      section: "Button",
+    },
+    buttonLink: {
+      type: "string",
+      displayName: "Button link",
+      description: "e.g. /contact, #interest-form, mailto:info@gcmm.ca",
+      section: "Button",
+    },
+    trackingLabel: {
+      type: "string",
+      displayName: "Tracking label (optional)",
+      description: "Short name for analytics, e.g. ambassador-hero. Leave blank if not needed.",
+      section: "Button",
+    },
+
+    // ---- Image ----
+    showImage: {
+      type: "boolean",
+      displayName: "Show image",
+      defaultValue: true,
+      section: "Image",
+    },
+    image: {
+      type: "imageUrl",
+      displayName: "Image",
+      section: "Image",
+    },
+    imageAlt: {
+      type: "string",
+      displayName: "Image description (alt text)",
+      description: "Describe the photo for screen readers and Google. Leave blank only for decorative images.",
+      section: "Image",
+    },
+    imagePosition: {
+      type: "choice",
+      displayName: "Image position",
+      options: [
+        { value: "below", label: "Below the text" },
+        { value: "above", label: "Above the text" },
+        { value: "behind", label: "Behind the text (with overlay)" },
+      ],
+      defaultValue: "below",
+      section: "Image",
+    },
+    imageHeight: {
+      type: "choice",
+      displayName: "Image height",
+      options: [
+        { value: "short", label: "Short" },
+        { value: "medium", label: "Medium" },
+        { value: "tall", label: "Tall" },
+      ],
+      defaultValue: "medium",
+      section: "Image",
+    },
+    loadEagerly: {
+      type: "boolean",
+      displayName: "Image is at the very top of the page",
+      description: "Turn on for ONE image per page (the first thing visitors see). Leave off for the rest.",
+      defaultValue: false,
+      section: "Image",
+    },
+    overlayColor: {
+      type: "color",
+      displayName: "Overlay color",
+      description: "Blank = brand navy",
+      hidden: (props) => props.imagePosition !== "behind",
+      section: "Image",
+    },
+    overlayStrength: {
+      type: "number",
+      displayName: "Overlay strength (0-100)",
+      min: 0,
+      max: 100,
+      defaultValue: 60,
+      hidden: (props) => props.imagePosition !== "behind",
+      section: "Image",
+    },
+
+    // ---- Layout ----
+    alignment: {
+      type: "choice",
+      displayName: "Text alignment",
+      options: ["left", "center", "right"],
+      defaultValue: "left",
+      section: "Layout",
+    },
+    contentWidth: {
+      type: "choice",
+      displayName: "Text width",
+      options: [
+        { value: "narrow", label: "Narrow" },
+        { value: "medium", label: "Medium" },
+        { value: "wide", label: "Wide" },
+      ],
+      defaultValue: "medium",
+      section: "Layout",
+    },
+    spaceY: {
+      type: "choice",
+      displayName: "Space above & below",
+      options: [
+        { value: "none", label: "None" },
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "large",
+      section: "Layout",
+    },
+    spaceX: {
+      type: "choice",
+      displayName: "Space left & right",
+      options: [
+        { value: "none", label: "None" },
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "medium",
+      section: "Layout",
+    },
+
+    // ---- Colors (pick a Style Token or any color; blank = automatic brand colors) ----
+    backgroundColor: {
+      type: "color",
+      displayName: "Background color",
+      description: "Blank = white",
+      section: "Colors",
+    },
+    textColor: {
+      type: "color",
+      displayName: "Text color",
+      description: "Blank = automatic",
+      section: "Colors",
+    },
+    headingColor: {
+      type: "color",
+      displayName: "Heading color",
+      description: "Blank = automatic",
+      section: "Colors",
+    },
+    eyebrowColor: {
+      type: "color",
+      displayName: "Eyebrow color",
+      description: "Blank = automatic",
+      section: "Colors",
+    },
+    buttonColor: {
+      type: "color",
+      displayName: "Button color",
+      description: "Blank = Amber",
+      section: "Colors",
+    },
+    buttonTextColor: {
+      type: "color",
+      displayName: "Button text color",
+      description: "Blank = Deep Navy",
+      section: "Colors",
+    },
+
+    // ---- Text style ----
+    headingFont: {
+      type: "choice",
+      displayName: "Heading font",
+      options: [
+        { value: "georgia", label: "Georgia" },
+        { value: "nunito", label: "Nunito" },
+        { value: "poppins", label: "Poppins" },
+        { value: "lexend", label: "Lexend" },
+        { value: "site", label: "Site default" },
+      ],
+      defaultValue: "georgia",
+      section: "Text style",
+    },
+    headingSize: {
+      type: "choice",
+      displayName: "Heading size",
+      options: [
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "large",
+      section: "Text style",
+    },
+    headingWeight: {
+      type: "choice",
+      displayName: "Heading weight",
+      options: [
+        { value: "regular", label: "Regular" },
+        { value: "medium", label: "Medium" },
+        { value: "semibold", label: "Semibold" },
+        { value: "bold", label: "Bold" },
+      ],
+      defaultValue: "bold",
+      section: "Text style",
+    },
+    bodyFont: {
+      type: "choice",
+      displayName: "Body font",
+      options: [
+        { value: "site", label: "Site default (Nunito)" },
+        { value: "georgia", label: "Georgia" },
+        { value: "nunito", label: "Nunito" },
+        { value: "poppins", label: "Poppins" },
+        { value: "lexend", label: "Lexend" },
+      ],
+      defaultValue: "site",
+      section: "Text style",
+    },
+    bodySize: {
+      type: "choice",
+      displayName: "Body size",
+      options: [
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "medium",
+      section: "Text style",
+    },
+    bodyWeight: {
+      type: "choice",
+      displayName: "Body weight",
+      options: [
+        { value: "regular", label: "Regular" },
+        { value: "medium", label: "Medium" },
+        { value: "semibold", label: "Semibold" },
+        { value: "bold", label: "Bold" },
+      ],
+      defaultValue: "regular",
+      section: "Text style",
+    },
+  },
+  importPath: "./components/ContentSection",
 });
 
 PLASMIC.registerComponent(Button, {
