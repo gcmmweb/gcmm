@@ -68,6 +68,8 @@ interface ContentSectionProps {
   alignment?: Align
   contentWidth?: WidthChoice
   spaceY?: SpaceChoice
+  spaceTop?: SpaceChoice
+  spaceBottom?: SpaceChoice
   spaceX?: SpaceChoice
 
   // Colors (blank = automatic brand colors)
@@ -198,6 +200,8 @@ export function ContentSection({
   alignment = "left",
   contentWidth = "medium",
   spaceY = "large",
+  spaceTop,
+  spaceBottom,
   spaceX = "medium",
 
   // Colors
@@ -270,8 +274,8 @@ export function ContentSection({
         marginLeft: "auto",
         marginRight: "auto",
         boxSizing: "border-box",
-        paddingTop: SPACE_Y[spaceY],
-        paddingBottom: SPACE_Y[spaceY],
+        paddingTop: SPACE_Y[spaceTop ?? spaceY],
+        paddingBottom: SPACE_Y[spaceBottom ?? spaceY],
         paddingLeft: SPACE_X[spaceX],
         paddingRight: SPACE_X[spaceX],
       }}

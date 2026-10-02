@@ -32,6 +32,7 @@ type CardLevel = "h1" | "h2" | "h3" | "h4"
 type Align = "left" | "center"
 type WidthChoice = "narrow" | "medium" | "wide"
 type MarkerChoice = "none" | "number" | "icon"
+type MarkerPosition = "above" | "beside"
 type ColumnsChoice = "1" | "2" | "3"
 type HoverChoice = "lift" | "none"
 type SizeChoice = "small" | "medium" | "large" | "xl"
@@ -58,6 +59,7 @@ interface CardGridProps {
   // Cards
   cards?: CardItem[]
   marker?: MarkerChoice
+  markerPosition?: MarkerPosition
   columns?: ColumnsChoice
   hoverEffect?: HoverChoice
   alignment?: Align
@@ -65,6 +67,8 @@ interface CardGridProps {
 
   // Spacing
   spaceY?: SpaceChoice
+  spaceTop?: SpaceChoice
+  spaceBottom?: SpaceChoice
   spaceX?: SpaceChoice
 
   // Colors (blank = automatic brand colors)
@@ -84,6 +88,7 @@ interface CardGridProps {
   headingSize?: SizeChoice
   headingWeight?: WeightChoice
   cardTitleFont?: FontChoice
+  cardTextSize?: SizeChoice
 }
 
 const FONT_STACKS: Record<FontChoice, string> = {
@@ -99,6 +104,13 @@ const HEADING_SIZES: Record<SizeChoice, string> = {
   medium: "clamp(1.75rem, 4vw, 2.5rem)",
   large: "clamp(2rem, 5vw, 3.25rem)",
   xl: "clamp(2.25rem, 6vw, 4rem)",
+}
+
+const CARD_TEXT_SIZES: Record<SizeChoice, string> = {
+  small: "0.875rem",
+  medium: "1rem",
+  large: "clamp(1rem, 2vw, 1.125rem)",
+  xl: "clamp(1.0625rem, 2.2vw, 1.25rem)",
 }
 
 const WEIGHTS: Record<WeightChoice, number> = {
@@ -165,6 +177,7 @@ export function CardGrid({
   // Cards
   cards = DEFAULT_CARDS,
   marker = "number",
+  markerPosition = "above",
   columns = "2",
   hoverEffect = "lift",
   alignment = "left",
@@ -172,6 +185,8 @@ export function CardGrid({
 
   // Spacing
   spaceY = "large",
+  spaceTop,
+  spaceBottom,
   spaceX = "medium",
 
   // Colors
@@ -191,6 +206,7 @@ export function CardGrid({
   headingSize = "large",
   headingWeight = "bold",
   cardTitleFont = "site",
+  cardTextSize = "medium",
 }: CardGridProps) {
   const eyebrowText = eyebrow.trim()
   const headingText = heading.trim()
@@ -250,39 +266,33 @@ export function CardGrid({
       "--cg-hover": BLUE,
     } as CSSProperties
 
-    const inner = (
-      <div
-        className={`flex h-full flex-col rounded-xl border p-6 sm:p-7 ${
-          centered ? "items-center text-center" : "items-start text-left"
-        } ${
-          lifts
-            ? "transition duration-200 ease-out hover:-translate-y-1 hover:border-[var(--cg-hover)] hover:shadow-lg motion-reduce:transition-none motion-reduce:hover:translate-y-0"
-            : ""
-        }`}
-        style={cardStyle}
-      >
-        {markerNode !== null && (
-          <div
-            aria-hidden="true"
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: "9999px",
-              backgroundColor: colMarker,
-              color: colMarkerText,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "0.9375rem",
-              fontWeight: 700,
-              marginBottom: "1rem",
-              flexShrink: 0,
-            }}
-          >
-            {markerNode}
-          </div>
-        )}
+    const beside = markerPosition === "beside"
 
+    const markerEl =
+      markerNode !== null ? (
+        <div
+          aria-hidden="true"
+          style={{
+            width: 44,
+            height: 44,
+            borderRadius: "9999px",
+            backgroundColor: colMarker,
+            color: colMarkerText,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "0.9375rem",
+            fontWeight: 700,
+            marginBottom: beside ? 0 : "1rem",
+            flexShrink: 0,
+          }}
+        >
+          {markerNode}
+        </div>
+      ) : null
+
+    const textEls = (
+      <>
         {title && (
           <CardTitle
             style={{
@@ -303,13 +313,41 @@ export function CardGrid({
             style={{
               margin: title ? "0.5rem 0 0" : 0,
               color: colCardText,
-              fontSize: "1rem",
+              fontSize: CARD_TEXT_SIZES[cardTextSize],
               lineHeight: 1.65,
               whiteSpace: "pre-line",
             }}
           >
             {formatInline(body)}
           </p>
+        )}
+      </>
+    )
+
+    const inner = (
+      <div
+        className={`flex h-full flex-col rounded-xl border p-6 sm:p-7 ${
+          centered ? "items-center text-center" : "items-start text-left"
+        } ${
+          lifts
+            ? "transition duration-200 ease-out hover:-translate-y-1 hover:border-[var(--cg-hover)] hover:shadow-lg motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+            : ""
+        }`}
+        style={cardStyle}
+      >
+        {beside && markerEl ? (
+          <div
+            className="flex w-full flex-row gap-4"
+            style={{ alignItems: title ? "flex-start" : "center" }}
+          >
+            {markerEl}
+            <div className="min-w-0 flex-1">{textEls}</div>
+          </div>
+        ) : (
+          <>
+            {markerEl}
+            {textEls}
+          </>
         )}
       </div>
     )
@@ -358,8 +396,8 @@ export function CardGrid({
           marginLeft: "auto",
           marginRight: "auto",
           boxSizing: "border-box",
-          paddingTop: SPACE_Y[spaceY],
-          paddingBottom: SPACE_Y[spaceY],
+          paddingTop: SPACE_Y[spaceTop ?? spaceY],
+          paddingBottom: SPACE_Y[spaceBottom ?? spaceY],
           paddingLeft: SPACE_X[spaceX],
           paddingRight: SPACE_X[spaceX],
           display: "flex",

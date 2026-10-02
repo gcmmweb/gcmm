@@ -1955,6 +1955,32 @@ PLASMIC.registerComponent(ContentSection, {
       defaultValue: "large",
       section: "Layout",
     },
+    spaceTop: {
+      type: "choice",
+      displayName: "Space above (optional)",
+      description: "Changes only the top space. Leave unset to follow 'Space above & below'.",
+      options: [
+        { value: "none", label: "None" },
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      section: "Layout",
+    },
+    spaceBottom: {
+      type: "choice",
+      displayName: "Space below (optional)",
+      description: "Changes only the bottom space. Leave unset to follow 'Space above & below'.",
+      options: [
+        { value: "none", label: "None" },
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      section: "Layout",
+    },
     spaceX: {
       type: "choice",
       displayName: "Space left & right",
@@ -2182,6 +2208,17 @@ PLASMIC.registerComponent(CardGrid, {
       defaultValue: "number",
       section: "Cards",
     },
+    markerPosition: {
+      type: "choice",
+      displayName: "Marker position",
+      description: "Show the number or icon above the card text, or beside it on the left.",
+      options: [
+        { value: "above", label: "Above the text" },
+        { value: "beside", label: "Beside the text (left)" },
+      ],
+      defaultValue: "above",
+      section: "Cards",
+    },
 
     // ---- Layout ----
     columns: {
@@ -2240,6 +2277,32 @@ PLASMIC.registerComponent(CardGrid, {
         { value: "xl", label: "Extra large" },
       ],
       defaultValue: "large",
+      section: "Layout",
+    },
+    spaceTop: {
+      type: "choice",
+      displayName: "Space above (optional)",
+      description: "Changes only the top space. Leave unset to follow 'Space above & below'.",
+      options: [
+        { value: "none", label: "None" },
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      section: "Layout",
+    },
+    spaceBottom: {
+      type: "choice",
+      displayName: "Space below (optional)",
+      description: "Changes only the bottom space. Leave unset to follow 'Space above & below'.",
+      options: [
+        { value: "none", label: "None" },
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
       section: "Layout",
     },
     spaceX: {
@@ -2367,6 +2430,18 @@ PLASMIC.registerComponent(CardGrid, {
         { value: "lexend", label: "Lexend" },
       ],
       defaultValue: "site",
+      section: "Text style",
+    },
+    cardTextSize: {
+      type: "choice",
+      displayName: "Card text size",
+      options: [
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "medium",
       section: "Text style",
     },
   },
