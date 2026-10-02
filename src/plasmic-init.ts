@@ -2046,6 +2046,18 @@ PLASMIC.registerComponent(ContentSection, {
       defaultValue: "georgia",
       section: "Text style",
     },
+    eyebrowSize: {
+      type: "choice",
+      displayName: "Eyebrow size",
+      options: [
+        { value: "small", label: "Small" },
+        { value: "normal", label: "Normal" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "normal",
+      section: "Text style",
+    },
     headingSize: {
       type: "choice",
       displayName: "Heading size",
