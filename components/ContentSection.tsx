@@ -231,7 +231,7 @@ export function ContentSection({
   // Automatic colors: dark text on light, white text on a photo
   const colBackground = backgroundColor || WHITE
   const colText = textColor || (isBehind ? WHITE : NAVY)
-  const colHeading = headingColor || (isBehind ? WHITE : BLUE)
+  const colHeading = headingColor || (isBehind ? WHITE : NAVY)
   const colEyebrow = eyebrowColor || (isBehind ? AMBER : BLUE)
   const colButton = buttonColor || AMBER
   const colButtonText = buttonTextColor || NAVY

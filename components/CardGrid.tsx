@@ -205,7 +205,7 @@ export function CardGrid({
   const colBackground = backgroundColor || NEUTRAL
   const colCard = cardColor || WHITE
   const colBorder = borderColor || "rgba(31, 45, 85, 0.12)"
-  const colHeading = headingColor || BLUE
+  const colHeading = headingColor || NAVY
   const colText = textColor || SLATE
   const colCardHeading = cardHeadingColor || NAVY
   const colCardText = cardTextColor || SLATE

@@ -1985,7 +1985,7 @@ PLASMIC.registerComponent(ContentSection, {
     headingColor: {
       type: "color",
       displayName: "Heading color",
-      description: "Blank = automatic",
+      description: "Blank = Deep Navy (white when the photo is behind the text)",
       section: "Colors",
     },
     eyebrowColor: {
@@ -2278,7 +2278,7 @@ PLASMIC.registerComponent(CardGrid, {
     headingColor: {
       type: "color",
       displayName: "Heading color",
-      description: "Blank = Primary Blue",
+      description: "Blank = Deep Navy",
       section: "Colors",
     },
     textColor: {
