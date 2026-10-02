@@ -20,6 +20,12 @@ const BLUE = "#336896"
 const AMBER = "#F4A300"
 const WHITE = "#FFFFFF"
 
+// Text sits inside a centered container this wide, so on big screens it lines
+// up with the header logo instead of hugging the browser edge. The section's
+// background and photo still run full-bleed. (1280px = 80rem, matching the
+// header's content width as measured from the 1440px Studio canvas.)
+const PAGE_MAX_WIDTH = "1280px"
+
 type Level = "h1" | "h2" | "h3"
 type Align = "left" | "center" | "right"
 type ImagePosition = "above" | "below" | "behind"
@@ -259,6 +265,9 @@ export function ContentSection({
         position: "relative",
         zIndex: 2,
         width: "100%",
+        maxWidth: PAGE_MAX_WIDTH,
+        marginLeft: "auto",
+        marginRight: "auto",
         boxSizing: "border-box",
         paddingTop: SPACE_Y[spaceY],
         paddingBottom: SPACE_Y[spaceY],

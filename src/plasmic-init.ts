@@ -1895,8 +1895,8 @@ PLASMIC.registerComponent(ContentSection, {
     },
     loadEagerly: {
       type: "boolean",
-      displayName: "Image is at the very top of the page",
-      description: "Turn on for ONE image per page (the first thing visitors see). Leave off for the rest.",
+      displayName: "Photo is visible without scrolling",
+      description: "Turn on for ONE photo per page: the one you can see before scrolling. Leave off for all other photos.",
       defaultValue: false,
       section: "Image",
     },
