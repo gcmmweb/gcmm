@@ -34,6 +34,7 @@ type Align = "left" | "center"
 type WidthChoice = "narrow" | "medium" | "wide"
 type MarkerChoice = "none" | "number" | "icon"
 type MarkerPosition = "above" | "beside"
+type MarkerSizeChoice = "small" | "medium" | "large" | "xl"
 type ColumnsChoice = "1" | "2" | "3"
 type HoverChoice = "lift" | "none"
 type SizeChoice = "small" | "medium" | "large" | "xl"
@@ -61,6 +62,8 @@ interface CardGridProps {
   cards?: CardItem[]
   marker?: MarkerChoice
   markerPosition?: MarkerPosition
+  markerSize?: MarkerSizeChoice
+  markerCircle?: boolean
   columns?: ColumnsChoice
   hoverEffect?: HoverChoice
   alignment?: Align
@@ -83,6 +86,7 @@ interface CardGridProps {
   eyebrowColor?: string
   markerColor?: string
   markerTextColor?: string
+  iconColor?: string
 
   // Text style
   eyebrowSize?: EyebrowSizeChoice
@@ -113,6 +117,22 @@ const CARD_TEXT_SIZES: Record<SizeChoice, string> = {
   medium: "1rem",
   large: "clamp(1rem, 2vw, 1.125rem)",
   xl: "clamp(1.0625rem, 2.2vw, 1.25rem)",
+}
+
+// Marker (icon or number) sizes. Small is the original size. When the circle
+// is on, it is 20px bigger than the icon, as in the original design.
+const ICON_SIZES: Record<MarkerSizeChoice, number> = {
+  small: 24,
+  medium: 36,
+  large: 56,
+  xl: 96,
+}
+
+const MARKER_FONTS: Record<MarkerSizeChoice, string> = {
+  small: "0.9375rem",
+  medium: "1.125rem",
+  large: "1.5rem",
+  xl: "2.5rem",
 }
 
 const WEIGHTS: Record<WeightChoice, number> = {
@@ -180,6 +200,8 @@ export function CardGrid({
   cards = DEFAULT_CARDS,
   marker = "number",
   markerPosition = "above",
+  markerSize = "small",
+  markerCircle = true,
   columns = "2",
   hoverEffect = "lift",
   alignment = "left",
@@ -202,6 +224,7 @@ export function CardGrid({
   eyebrowColor,
   markerColor,
   markerTextColor,
+  iconColor = "",
 
   // Text style
   eyebrowSize = "normal",
@@ -231,6 +254,9 @@ export function CardGrid({
   const colEyebrow = eyebrowColor || BLUE
   const colMarker = markerColor || "rgba(51, 104, 150, 0.12)"
   const colMarkerText = markerTextColor || BLUE
+  const colIcon = (iconColor || "").trim()
+  const iconPx = ICON_SIZES[markerSize] ?? ICON_SIZES.small
+  const markerFont = MARKER_FONTS[markerSize] ?? MARKER_FONTS.small
 
   const eyebrowStyle = EYEBROW_STYLES[eyebrowSize] ?? EYEBROW_STYLES.normal
   const SectionHeading = headingLevel
@@ -246,20 +272,39 @@ export function CardGrid({
     const body = card.text?.trim() || ""
     const icon = card.icon?.trim() || ""
     const link = card.link?.trim() || ""
+    const maskUrl = `url("${icon.replace(/"/g, "%22")}")`
 
     let markerNode: ReactNode = null
     if (marker === "number") {
       markerNode = String(index + 1).padStart(2, "0")
     } else if (marker === "icon" && icon) {
-      markerNode = (
+      markerNode = colIcon ? (
+        <span
+          aria-hidden="true"
+          style={{
+            display: "block",
+            width: iconPx,
+            height: iconPx,
+            backgroundColor: colIcon,
+            WebkitMaskImage: maskUrl,
+            maskImage: maskUrl,
+            WebkitMaskRepeat: "no-repeat",
+            maskRepeat: "no-repeat",
+            WebkitMaskPosition: "center",
+            maskPosition: "center",
+            WebkitMaskSize: "contain",
+            maskSize: "contain",
+          }}
+        />
+      ) : (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={icon}
           alt=""
-          width={24}
-          height={24}
+          width={iconPx}
+          height={iconPx}
           loading="lazy"
-          style={{ width: 24, height: 24, objectFit: "contain" }}
+          style={{ width: iconPx, height: iconPx, objectFit: "contain" }}
         />
       )
     }
@@ -277,15 +322,15 @@ export function CardGrid({
         <div
           aria-hidden="true"
           style={{
-            width: 44,
-            height: 44,
+            width: markerCircle ? iconPx + 20 : "auto",
+            height: markerCircle ? iconPx + 20 : "auto",
             borderRadius: "9999px",
-            backgroundColor: colMarker,
+            backgroundColor: markerCircle ? colMarker : "transparent",
             color: colMarkerText,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: "0.9375rem",
+            fontSize: markerFont,
             fontWeight: 700,
             marginBottom: beside ? 0 : "1rem",
             flexShrink: 0,

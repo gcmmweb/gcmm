@@ -2219,6 +2219,26 @@ PLASMIC.registerComponent(CardGrid, {
       defaultValue: "number",
       section: "Cards",
     },
+    markerSize: {
+      type: "choice",
+      displayName: "Marker size (icon or number)",
+      description: "How big the icon or number is. Small is the original size.",
+      options: [
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "small",
+      section: "Cards",
+    },
+    markerCircle: {
+      type: "boolean",
+      displayName: "Circle behind marker",
+      description: "Turn off for a plain icon or number with no circle.",
+      defaultValue: true,
+      section: "Cards",
+    },
     markerPosition: {
       type: "choice",
       displayName: "Marker position",
@@ -2383,6 +2403,12 @@ PLASMIC.registerComponent(CardGrid, {
       type: "color",
       displayName: "Marker circle color",
       description: "Blank = light blue tint",
+      section: "Colors",
+    },
+    iconColor: {
+      type: "color",
+      displayName: "Icon color",
+      description: "Blank = the icon's own colors. Pick a color to recolor a one-color icon (SVG, or PNG with a transparent background).",
       section: "Colors",
     },
     markerTextColor: {
