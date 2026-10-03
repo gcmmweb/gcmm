@@ -2481,6 +2481,19 @@ PLASMIC.registerComponent(CardGrid, {
       defaultValue: "site",
       section: "Text style",
     },
+    cardHeadingSize: {
+      type: "choice",
+      displayName: "Card heading size",
+      description: "Size of each card's heading. For a stat card (big number), use Large or Extra large. Medium is the original size.",
+      options: [
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "medium",
+      section: "Text style",
+    },
     cardTextSize: {
       type: "choice",
       displayName: "Card text size",

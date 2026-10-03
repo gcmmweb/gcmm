@@ -94,6 +94,7 @@ interface CardGridProps {
   headingSize?: SizeChoice
   headingWeight?: WeightChoice
   cardTitleFont?: FontChoice
+  cardHeadingSize?: SizeChoice
   cardTextSize?: SizeChoice
 }
 
@@ -133,6 +134,16 @@ const MARKER_FONTS: Record<MarkerSizeChoice, string> = {
   medium: "1.125rem",
   large: "1.5rem",
   xl: "2.5rem",
+}
+
+// Card heading (the title on each card; also the big number on a stat card).
+// Medium is the original size. Large matches the 32px numbers in the old
+// manual stats band; Extra large is bigger. All scale down on phones.
+const CARD_HEADING_SIZES: Record<SizeChoice, { fontSize: string; lineHeight: number }> = {
+  small: { fontSize: "clamp(1rem, 1.6vw, 1.125rem)", lineHeight: 1.3 },
+  medium: { fontSize: "clamp(1.125rem, 2vw, 1.375rem)", lineHeight: 1.3 },
+  large: { fontSize: "clamp(1.5rem, 2.8vw, 2rem)", lineHeight: 1.2 },
+  xl: { fontSize: "clamp(2rem, 4.5vw, 3rem)", lineHeight: 1.1 },
 }
 
 const WEIGHTS: Record<WeightChoice, number> = {
@@ -232,6 +243,7 @@ export function CardGrid({
   headingSize = "large",
   headingWeight = "bold",
   cardTitleFont = "site",
+  cardHeadingSize = "medium",
   cardTextSize = "medium",
 }: CardGridProps) {
   const eyebrowText = eyebrow.trim()
@@ -259,6 +271,7 @@ export function CardGrid({
   const markerFont = MARKER_FONTS[markerSize] ?? MARKER_FONTS.small
 
   const eyebrowStyle = EYEBROW_STYLES[eyebrowSize] ?? EYEBROW_STYLES.normal
+  const cardHeadingStyle = CARD_HEADING_SIZES[cardHeadingSize] ?? CARD_HEADING_SIZES.medium
   const SectionHeading = headingLevel
   // Cards sit one level under the section heading; with no section heading
   // they take the section's own level so the page outline never skips a step.
@@ -348,9 +361,9 @@ export function CardGrid({
               margin: 0,
               color: colCardHeading,
               fontFamily: FONT_STACKS[cardTitleFont],
-              fontSize: "clamp(1.125rem, 2vw, 1.375rem)",
+              fontSize: cardHeadingStyle.fontSize,
               fontWeight: 700,
-              lineHeight: 1.3,
+              lineHeight: cardHeadingStyle.lineHeight,
             }}
           >
             {formatInline(title)}
