@@ -301,7 +301,10 @@ export function ContentSection({
         {eyebrowText && (
           <p
             style={{
-              margin: 0,
+              marginTop: 0,
+              marginLeft: 0,
+              marginRight: 0,
+              marginBottom: eyebrowStyle.marginBottom,
               color: colEyebrow,
               fontSize: eyebrowStyle.fontSize,
               fontWeight: eyebrowStyle.fontWeight,
