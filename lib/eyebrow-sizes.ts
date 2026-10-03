@@ -20,6 +20,6 @@ export const EYEBROW_STYLES: Record<
 > = {
   small: { fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.14em", marginBottom: "0px" },
   normal: { fontSize: "0.8125rem", fontWeight: 700, letterSpacing: "0.14em", marginBottom: "0px" },
-  large: { fontSize: "clamp(1rem, 2vw, 1.5rem)", fontWeight: 600, letterSpacing: "0.06em", marginBottom: PHONE_EXTRA_GAP },
-  xl: { fontSize: "clamp(1.125rem, 3vw, 2rem)", fontWeight: 600, letterSpacing: "0.06em", marginBottom: PHONE_EXTRA_GAP },
+  large: { fontSize: "clamp(1.0625rem, 2vw, 1.5rem)", fontWeight: 600, letterSpacing: "0.06em", marginBottom: PHONE_EXTRA_GAP },
+  xl: { fontSize: "clamp(1.25rem, 3vw, 2rem)", fontWeight: 600, letterSpacing: "0.06em", marginBottom: PHONE_EXTRA_GAP },
 }

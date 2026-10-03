@@ -324,7 +324,7 @@ export function ContentSection({
               fontFamily: FONT_STACKS[headingFont],
               fontSize: HEADING_SIZES[headingSize],
               fontWeight: WEIGHTS[headingWeight],
-              lineHeight: 1.15,
+              lineHeight: 1.25,
               textWrap: "balance",
             }}
           >
