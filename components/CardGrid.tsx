@@ -279,6 +279,10 @@ export function CardGrid({
 
   const centered = alignment === "center"
   const lifts = hoverEffect === "lift"
+  const gridColumns =
+    centered && markerPosition === "beside" && marker !== "none"
+      ? COLUMN_CLASSES[columns].replace("grid-cols-1", "grid-cols-[minmax(0,max-content)] justify-center")
+      : COLUMN_CLASSES[columns]
 
   const renderCard = (card: CardItem, index: number) => {
     const title = card.heading?.trim() || ""
@@ -388,7 +392,7 @@ export function CardGrid({
 
     const inner = (
       <div
-        className={`flex h-full flex-col rounded-xl border p-6 sm:p-7 ${
+        className={`flex h-full flex-col rounded-xl border p-4 sm:p-7 ${
           centered ? "items-center text-center" : "items-start text-left"
         } ${
           lifts
@@ -403,7 +407,7 @@ export function CardGrid({
             style={{ alignItems: title ? "flex-start" : "center" }}
           >
             {markerEl}
-            <div className="min-w-0 flex-1">{textEls}</div>
+            <div className="min-w-0 flex-1 text-left">{textEls}</div>
           </div>
         ) : (
           <>
@@ -529,7 +533,7 @@ export function CardGrid({
         )}
 
         {list.length > 0 && (
-          <div className={`grid gap-4 sm:gap-5 ${COLUMN_CLASSES[columns]}`}>
+          <div className={`grid gap-3 sm:gap-5 ${gridColumns}`}>
             {list.map((card, i) => renderCard(card, i))}
           </div>
         )}
