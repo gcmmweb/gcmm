@@ -3435,6 +3435,12 @@ PLASMIC.registerComponent(PhotoCarousel, {
       defaultValue: 3000,
       description: "Time between auto-advances in milliseconds",
     },
+    randomizeOrder: {
+      type: "boolean",
+      displayName: "Randomize Order",
+      defaultValue: false,
+      description: "Show the photos in a random order each time the page loads, instead of the order they're listed in below",
+    },
 
     // Spacing
     sectionPaddingY: {
@@ -3456,35 +3462,9 @@ sectionPaddingX: {
       type: "array",
       displayName: "Photos",
       description: "Add photos to the carousel",
-      defaultValue: [
-        {
-          image: "/placeholder.svg?height=400&width=600",
-          alt: "Photo 1",
-          caption: "Beautiful landscape",
-        },
-        {
-          image: "/placeholder.svg?height=400&width=600",
-          alt: "Photo 2",
-          caption: "City skyline",
-        },
-        {
-          image: "/placeholder.svg?height=400&width=600",
-          alt: "Photo 3",
-          caption: "Mountain view",
-        },
-        {
-          image: "/placeholder.svg?height=400&width=600",
-          alt: "Photo 4",
-          caption: "Ocean sunset",
-        },
-        {
-          image: "/placeholder.svg?height=400&width=600",
-          alt: "Photo 5",
-          caption: "Forest path",
-        },
-      ],
       itemType: {
         type: "object",
+        nameFunc: (item: any) => String(item.caption || item.alt || "New photo").slice(0, 40),
         fields: {
           image: {
             type: "imageUrl",
