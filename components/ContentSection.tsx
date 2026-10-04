@@ -22,6 +22,7 @@ const NAVY = "#1F2D55"
 const BLUE = "#336896"
 const AMBER = "#F4A300"
 const WHITE = "#FFFFFF"
+const GOLD = "#CBA86D"
 
 // Text sits inside a centered container this wide, so on big screens it lines
 // up with the header logo instead of hugging the browser edge. The section's
@@ -58,6 +59,7 @@ interface ContentSectionProps {
   secondButtonText?: string
   secondButtonLink?: string
   secondTrackingLabel?: string
+  phoneButtons?: "full" | "natural"
 
   // Image
   showImage?: boolean
@@ -187,32 +189,59 @@ function isExternal(url: string) {
 //     ## Printed Gospel Resources Across Ukraine
 //     Alongside digital media ...
 // Body text with no "## " line is shown exactly as before (one block).
-type BodyBlock = { kind: "heading" | "text"; text: string }
+// A body line that starts with "> " becomes an indented quote. Consecutive
+// "> " lines make one quote; if the last one starts with a dash it is shown
+// as the name line:
+//     > "Amid the destruction around us ..."
+//     > - Galina, Ukraine
+type BodyBlock =
+  | { kind: "heading" | "text"; text: string }
+  | { kind: "quote"; text: string; cite: string }
 
 const SUBHEADING_LINE = /^[ \t]*##[ \t]+(.+?)[ \t]*$/
+const QUOTE_LINE = /^[ \t]*>[ \t]?(.*)$/
+const CITE_LINE = /^[ \t]*(?:\u2014|\u2013|--)/
 
 function parseBody(body: string): BodyBlock[] {
   const lines = body.split("\n")
-  if (!lines.some((line) => SUBHEADING_LINE.test(line))) {
+  if (!lines.some((line) => SUBHEADING_LINE.test(line) || QUOTE_LINE.test(line))) {
     return body.trim() ? [{ kind: "text", text: body }] : []
   }
   const blocks: BodyBlock[] = []
   let buffer: string[] = []
+  let quoteLines: string[] = []
   const flush = () => {
     const text = buffer.join("\n").replace(/^(?:[ \t]*\n)+|(?:\n[ \t]*)+$/g, "")
     if (text.trim()) blocks.push({ kind: "text", text })
     buffer = []
   }
+  const flushQuote = () => {
+    const rows = quoteLines.map((row) => row.trim()).filter(Boolean)
+    quoteLines = []
+    if (rows.length === 0) return
+    let cite = ""
+    if (rows.length > 1 && CITE_LINE.test(rows[rows.length - 1])) {
+      cite = rows.pop() as string
+    }
+    blocks.push({ kind: "quote", text: rows.join("\n"), cite })
+  }
   for (const line of lines) {
-    const match = line.match(SUBHEADING_LINE)
-    if (match) {
+    const heading = line.match(SUBHEADING_LINE)
+    const quote = heading ? null : line.match(QUOTE_LINE)
+    if (heading) {
       flush()
-      blocks.push({ kind: "heading", text: match[1] })
+      flushQuote()
+      blocks.push({ kind: "heading", text: heading[1] })
+    } else if (quote) {
+      flush()
+      quoteLines.push(quote[1])
     } else {
+      flushQuote()
       buffer.push(line)
     }
   }
   flush()
+  flushQuote()
   return blocks
 }
 
@@ -220,6 +249,25 @@ function parseBody(body: string): BodyBlock[] {
 // the section heading. The one exception: if the section heading is an H1, the
 // subheadings become H2, so a page never ends up with extra H1s.
 const SUB_LEVEL: Record<Level, "h2" | "h3"> = { h1: "h2", h2: "h2", h3: "h3" }
+
+// A quote is one size step bigger than the body text.
+const STEP_UP: Record<SizeChoice, SizeChoice> = {
+  small: "medium",
+  medium: "large",
+  large: "xl",
+  xl: "xl",
+}
+
+// Button row. Scoped class names (cs-btns) so nothing else on the page is
+// affected. On phones: optional full-width stack where every button gets the
+// same height (grid-auto-rows: 1fr), plus a little space above the buttons.
+const BUTTON_ROW_CSS = `
+.cs-btns{display:flex;flex-wrap:wrap;gap:0.5rem 1rem}
+@media (max-width:640px){
+.cs-btns{margin-top:0.75rem}
+.cs-btns-full{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:1fr;gap:0.75rem}
+.cs-btns-full > a{margin-top:0;width:100%;box-sizing:border-box;text-align:center}
+}`
 
 export function ContentSection({
   className = "",
@@ -240,6 +288,7 @@ export function ContentSection({
   secondButtonText = "",
   secondButtonLink = "",
   secondTrackingLabel = "",
+  phoneButtons = "full",
 
   // Image
   showImage = true,
@@ -446,7 +495,45 @@ export function ContentSection({
         )}
 
         {bodyBlocks.map((block, index) =>
-          block.kind === "heading" ? (
+          block.kind === "quote" ? (
+            <blockquote
+              key={index}
+              style={{
+                margin: 0,
+                marginLeft: "clamp(0.25rem, 1.5vw, 0.75rem)",
+                paddingLeft: "clamp(1rem, 2.5vw, 1.5rem)",
+                borderLeft: `4px solid ${GOLD}`,
+                maxWidth: "100%",
+                boxSizing: "border-box",
+                textAlign: "left",
+                fontFamily: FONT_STACKS.georgia,
+                fontStyle: "italic",
+                fontWeight: 400,
+                fontSize: BODY_SIZES[STEP_UP[bodySize]],
+                lineHeight: 1.55,
+                whiteSpace: "pre-line",
+                textWrap: "pretty",
+              }}
+            >
+              {formatInline(block.text)}
+              {block.cite && (
+                <footer
+                  style={{
+                    marginTop: "0.5rem",
+                    fontFamily: FONT_STACKS[bodyFont],
+                    fontStyle: "normal",
+                    fontWeight: 600,
+                    fontSize: "clamp(0.8125rem, 1.6vw, 0.9375rem)",
+                    lineHeight: 1.5,
+                    whiteSpace: "normal",
+                    color: colEyebrow,
+                  }}
+                >
+                  {formatInline(block.cite)}
+                </footer>
+              )}
+            </blockquote>
+          ) : block.kind === "heading" ? (
             <SubHeading
               key={index}
               style={{
@@ -483,13 +570,10 @@ export function ContentSection({
 
         {(hasButton || hasSecond) && (
           <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "0.5rem 1rem",
-              justifyContent: ALIGN_ITEMS[alignment],
-            }}
+            className={phoneButtons === "full" ? "cs-btns cs-btns-full" : "cs-btns"}
+            style={{ justifyContent: ALIGN_ITEMS[alignment] }}
           >
+            <style>{BUTTON_ROW_CSS}</style>
         {hasButton &&
           (isExternal(btnLink) ? (
             <a

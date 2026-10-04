@@ -1835,7 +1835,7 @@ PLASMIC.registerComponent(ContentSection, {
       type: "string",
       control: "large",
       displayName: "Body text",
-      description: "Format words: **bold**, *italic*, ***bold and italic***. Example: Help **one person** discover the *mission*. Subheading: start a line with ## (example: ## Printed Gospel Resources). Repeat a ## line and its text to add more titled blocks.",
+      description: "Format words: **bold**, *italic*, ***bold and italic***. Example: Help **one person** discover the *mission*. Subheading: start a line with ## (example: ## Printed Gospel Resources). Repeat a ## line and its text to add more titled blocks. Quote: start the quote line with > (example: > Quote text here.). For a name under the quote, add a second line that starts with > and a long dash (example: > \u2014 Name, Place). It shows as an indented quote with a gold bar.",
       section: "Content",
     },
 
@@ -1873,6 +1873,17 @@ PLASMIC.registerComponent(ContentSection, {
       type: "string",
       displayName: "Second button tracking label (optional)",
       description: "Short name for analytics so clicks on this button are counted separately, e.g. ukraine-learn-more.",
+      section: "Button",
+    },
+    phoneButtons: {
+      type: "choice",
+      displayName: "Buttons on phones",
+      description: "Full width stacks the buttons at the same width and height on phones. Natural width keeps each button as wide as its text.",
+      options: [
+        { value: "full", label: "Full width" },
+        { value: "natural", label: "Natural width" },
+      ],
+      defaultValue: "full",
       section: "Button",
     },
 
