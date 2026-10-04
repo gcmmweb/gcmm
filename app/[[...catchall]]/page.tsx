@@ -5,7 +5,6 @@ import { PLASMIC_SERVER } from "@/src/plasmic-init-server";
 import { isNoIndexPath } from "@/lib/indexing";
 import PlasmicClientPage from "./client-page";
 import type { StoryLink } from "@/components/all-stories-list";
-import { SiteUnavailableFallback } from "@/components/SiteUnavailableFallback";
 // NOTE (Sep 2026): this was briefly changed to a next/dynamic(..., { ssr:
 // false }) import to keep this component's bundle out of every route's
 // shared chunk — but Next.js disallows ssr:false with next/dynamic inside
@@ -483,7 +482,13 @@ export default async function CatchallPage({ params }: Props) {
       return <StripeDonationPage />;
     }
 
-    return <SiteUnavailableFallback pathname={pathname} />;
+    // Do NOT return a page here. A returned page counts as a successful
+    // rebuild, so it would be saved over the good copy for every visitor
+    // (this is what happened on Oct 4, 2026). Re-throwing lets Next.js
+    // keep serving the last good copy and retry on the next visit. If
+    // there is no good copy at all, app/[[...catchall]]/error.tsx shows
+    // the friendly screen, and error screens are never saved.
+    throw err;
   }
 
   if (!pageData) {
