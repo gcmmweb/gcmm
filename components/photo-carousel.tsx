@@ -10,6 +10,18 @@ interface Photo {
   caption?: string
 }
 
+// Fisher-Yates shuffle (returns a new array, never changes the original).
+function shuffled<T>(list: T[]): T[] {
+  const a = list.slice()
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    const tmp = a[i]
+    a[i] = a[j]
+    a[j] = tmp
+  }
+  return a
+}
+
 export function PhotoCarousel({
   className,
   photos = [],
@@ -32,6 +44,7 @@ export function PhotoCarousel({
   sectionPaddingX = "40px",
   arrowSize = "48px",
   arrowIconSize = "24px",
+  randomizeOrder = false,
 }: {
   className?: string
   photos?: Photo[]
@@ -54,6 +67,9 @@ export function PhotoCarousel({
   sectionPaddingX?: string
   arrowSize?: string
   arrowIconSize?: string
+  // Shuffles the photo order once per page load (browser only).
+  // Off by default so existing carousels keep their current order.
+  randomizeOrder?: boolean
 }) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isLeftHovered, setIsLeftHovered] = useState(false)
@@ -61,6 +77,20 @@ export function PhotoCarousel({
   const [hoveredPhotoIndex, setHoveredPhotoIndex] = useState<number | null>(null)
   const [actualPhotosPerView, setActualPhotosPerView] = useState(photosPerView)
   const [isNarrowScreen, setIsNarrowScreen] = useState(false)
+
+  // Display order. Starts as the normal CMS order so the server HTML and the
+  // browser's first render match (no hydration mismatch). If Randomize Order
+  // is on, it is shuffled once in the browser right after the page loads.
+  const [orderedPhotos, setOrderedPhotos] = useState<Photo[]>(photos || [])
+  const photosKey = (photos || []).map((p) => p.image).join("|")
+  useEffect(() => {
+    const list = photos || []
+    setOrderedPhotos(randomizeOrder && list.length > 1 ? shuffled(list) : list)
+    setCurrentIndex(0)
+    // photosKey stands in for photos so a new array object with the same
+    // photos does not trigger another shuffle.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [randomizeOrder, photosKey])
 
   // Responsive photos per view based on screen size
   useEffect(() => {
@@ -126,7 +156,7 @@ export function PhotoCarousel({
   // This sits after every hook above, so hook order is unchanged.
   if (!photos || photos.length === 0) return null
 
-  const visiblePhotos = photos.slice(currentIndex, currentIndex + actualPhotosPerView)
+  const visiblePhotos = orderedPhotos.slice(currentIndex, currentIndex + actualPhotosPerView)
 
   return (
     <section
@@ -207,7 +237,11 @@ export function PhotoCarousel({
                   onMouseLeave={() => setHoveredPhotoIndex(null)}
                   style={{
                     position: "relative",
-                    width: isNarrowScreen ? "100%" : photoWidth,
+                    // Never wider than the box: a full row always fits, so
+                    // Item 0 is the first, fully visible photo.
+                    width: isNarrowScreen
+                      ? "100%"
+                      : `min(${photoWidth}, calc((100% - (${gap}) * ${Math.max(actualPhotosPerView - 1, 0)}) / ${Math.max(actualPhotosPerView, 1)}))`,
                     aspectRatio: `${parseInt(photoWidth) || 400} / ${parseInt(photoHeight) || 300}`,
                     flexShrink: 0,
                     borderRadius: borderRadius,
