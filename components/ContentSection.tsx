@@ -171,6 +171,53 @@ function isExternal(url: string) {
   return /^(https?:|mailto:|tel:)/i.test(url)
 }
 
+// ---- Subheadings inside the Body text ------------------------------------
+// A body line that starts with "## " becomes a subheading, so one Content
+// Section can hold several titled blocks:
+//     ## Reaching Hearts Through Ukrainian Media
+//     GCMM reaches Ukrainian-speaking audiences ...
+//     ## Printed Gospel Resources Across Ukraine
+//     Alongside digital media ...
+// Body text with no "## " line is shown exactly as before (one block).
+type BodyBlock = { kind: "heading" | "text"; text: string }
+
+const SUBHEADING_LINE = /^[ \t]*##[ \t]+(.+?)[ \t]*$/
+
+function parseBody(body: string): BodyBlock[] {
+  const lines = body.split("\n")
+  if (!lines.some((line) => SUBHEADING_LINE.test(line))) {
+    return body.trim() ? [{ kind: "text", text: body }] : []
+  }
+  const blocks: BodyBlock[] = []
+  let buffer: string[] = []
+  const flush = () => {
+    const text = buffer.join("\n").replace(/^(?:[ \t]*\n)+|(?:\n[ \t]*)+$/g, "")
+    if (text.trim()) blocks.push({ kind: "text", text })
+    buffer = []
+  }
+  for (const line of lines) {
+    const match = line.match(SUBHEADING_LINE)
+    if (match) {
+      flush()
+      blocks.push({ kind: "heading", text: match[1] })
+    } else {
+      buffer.push(line)
+    }
+  }
+  flush()
+  return blocks
+}
+
+// A subheading sits one level below the section heading (or at the section's
+// own level when the section has no heading), and one size smaller.
+const NEXT_LEVEL: Record<Level, "h2" | "h3" | "h4"> = { h1: "h2", h2: "h3", h3: "h4" }
+const STEP_DOWN: Record<SizeChoice, SizeChoice> = {
+  xl: "large",
+  large: "medium",
+  medium: "small",
+  small: "small",
+}
+
 export function ContentSection({
   className = "",
 
@@ -234,6 +281,9 @@ export function ContentSection({
   const hasImage = showImage && imageSrc.length > 0
   const isBehind = hasImage && imagePosition === "behind"
   const hasButton = btnText.length > 0 && btnLink.length > 0
+  const bodyBlocks = parseBody(bodyText.replace(/\r/g, ""))
+  const SubHeading = headingText ? NEXT_LEVEL[headingLevel] : headingLevel
+  const subSize = headingText ? STEP_DOWN[headingSize] : headingSize
 
   // Automatic colors: dark text on light, white text on a photo
   const colBackground = backgroundColor || WHITE
@@ -345,19 +395,40 @@ export function ContentSection({
           </p>
         )}
 
-        {bodyText && (
-          <p
-            style={{
-              margin: 0,
-              fontSize: BODY_SIZES[bodySize],
-              fontWeight: WEIGHTS[bodyWeight],
-              lineHeight: 1.7,
-              whiteSpace: "pre-line",
-              textWrap: "pretty",
-            }}
-          >
-            {formatInline(bodyText)}
-          </p>
+        {bodyBlocks.map((block, index) =>
+          block.kind === "heading" ? (
+            <SubHeading
+              key={index}
+              style={{
+                marginTop: index === 0 ? 0 : "clamp(0.75rem, 2.5vw, 2rem)",
+                marginRight: 0,
+                marginBottom: 0,
+                marginLeft: 0,
+                color: colHeading,
+                fontFamily: FONT_STACKS[headingFont],
+                fontSize: HEADING_SIZES[subSize],
+                fontWeight: WEIGHTS[headingWeight],
+                lineHeight: 1.45,
+                textWrap: "balance",
+              }}
+            >
+              {formatInline(block.text)}
+            </SubHeading>
+          ) : (
+            <p
+              key={index}
+              style={{
+                margin: 0,
+                fontSize: BODY_SIZES[bodySize],
+                fontWeight: WEIGHTS[bodyWeight],
+                lineHeight: 1.7,
+                whiteSpace: "pre-line",
+                textWrap: "pretty",
+              }}
+            >
+              {formatInline(block.text)}
+            </p>
+          )
         )}
 
         {hasButton &&

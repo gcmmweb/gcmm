@@ -1835,7 +1835,7 @@ PLASMIC.registerComponent(ContentSection, {
       type: "string",
       control: "large",
       displayName: "Body text",
-      description: "Format words: **bold**, *italic*, ***bold and italic***. Example: Help **one person** discover the *mission*.",
+      description: "Format words: **bold**, *italic*, ***bold and italic***. Example: Help **one person** discover the *mission*. Subheading: start a line with ## (example: ## Printed Gospel Resources). Repeat a ## line and its text to add more titled blocks.",
       section: "Content",
     },
 
