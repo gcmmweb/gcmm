@@ -363,14 +363,14 @@ export function PhotoOverlay({
             padding-bottom: max(40px, 8vw) !important;
           }
           
-          h1 {
+          .photo-overlay-content h1 {
             font-size: clamp(1.5rem, 5vw, calc(${titleFontSize} * 0.6)) !important;
             word-wrap: break-word !important;
             overflow-wrap: break-word !important;
             hyphens: auto !important;
           }
           
-          p {
+          .photo-overlay-content p {
             font-size: calc(${descriptionFontSize} * 0.9) !important;
           }
         }
@@ -381,12 +381,12 @@ export function PhotoOverlay({
             min-height: 400px !important;
           }
           
-          h1 {
+          .photo-overlay-content h1 {
             font-size: clamp(1.25rem, 6vw, calc(${titleFontSize} * 0.5)) !important;
             line-height: 1.15 !important;
           }
           
-          p {
+          .photo-overlay-content p {
             font-size: calc(${descriptionFontSize} * 0.85) !important;
           }
         }
@@ -404,12 +404,12 @@ export function PhotoOverlay({
             padding-bottom: 32px !important;
           }
           
-          h1 {
+          .photo-overlay-content h1 {
             font-size: clamp(1.125rem, 7vw, calc(${titleFontSize} * 0.45)) !important;
             line-height: 1.1 !important;
           }
           
-          p {
+          .photo-overlay-content p {
             font-size: calc(${descriptionFontSize} * 0.8) !important;
           }
         }
