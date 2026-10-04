@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState, type CSSProperties } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { formatInline } from "@/lib/inline-format"
@@ -53,6 +54,11 @@ interface ContentSectionProps {
   buttonLink?: string
   trackingLabel?: string
 
+  // Second button (outlined)
+  secondButtonText?: string
+  secondButtonLink?: string
+  secondTrackingLabel?: string
+
   // Image
   showImage?: boolean
   image?: string
@@ -80,6 +86,8 @@ interface ContentSectionProps {
   eyebrowColor?: string
   buttonColor?: string
   buttonTextColor?: string
+  secondButtonColor?: string
+  secondButtonHoverTextColor?: string
 
   // Text style
   eyebrowSize?: EyebrowSizeChoice
@@ -208,15 +216,10 @@ function parseBody(body: string): BodyBlock[] {
   return blocks
 }
 
-// A subheading sits one level below the section heading (or at the section's
-// own level when the section has no heading), and one size smaller.
-const NEXT_LEVEL: Record<Level, "h2" | "h3" | "h4"> = { h1: "h2", h2: "h3", h3: "h4" }
-const STEP_DOWN: Record<SizeChoice, SizeChoice> = {
-  xl: "large",
-  large: "medium",
-  medium: "small",
-  small: "small",
-}
+// A "##" subheading is a sibling section, so it uses the SAME tag and size as
+// the section heading. The one exception: if the section heading is an H1, the
+// subheadings become H2, so a page never ends up with extra H1s.
+const SUB_LEVEL: Record<Level, "h2" | "h3"> = { h1: "h2", h2: "h2", h3: "h3" }
 
 export function ContentSection({
   className = "",
@@ -232,6 +235,11 @@ export function ContentSection({
   buttonText = "",
   buttonLink = "",
   trackingLabel = "",
+
+  // Second button
+  secondButtonText = "",
+  secondButtonLink = "",
+  secondTrackingLabel = "",
 
   // Image
   showImage = true,
@@ -260,6 +268,8 @@ export function ContentSection({
   eyebrowColor,
   buttonColor,
   buttonTextColor,
+  secondButtonColor,
+  secondButtonHoverTextColor,
 
   // Text style
   eyebrowSize = "normal",
@@ -270,6 +280,18 @@ export function ContentSection({
   bodySize = "medium",
   bodyWeight = "regular",
 }: ContentSectionProps) {
+  // Second-button hover state (inline styles cannot do :hover, and this keeps
+  // the component free of global CSS) and the reduce-motion preference.
+  const [secondHover, setSecondHover] = useState(false)
+  const [reduceMotion, setReduceMotion] = useState(false)
+  useEffect(() => {
+    const query = window.matchMedia("(prefers-reduced-motion: reduce)")
+    setReduceMotion(query.matches)
+    const onChange = () => setReduceMotion(query.matches)
+    query.addEventListener("change", onChange)
+    return () => query.removeEventListener("change", onChange)
+  }, [])
+
   const eyebrowText = eyebrow.trim()
   const headingText = heading.trim()
   const leadText = lead.trim()
@@ -281,9 +303,12 @@ export function ContentSection({
   const hasImage = showImage && imageSrc.length > 0
   const isBehind = hasImage && imagePosition === "behind"
   const hasButton = btnText.length > 0 && btnLink.length > 0
+  const btn2Text = secondButtonText.trim()
+  const btn2Link = secondButtonLink.trim()
+  const hasSecond = btn2Text.length > 0 && btn2Link.length > 0
   const bodyBlocks = parseBody(bodyText.replace(/\r/g, ""))
-  const SubHeading = headingText ? NEXT_LEVEL[headingLevel] : headingLevel
-  const subSize = headingText ? STEP_DOWN[headingSize] : headingSize
+  const SubHeading = SUB_LEVEL[headingLevel]
+  const subSize = headingSize
 
   // Automatic colors: dark text on light, white text on a photo
   const colBackground = backgroundColor || WHITE
@@ -293,6 +318,31 @@ export function ContentSection({
   const colButton = buttonColor || AMBER
   const colButtonText = buttonTextColor || NAVY
   const colOverlay = overlayColor || NAVY
+
+  // Second button: outlined. On hover it fills with its own color and the text
+  // flips so it stays readable. Border is 2px, so padding is reduced by 2px to
+  // keep it the same height as the filled button beside it.
+  const outlineColor = secondButtonColor || (isBehind ? WHITE : NAVY)
+  const outlineHoverText =
+    secondButtonHoverTextColor || (!secondButtonColor && isBehind ? NAVY : WHITE)
+  const outlineClass =
+    "mt-2 inline-flex min-h-[44px] items-center justify-center gap-2 rounded-md font-semibold no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+  const outlineStyle: CSSProperties = {
+    backgroundColor: secondHover ? outlineColor : "transparent",
+    color: secondHover ? outlineHoverText : outlineColor,
+    border: `2px solid ${outlineColor}`,
+    paddingTop: "calc(0.875rem - 2px)",
+    paddingBottom: "calc(0.875rem - 2px)",
+    paddingLeft: "calc(1.75rem - 2px)",
+    paddingRight: "calc(1.75rem - 2px)",
+    transition: reduceMotion ? "none" : "background-color 200ms ease, color 200ms ease",
+  }
+  const outlineHandlers = {
+    onMouseEnter: () => setSecondHover(true),
+    onMouseLeave: () => setSecondHover(false),
+    onFocus: () => setSecondHover(true),
+    onBlur: () => setSecondHover(false),
+  }
 
   const Heading = headingLevel
   const eyebrowStyle = EYEBROW_STYLES[eyebrowSize] ?? EYEBROW_STYLES.normal
@@ -318,7 +368,7 @@ export function ContentSection({
     </div>
   )
 
-  const textBlock = (eyebrowText || headingText || leadText || bodyText || hasButton) && (
+  const textBlock = (eyebrowText || headingText || leadText || bodyText || hasButton || hasSecond) && (
     <div
       style={{
         position: "relative",
@@ -400,7 +450,7 @@ export function ContentSection({
             <SubHeading
               key={index}
               style={{
-                marginTop: index === 0 ? 0 : "clamp(0.75rem, 2.5vw, 2rem)",
+                marginTop: 0,
                 marginRight: 0,
                 marginBottom: 0,
                 marginLeft: 0,
@@ -431,6 +481,15 @@ export function ContentSection({
           )
         )}
 
+        {(hasButton || hasSecond) && (
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "0.5rem 1rem",
+              justifyContent: ALIGN_ITEMS[alignment],
+            }}
+          >
         {hasButton &&
           (isExternal(btnLink) ? (
             <a
@@ -456,6 +515,40 @@ export function ContentSection({
               <span aria-hidden="true">→</span>
             </Link>
           ))}
+
+        {hasSecond &&
+          (isExternal(btn2Link) ? (
+            <a
+              href={btn2Link}
+              {...(/^https?:/i.test(btn2Link)
+                ? { target: "_blank", rel: "noopener noreferrer" }
+                : {})}
+              {...(secondTrackingLabel.trim()
+                ? { "data-track-label": secondTrackingLabel.trim() }
+                : {})}
+              className={outlineClass}
+              style={outlineStyle}
+              {...outlineHandlers}
+            >
+              <span>{btn2Text}</span>
+              <span aria-hidden="true">{"\u2192"}</span>
+            </a>
+          ) : (
+            <Link
+              href={btn2Link}
+              {...(secondTrackingLabel.trim()
+                ? { "data-track-label": secondTrackingLabel.trim() }
+                : {})}
+              className={outlineClass}
+              style={outlineStyle}
+              {...outlineHandlers}
+            >
+              <span>{btn2Text}</span>
+              <span aria-hidden="true">{"\u2192"}</span>
+            </Link>
+          ))}
+          </div>
+        )}
       </div>
     </div>
   )

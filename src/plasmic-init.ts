@@ -1857,6 +1857,24 @@ PLASMIC.registerComponent(ContentSection, {
       description: "Short name for analytics, e.g. ambassador-hero. Leave blank if not needed.",
       section: "Button",
     },
+    secondButtonText: {
+      type: "string",
+      displayName: "Second button text (outlined)",
+      description: "Optional. Shows only when BOTH second button text and link are filled. Outlined style, fills in on hover. Maximum of two buttons.",
+      section: "Button",
+    },
+    secondButtonLink: {
+      type: "string",
+      displayName: "Second button link",
+      description: "e.g. /donate, https://ukraineaidtoday.ca, mailto:info@gcmm.ca",
+      section: "Button",
+    },
+    secondTrackingLabel: {
+      type: "string",
+      displayName: "Second button tracking label (optional)",
+      description: "Short name for analytics so clicks on this button are counted separately, e.g. ukraine-learn-more.",
+      section: "Button",
+    },
 
     // ---- Image ----
     showImage: {
@@ -2029,6 +2047,18 @@ PLASMIC.registerComponent(ContentSection, {
       type: "color",
       displayName: "Button text color",
       description: "Blank = Deep Navy",
+      section: "Colors",
+    },
+    secondButtonColor: {
+      type: "color",
+      displayName: "Second button color",
+      description: "Border and text color of the outlined button. Blank = Deep Navy (white when the photo is behind the text)",
+      section: "Colors",
+    },
+    secondButtonHoverTextColor: {
+      type: "color",
+      displayName: "Second button hover text color",
+      description: "Text color once the button fills in on hover. Blank = automatic (white, or navy on a white button)",
       section: "Colors",
     },
 
