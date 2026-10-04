@@ -12,33 +12,7 @@ interface Photo {
 
 export function PhotoCarousel({
   className,
-  photos = [
-    {
-      image: "/placeholder.svg?height=400&width=600",
-      alt: "Photo 1",
-      caption: "Beautiful landscape",
-    },
-    {
-      image: "/placeholder.svg?height=400&width=600",
-      alt: "Photo 2",
-      caption: "City skyline",
-    },
-    {
-      image: "/placeholder.svg?height=400&width=600",
-      alt: "Photo 3",
-      caption: "Mountain view",
-    },
-    {
-      image: "/placeholder.svg?height=400&width=600",
-      alt: "Photo 4",
-      caption: "Ocean sunset",
-    },
-    {
-      image: "/placeholder.svg?height=400&width=600",
-      alt: "Photo 5",
-      caption: "Forest path",
-    },
-  ],
+  photos = [],
   photosPerView = 3,
   photoWidth = "400px",
   photoHeight = "300px",
@@ -147,6 +121,10 @@ export function PhotoCarousel({
     }
     return `/${url}`
   }
+
+  // No photos -> render nothing (no empty section, no sample photos).
+  // This sits after every hook above, so hook order is unchanged.
+  if (!photos || photos.length === 0) return null
 
   const visiblePhotos = photos.slice(currentIndex, currentIndex + actualPhotosPerView)
 
