@@ -250,12 +250,12 @@ function parseBody(body: string): BodyBlock[] {
 // subheadings become H2, so a page never ends up with extra H1s.
 const SUB_LEVEL: Record<Level, "h2" | "h3"> = { h1: "h2", h2: "h2", h3: "h3" }
 
-// A quote is one size step bigger than the body text.
-const STEP_UP: Record<SizeChoice, SizeChoice> = {
-  small: "medium",
-  medium: "large",
-  large: "xl",
-  xl: "xl",
+// Quote text is a little bigger than the body text (matched to Body size).
+const QUOTE_SIZES: Record<SizeChoice, string> = {
+  small: "clamp(1.0625rem, 2.2vw, 1.25rem)",
+  medium: "clamp(1.0625rem, 2.2vw, 1.375rem)",
+  large: "clamp(1.125rem, 2.4vw, 1.5rem)",
+  xl: "clamp(1.25rem, 2.6vw, 1.625rem)",
 }
 
 // Button row. Scoped class names (cs-btns) so nothing else on the page is
@@ -509,7 +509,7 @@ export function ContentSection({
                 fontFamily: FONT_STACKS.georgia,
                 fontStyle: "italic",
                 fontWeight: 400,
-                fontSize: BODY_SIZES[STEP_UP[bodySize]],
+                fontSize: QUOTE_SIZES[bodySize],
                 lineHeight: 1.55,
                 whiteSpace: "pre-line",
                 textWrap: "pretty",
@@ -520,7 +520,7 @@ export function ContentSection({
                 <footer
                   style={{
                     marginTop: "0.5rem",
-                    fontFamily: FONT_STACKS[bodyFont],
+                    fontFamily: FONT_STACKS.nunito,
                     fontStyle: "normal",
                     fontWeight: 600,
                     fontSize: "clamp(0.8125rem, 1.6vw, 0.9375rem)",
