@@ -507,7 +507,7 @@ export function CardGrid({
                   fontFamily: FONT_STACKS[headingFont],
                   fontSize: HEADING_SIZES[headingSize],
                   fontWeight: WEIGHTS[headingWeight],
-                  lineHeight: 1.25,
+                  lineHeight: 1.45,
                   textWrap: "balance",
                 }}
               >
