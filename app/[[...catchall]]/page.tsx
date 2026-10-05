@@ -5,18 +5,6 @@ import { PLASMIC_SERVER } from "@/src/plasmic-init-server";
 import { isNoIndexPath } from "@/lib/indexing";
 import PlasmicClientPage from "./client-page";
 import type { StoryLink } from "@/components/all-stories-list";
-// NOTE (Sep 2026): this was briefly changed to a next/dynamic(..., { ssr:
-// false }) import to keep this component's bundle out of every route's
-// shared chunk — but Next.js disallows ssr:false with next/dynamic inside
-// Server Components (this file does server-side data fetching, so it's a
-// Server Component), which broke the production build. Reverted to a plain
-// static import. This is safe: the actual bug (Stripe's JS loading on every
-// page) is fixed inside stripe-donation-page-v2.tsx itself — loadStripe()
-// now only runs lazily, inside a useEffect, once this component actually
-// mounts. Since it only mounts here when pathname === "/donate", that lazy
-// call never fires on other pages regardless of whether this import is
-// static or dynamic.
-import { StripeDonationPage } from "@/components/stripe-donation-page-v2";
 
 type Props = {
   params: Promise<{ catchall?: string[] }>;
@@ -470,17 +458,9 @@ export default async function CatchallPage({ params }: Props) {
   } catch (err) {
     console.error(`Plasmic fetch failed for ${pathname}:`, err);
 
-    // Donations are revenue-critical — don't just apologize, actually let
-    // people give. StripeDonationPage has no Plasmic dependency itself, so
-    // it renders fine even while Plasmic's API is down. It'll show its own
-    // built-in defaults (org info, a single "Where Most Needed" campaign)
-    // rather than whatever specific campaigns are configured in Plasmic
-    // Studio, since fetching that config is exactly what's failing — but a
-    // working donation path beats none. Payment itself goes through our own
-    // /api/stripe-donate-v2 route, which doesn't depend on Plasmic either.
-    if (pathname === "/donate") {
-      return <StripeDonationPage />;
-    }
+    // /donate is treated like every other page: re-throw so the last good
+    // copy keeps serving. If there is no good copy at all, error.tsx shows
+    // the built-in donation form for /donate (still no Plasmic needed).
 
     // Do NOT return a page here. A returned page counts as a successful
     // rebuild, so it would be saved over the good copy for every visitor
