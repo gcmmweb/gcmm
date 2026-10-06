@@ -157,6 +157,7 @@ import { IconCard } from "@/components/icongrid"
 import { TextSection1 } from "@/components/TextSection1"
 
 import { ContentSection } from "@/components/ContentSection"
+import { VideoSection } from "@/components/VideoSection"
 
 import { CardGrid } from "@/components/CardGrid"
 
@@ -16868,3 +16869,442 @@ PLASMIC.registerComponent(AllStoriesList, {
   },
   importPath: "./components/all-stories-list",
 });
+
+// VIDEO SECTION (Oct 2026): ONE reusable video block that replaces Ministry
+// Video, Video Ministries Section and the plain Iframe element. Accepts any
+// YouTube/Vimeo link or embed code (lib/video-source.ts), loads the real player
+// only after a click (picture is lazy-loaded), counts plays in Google Analytics.
+PLASMIC.registerComponent(VideoSection, {
+  name: "VideoSection",
+  displayName: "Video Section",
+  description:
+    "Video with optional text and two buttons. Paste any YouTube or Vimeo link (or the embed code). The player loads only when someone clicks play. Leave any text field blank and it disappears with no gap.",
+  props: {
+    className: {
+      type: "class",
+      displayName: "CSS Class",
+    },
+
+    // ---- Content ----
+    eyebrow: {
+      type: "string",
+      displayName: "Eyebrow (small label above heading)",
+      description: "Format words: **bold**, *italic*, ***bold and italic***.",
+      section: "Content",
+    },
+    heading: {
+      type: "string",
+      displayName: "Heading",
+      description: "Optional. Format words: **bold**, *italic*. Leave blank for a video with no text.",
+      section: "Content",
+    },
+    headingLevel: {
+      type: "choice",
+      displayName: "Heading level",
+      description: "Use H1 only ONCE per page (the main title). Everything else H2.",
+      options: [
+        { value: "h1", label: "H1 (main page title)" },
+        { value: "h2", label: "H2 (section)" },
+        { value: "h3", label: "H3 (sub-section)" },
+      ],
+      defaultValue: "h2",
+      section: "Content",
+    },
+    lead: {
+      type: "string",
+      control: "large",
+      displayName: "Lead line (large text under heading)",
+      section: "Content",
+    },
+    body: {
+      type: "string",
+      control: "large",
+      displayName: "Body text",
+      description: "Blank line = new paragraph. A line starting with ## becomes a subheading. Format words: **bold**, *italic*.",
+      section: "Content",
+    },
+
+    // ---- Video ----
+    videoLink: {
+      type: "string",
+      control: "large",
+      displayName: "Video link",
+      description:
+        "Paste ANY of these: a YouTube or Vimeo page link, a share link, an embed link, or the whole embed code. Nothing to convert.",
+      section: "Video",
+    },
+    videoTitle: {
+      type: "string",
+      displayName: "Video title (for screen readers and analytics)",
+      description: "Blank = the heading is used.",
+      section: "Video",
+    },
+    posterImage: {
+      type: "imageUrl",
+      displayName: "Poster image (optional)",
+      description:
+        "The picture shown before play. YouTube gets one automatically. Vimeo has no automatic picture, so upload one for Vimeo videos (about 150 KB is plenty).",
+      section: "Video",
+    },
+    videoShape: {
+      type: "choice",
+      displayName: "Video shape",
+      options: [
+        { value: "wide", label: "Widescreen (16:9)" },
+        { value: "classic", label: "Classic (4:3)" },
+        { value: "square", label: "Square" },
+        { value: "tall", label: "Tall / phone video (9:16)" },
+      ],
+      defaultValue: "wide",
+      section: "Video",
+    },
+    videoRadius: {
+      type: "choice",
+      displayName: "Rounded corners",
+      options: [
+        { value: "none", label: "None" },
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+      ],
+      defaultValue: "medium",
+      section: "Video",
+    },
+    videoShadow: {
+      type: "boolean",
+      displayName: "Soft shadow",
+      defaultValue: true,
+      section: "Video",
+    },
+    loadEagerly: {
+      type: "boolean",
+      displayName: "Video is visible without scrolling",
+      description: "Turn on for ONE video per page: the one you can see before scrolling. Leave off for all others (they load only when you scroll near them).",
+      defaultValue: false,
+      section: "Video",
+    },
+    videoTrackingLabel: {
+      type: "string",
+      displayName: "Tracking label (optional)",
+      description: "Short name added to the play count in Google Analytics, e.g. ukraineaid-page. Leave blank if not needed.",
+      section: "Video",
+    },
+
+    // ---- Buttons ----
+    buttonText: {
+      type: "string",
+      displayName: "Button text",
+      section: "Button",
+    },
+    buttonLink: {
+      type: "string",
+      displayName: "Button link",
+      description: "e.g. /donate, https://ukraineaidtoday.ca, mailto:info@gcmm.ca",
+      section: "Button",
+    },
+    trackingLabel: {
+      type: "string",
+      displayName: "Tracking label (optional)",
+      description: "Short name for analytics, e.g. ukraine-give. Leave blank if not needed.",
+      section: "Button",
+    },
+    secondButtonText: {
+      type: "string",
+      displayName: "Second button text (outlined)",
+      description: "Optional. Shows only when BOTH second button text and link are filled. Maximum of two buttons.",
+      section: "Button",
+    },
+    secondButtonLink: {
+      type: "string",
+      displayName: "Second button link",
+      section: "Button",
+    },
+    secondTrackingLabel: {
+      type: "string",
+      displayName: "Second button tracking label (optional)",
+      section: "Button",
+    },
+    phoneButtons: {
+      type: "choice",
+      displayName: "Buttons on phones",
+      options: [
+        { value: "full", label: "Full width" },
+        { value: "natural", label: "Natural width" },
+      ],
+      defaultValue: "full",
+      section: "Button",
+    },
+
+    // ---- Layout ----
+    layout: {
+      type: "choice",
+      displayName: "Video position",
+      options: [
+        { value: "below", label: "Below the text" },
+        { value: "above", label: "Above the text" },
+        { value: "left", label: "Beside the text (video on the left)" },
+        { value: "right", label: "Beside the text (video on the right)" },
+      ],
+      defaultValue: "below",
+      section: "Layout",
+    },
+    verticalAlign: {
+      type: "choice",
+      displayName: "Line up beside the text",
+      description: "For the side-by-side layouts: line the video up with the top of the text, or the middle.",
+      options: [
+        { value: "middle", label: "Middle" },
+        { value: "top", label: "Top" },
+      ],
+      defaultValue: "middle",
+      hidden: (props: any) => props.layout !== "left" && props.layout !== "right",
+      section: "Layout",
+    },
+    videoWidth: {
+      type: "choice",
+      displayName: "Video width (side by side)",
+      options: [
+        { value: "small", label: "Small (40%)" },
+        { value: "medium", label: "Medium (half)" },
+        { value: "large", label: "Large (60%)" },
+      ],
+      defaultValue: "medium",
+      hidden: (props: any) => props.layout !== "left" && props.layout !== "right",
+      section: "Layout",
+    },
+    phoneOrder: {
+      type: "choice",
+      displayName: "On phones, show first",
+      options: [
+        { value: "videoFirst", label: "The video" },
+        { value: "textFirst", label: "The text" },
+      ],
+      defaultValue: "videoFirst",
+      hidden: (props: any) => props.layout !== "left" && props.layout !== "right",
+      section: "Layout",
+    },
+    alignment: {
+      type: "choice",
+      displayName: "Text alignment",
+      options: ["left", "center", "right"],
+      defaultValue: "left",
+      section: "Layout",
+    },
+    contentWidth: {
+      type: "choice",
+      displayName: "Width (video above or below the text)",
+      options: [
+        { value: "narrow", label: "Narrow" },
+        { value: "medium", label: "Medium" },
+        { value: "wide", label: "Wide" },
+      ],
+      defaultValue: "medium",
+      hidden: (props: any) => props.layout === "left" || props.layout === "right",
+      section: "Layout",
+    },
+    spaceY: {
+      type: "choice",
+      displayName: "Space above & below",
+      options: [
+        { value: "none", label: "None" },
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "large",
+      section: "Layout",
+    },
+    spaceTop: {
+      type: "choice",
+      displayName: "Space above (optional)",
+      description: "Changes only the top space. Leave unset to follow 'Space above & below'.",
+      options: [
+        { value: "none", label: "None" },
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      section: "Layout",
+    },
+    spaceBottom: {
+      type: "choice",
+      displayName: "Space below (optional)",
+      description: "Changes only the bottom space. Leave unset to follow 'Space above & below'.",
+      options: [
+        { value: "none", label: "None" },
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      section: "Layout",
+    },
+    spaceX: {
+      type: "choice",
+      displayName: "Space left & right",
+      options: [
+        { value: "none", label: "None" },
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "medium",
+      section: "Layout",
+    },
+
+    // ---- Colors ----
+    backgroundColor: {
+      type: "color",
+      displayName: "Background color",
+      description: "Blank = white",
+      section: "Colors",
+    },
+    lightText: {
+      type: "boolean",
+      displayName: "Light text (for dark backgrounds)",
+      description: "Turn on when the background is dark: text becomes white and the label amber.",
+      defaultValue: false,
+      section: "Colors",
+    },
+    textColor: {
+      type: "color",
+      displayName: "Text color",
+      description: "Blank = Deep Navy (white when Light text is on)",
+      section: "Colors",
+    },
+    headingColor: {
+      type: "color",
+      displayName: "Heading color",
+      description: "Blank = automatic",
+      section: "Colors",
+    },
+    eyebrowColor: {
+      type: "color",
+      displayName: "Eyebrow color",
+      description: "Blank = automatic",
+      section: "Colors",
+    },
+    buttonColor: {
+      type: "color",
+      displayName: "Button color",
+      description: "Blank = Amber",
+      section: "Colors",
+    },
+    buttonTextColor: {
+      type: "color",
+      displayName: "Button text color",
+      description: "Blank = Deep Navy",
+      section: "Colors",
+    },
+    secondButtonColor: {
+      type: "color",
+      displayName: "Second button color",
+      description: "Border and text color of the outlined button. Blank = automatic",
+      section: "Colors",
+    },
+    secondButtonHoverTextColor: {
+      type: "color",
+      displayName: "Second button hover text color",
+      description: "Blank = automatic",
+      section: "Colors",
+    },
+    playButtonColor: {
+      type: "color",
+      displayName: "Play button color",
+      description: "Blank = Amber",
+      section: "Colors",
+    },
+
+    // ---- Text style ----
+    eyebrowSize: {
+      type: "choice",
+      displayName: "Eyebrow size",
+      options: [
+        { value: "small", label: "Small" },
+        { value: "normal", label: "Normal" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "normal",
+      section: "Text style",
+    },
+    headingFont: {
+      type: "choice",
+      displayName: "Heading font",
+      options: [
+        { value: "site", label: "Site default (Nunito)" },
+        { value: "georgia", label: "Georgia" },
+        { value: "nunito", label: "Nunito" },
+        { value: "poppins", label: "Poppins" },
+        { value: "lexend", label: "Lexend" },
+      ],
+      defaultValue: "georgia",
+      section: "Text style",
+    },
+    headingSize: {
+      type: "choice",
+      displayName: "Heading size",
+      options: [
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "large",
+      section: "Text style",
+    },
+    headingWeight: {
+      type: "choice",
+      displayName: "Heading weight",
+      options: [
+        { value: "regular", label: "Regular" },
+        { value: "medium", label: "Medium" },
+        { value: "semibold", label: "Semibold" },
+        { value: "bold", label: "Bold" },
+      ],
+      defaultValue: "bold",
+      section: "Text style",
+    },
+    bodyFont: {
+      type: "choice",
+      displayName: "Body font",
+      options: [
+        { value: "site", label: "Site default (Nunito)" },
+        { value: "georgia", label: "Georgia" },
+        { value: "nunito", label: "Nunito" },
+        { value: "poppins", label: "Poppins" },
+        { value: "lexend", label: "Lexend" },
+      ],
+      defaultValue: "site",
+      section: "Text style",
+    },
+    bodySize: {
+      type: "choice",
+      displayName: "Body size",
+      options: [
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "medium",
+      section: "Text style",
+    },
+    bodyWeight: {
+      type: "choice",
+      displayName: "Body weight",
+      options: [
+        { value: "regular", label: "Regular" },
+        { value: "medium", label: "Medium" },
+        { value: "semibold", label: "Semibold" },
+        { value: "bold", label: "Bold" },
+      ],
+      defaultValue: "regular",
+      section: "Text style",
+    },
+  },
+  importPath: "./components/VideoSection",
+} as any);

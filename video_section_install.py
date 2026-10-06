@@ -1,0 +1,1430 @@
+#!/usr/bin/env python3
+"""
+video_section_install.py  (ASCII only)
+
+Adds the new "Video Section" component to gcmm.ca. It changes NO live page:
+nothing uses it until you place it in Plasmic Studio.
+
+What it does:
+  1. creates  lib/video-source.ts            (reads ANY YouTube/Vimeo link or embed code)
+  2. creates  lib/track-event.ts             (safe "send event to Google Analytics" helper)
+  3. creates  components/VideoSection.tsx    (the component)
+  4. patches  src/plasmic-init.ts            (one import line + the Studio registration at the end)
+
+Run from the repo root (gcmmfinal):
+  python3 video_section_install.py --dry-run     # shows what would change, writes nothing
+  python3 video_section_install.py               # applies it
+
+Safe to run twice. If an anchor line is not found exactly once, NOTHING is written.
+"""
+import sys, os
+
+DRY = "--dry-run" in sys.argv
+INIT = "src/plasmic-init.ts"
+
+NEW_FILES = {
+    'lib/video-source.ts': r"""// lib/video-source.ts
+//
+// ONE place that understands video links for the whole site. Paste anything:
+//   - a YouTube share link (youtu.be/...), watch link, embed link, Shorts or Live link
+//   - a Vimeo page link or player link (private "h=" codes are kept)
+//   - the whole <iframe ...> embed code copied from YouTube or Vimeo
+//   - a plain video file link (.mp4, .webm)
+// and get back one clean description of the video. Returns null when the link
+// is not recognised (the component then shows nothing on the live site).
+
+export type VideoProvider = "youtube" | "vimeo" | "file"
+
+export interface VideoSource {
+  provider: VideoProvider
+  id: string // YouTube id, Vimeo id, or the file address
+  hash?: string // Vimeo private-link code
+  start?: number // start time in seconds
+  watchUrl: string // the video's own page (a real link, good for Google)
+  embedUrl: string // player address with autoplay (used only after a click)
+  thumbnailUrls: string[] // YouTube pictures, best first (Vimeo has none)
+}
+
+const YT_ID = /^[A-Za-z0-9_-]{11}$/
+
+// Turns whatever was pasted into one clean https address (or "").
+function cleanInput(raw: string): string {
+  let s = (raw || "").trim()
+  if (!s) return ""
+  const iframe = s.match(/<iframe[^>]*?\ssrc\s*=\s*["']?([^"'\s>]+)/i)
+  if (iframe) {
+    s = iframe[1]
+  } else if (/[<>"']/.test(s)) {
+    const url = s.match(/https?:\/\/[^\s"'<>]+/i)
+    if (url) s = url[0]
+  }
+  s = s
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/^[\s"'<>]+|[\s"'<>]+$/g, "")
+  if (/^\/\//.test(s)) s = "https:" + s
+  if (!/^[a-z][a-z0-9+.-]*:/i.test(s)) s = "https://" + s
+  return s
+}
+
+// "90", "1m30s", "1h2m3s" -> seconds
+function parseTime(value: string | null | undefined): number | undefined {
+  if (!value) return undefined
+  if (/^\d+$/.test(value)) {
+    const n = parseInt(value, 10)
+    return n > 0 ? n : undefined
+  }
+  const m = value.match(/^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$/i)
+  if (!m || !(m[1] || m[2] || m[3])) return undefined
+  const n = (+m[1] || 0) * 3600 + (+m[2] || 0) * 60 + (+m[3] || 0)
+  return n > 0 ? n : undefined
+}
+
+function youtubeId(u: URL): string | null {
+  const host = u.hostname.toLowerCase().replace(/^www\./, "").replace(/^m\./, "")
+  const parts = u.pathname.split("/").filter(Boolean)
+  if (host === "youtu.be") return parts[0] ?? null
+  if (host === "youtube.com" || host === "youtube-nocookie.com" || host === "music.youtube.com") {
+    if (parts[0] === "watch") return u.searchParams.get("v")
+    if (["embed", "shorts", "live", "v"].includes(parts[0])) return parts[1] ?? null
+  }
+  return null
+}
+
+function vimeoParts(u: URL): { id: string; hash?: string } | null {
+  const host = u.hostname.toLowerCase().replace(/^www\./, "")
+  if (host !== "vimeo.com" && host !== "player.vimeo.com") return null
+  const parts = u.pathname.split("/").filter(Boolean)
+  const idx = parts.findIndex((p) => /^\d{6,}$/.test(p))
+  if (idx === -1) return null
+  let hash = u.searchParams.get("h") || undefined
+  const next = parts[idx + 1]
+  if (!hash && next && /^[A-Za-z0-9]{8,12}$/.test(next)) hash = next
+  return { id: parts[idx], hash }
+}
+
+export function parseVideoSource(raw: string | undefined | null): VideoSource | null {
+  const cleaned = cleanInput(raw ?? "")
+  if (!cleaned) return null
+  let u: URL
+  try {
+    u = new URL(cleaned)
+  } catch {
+    return null
+  }
+  if (u.protocol !== "https:" && u.protocol !== "http:") return null
+
+  const yt = youtubeId(u)
+  if (yt && YT_ID.test(yt)) {
+    const start = parseTime(u.searchParams.get("start")) ?? parseTime(u.searchParams.get("t"))
+    return {
+      provider: "youtube",
+      id: yt,
+      start,
+      watchUrl: `https://www.youtube.com/watch?v=${yt}${start ? `&t=${start}s` : ""}`,
+      embedUrl: `https://www.youtube-nocookie.com/embed/${yt}?autoplay=1&rel=0&playsinline=1${start ? `&start=${start}` : ""}`,
+      thumbnailUrls: [
+        `https://i.ytimg.com/vi/${yt}/maxresdefault.jpg`,
+        `https://i.ytimg.com/vi/${yt}/hqdefault.jpg`,
+      ],
+    }
+  }
+
+  const vm = vimeoParts(u)
+  if (vm) {
+    const start = parseTime(new URLSearchParams(u.hash.replace(/^#/, "")).get("t"))
+    return {
+      provider: "vimeo",
+      id: vm.id,
+      hash: vm.hash,
+      start,
+      watchUrl: `https://vimeo.com/${vm.id}${vm.hash ? `/${vm.hash}` : ""}`,
+      embedUrl:
+        `https://player.vimeo.com/video/${vm.id}?` +
+        `${vm.hash ? `h=${vm.hash}&` : ""}autoplay=1&dnt=1&playsinline=1` +
+        `${start ? `#t=${start}s` : ""}`,
+      thumbnailUrls: [],
+    }
+  }
+
+  if (/\.(mp4|webm|m4v|mov)$/i.test(u.pathname)) {
+    return {
+      provider: "file",
+      id: u.toString(),
+      watchUrl: u.toString(),
+      embedUrl: u.toString(),
+      thumbnailUrls: [],
+    }
+  }
+
+  return null
+}
+""",
+    'lib/track-event.ts': r"""// lib/track-event.ts
+//
+// Sends one event to Google Analytics 4. Safe to call at any time:
+//  - if Google's tag has already loaded, it is used directly;
+//  - if not yet (the tag loads late on purpose), the event is queued and Google
+//    sends it as soon as the tag arrives (so early clicks are not lost);
+//  - any problem is swallowed: analytics must never be able to break a page.
+
+type Params = Record<string, string | number | boolean | undefined>
+
+export function trackEvent(name: string, params: Params = {}): void {
+  try {
+    if (typeof window === "undefined") return
+    const w = window as unknown as {
+      dataLayer?: unknown[]
+      gtag?: (...args: unknown[]) => void
+    }
+    const clean: Record<string, string | number | boolean> = {}
+    for (const [key, value] of Object.entries(params)) {
+      if (value === undefined || value === "") continue
+      clean[key] = typeof value === "string" ? value.slice(0, 100) : value
+    }
+    if (typeof w.gtag === "function") {
+      w.gtag("event", name, clean)
+      return
+    }
+    w.dataLayer = w.dataLayer || []
+    // Google's tag only understands "arguments" objects in the queue, not arrays.
+    const queue = w.dataLayer
+    ;(function (..._args: unknown[]) {
+      // eslint-disable-next-line prefer-rest-params
+      queue.push(arguments)
+    })("event", name, clean)
+  } catch {
+    /* never break the page */
+  }
+}
+""",
+    'components/VideoSection.tsx': r""""use client"
+
+import { useEffect, useRef, useState, type CSSProperties } from "react"
+import Link from "next/link"
+import { formatInline } from "@/lib/inline-format"
+import { EYEBROW_STYLES, type EyebrowSizeChoice } from "@/lib/eyebrow-sizes"
+import { parseVideoSource } from "@/lib/video-source"
+import { trackEvent } from "@/lib/track-event"
+
+/**
+ * VideoSection - ONE reusable video block (with optional text and two buttons).
+ *
+ * - Paste ANY YouTube or Vimeo link, embed link, or the whole embed code.
+ * - Light by design: the page shows a picture with a play button. The real
+ *   player (about 1.7 MB for YouTube) loads ONLY after someone clicks play.
+ *   The picture is lazy-loaded too, unless "Video is visible without
+ *   scrolling" is turned on.
+ * - The play button is a real link to the video's own page, so Google and
+ *   people without JavaScript can still follow it.
+ * - Every play is counted in Google Analytics ("video_play").
+ * - Text and buttons are blank-safe, exactly like Content Section: leave a
+ *   field empty and it disappears with no gap.
+ * - No global CSS: scoped class names (vs-*) only.
+ */
+
+// Brand palette (same as Content Section)
+const NAVY = "#1F2D55"
+const BLUE = "#336896"
+const AMBER = "#F4A300"
+const WHITE = "#FFFFFF"
+
+const PAGE_MAX_WIDTH = "1280px"
+
+type Level = "h1" | "h2" | "h3"
+type Align = "left" | "center" | "right"
+type Layout = "above" | "below" | "left" | "right"
+type SizeChoice = "small" | "medium" | "large" | "xl"
+type WeightChoice = "regular" | "medium" | "semibold" | "bold"
+type FontChoice = "site" | "georgia" | "nunito" | "poppins" | "lexend"
+type SpaceChoice = "none" | "small" | "medium" | "large" | "xl"
+type WidthChoice = "narrow" | "medium" | "wide"
+type ShapeChoice = "wide" | "classic" | "square" | "tall"
+type RadiusChoice = "none" | "small" | "medium" | "large"
+type SideWidth = "small" | "medium" | "large"
+
+interface VideoSectionProps {
+  className?: string
+
+  // Content
+  eyebrow?: string
+  heading?: string
+  headingLevel?: Level
+  lead?: string
+  body?: string
+
+  // Video
+  videoLink?: string
+  videoTitle?: string
+  posterImage?: string
+  videoShape?: ShapeChoice
+  videoRadius?: RadiusChoice
+  videoShadow?: boolean
+  loadEagerly?: boolean
+  videoTrackingLabel?: string
+
+  // Buttons
+  buttonText?: string
+  buttonLink?: string
+  trackingLabel?: string
+  secondButtonText?: string
+  secondButtonLink?: string
+  secondTrackingLabel?: string
+  phoneButtons?: "full" | "natural"
+
+  // Layout
+  layout?: Layout
+  verticalAlign?: "top" | "middle"
+  videoWidth?: SideWidth
+  phoneOrder?: "textFirst" | "videoFirst"
+  alignment?: Align
+  contentWidth?: WidthChoice
+  spaceY?: SpaceChoice
+  spaceTop?: SpaceChoice
+  spaceBottom?: SpaceChoice
+  spaceX?: SpaceChoice
+
+  // Colors (blank = automatic brand colors)
+  backgroundColor?: string
+  lightText?: boolean
+  textColor?: string
+  headingColor?: string
+  eyebrowColor?: string
+  buttonColor?: string
+  buttonTextColor?: string
+  secondButtonColor?: string
+  secondButtonHoverTextColor?: string
+  playButtonColor?: string
+
+  // Text style
+  eyebrowSize?: EyebrowSizeChoice
+  headingFont?: FontChoice
+  headingSize?: SizeChoice
+  headingWeight?: WeightChoice
+  bodyFont?: FontChoice
+  bodySize?: SizeChoice
+  bodyWeight?: WeightChoice
+}
+
+const FONT_STACKS: Record<FontChoice, string> = {
+  site: "inherit",
+  georgia: 'Georgia, Gelasio, "Times New Roman", serif',
+  nunito: "Nunito, system-ui, sans-serif",
+  poppins: "Poppins, system-ui, sans-serif",
+  lexend: "Lexend, system-ui, sans-serif",
+}
+
+const HEADING_SIZES: Record<SizeChoice, string> = {
+  small: "clamp(1.5rem, 3vw, 1.875rem)",
+  medium: "clamp(1.75rem, 4vw, 2.5rem)",
+  large: "clamp(2rem, 5vw, 3.25rem)",
+  xl: "clamp(2.25rem, 6vw, 4.5rem)",
+}
+
+const BODY_SIZES: Record<SizeChoice, string> = {
+  small: "1rem",
+  medium: "clamp(1rem, 2vw, 1.125rem)",
+  large: "clamp(1.0625rem, 2.2vw, 1.25rem)",
+  xl: "clamp(1.125rem, 2.5vw, 1.375rem)",
+}
+
+const WEIGHTS: Record<WeightChoice, number> = { regular: 400, medium: 500, semibold: 600, bold: 700 }
+
+const SPACE_Y: Record<SpaceChoice, string> = {
+  none: "0px",
+  small: "clamp(1.5rem, 3vw, 2.5rem)",
+  medium: "clamp(2.5rem, 5vw, 4rem)",
+  large: "clamp(3.5rem, 7vw, 6rem)",
+  xl: "clamp(5rem, 10vw, 8rem)",
+}
+
+const SPACE_X: Record<SpaceChoice, string> = {
+  none: "0px",
+  small: "1rem",
+  medium: "clamp(1rem, 4vw, 2rem)",
+  large: "clamp(1.5rem, 6vw, 4rem)",
+  xl: "clamp(2rem, 8vw, 6rem)",
+}
+
+const CONTENT_WIDTHS: Record<WidthChoice, string> = { narrow: "640px", medium: "800px", wide: "1100px" }
+const ALIGN_ITEMS: Record<Align, string> = { left: "flex-start", center: "center", right: "flex-end" }
+const SHAPES: Record<ShapeChoice, string> = { wide: "16 / 9", classic: "4 / 3", square: "1 / 1", tall: "9 / 16" }
+const RADII: Record<RadiusChoice, string> = { none: "0px", small: "6px", medium: "12px", large: "20px" }
+
+// Columns for the side-by-side layouts: [text, video]
+const SIDE_COLUMNS: Record<SideWidth, [string, string]> = {
+  small: ["3fr", "2fr"],
+  medium: ["1fr", "1fr"],
+  large: ["2fr", "3fr"],
+}
+
+function isExternal(url: string) {
+  return /^(https?:|mailto:|tel:)/i.test(url)
+}
+
+// Body text: blank lines make paragraphs; a line starting with "## " becomes a
+// subheading (same convention as Content Section).
+type Block = { kind: "heading" | "text"; text: string }
+function parseBody(body: string): Block[] {
+  const blocks: Block[] = []
+  let buffer: string[] = []
+  const flush = () => {
+    const text = buffer.join("\n").trim()
+    if (text) blocks.push({ kind: "text", text })
+    buffer = []
+  }
+  for (const line of body.replace(/\r/g, "").split("\n")) {
+    const h = line.match(/^[ \t]*##[ \t]+(.+?)[ \t]*$/)
+    if (h) {
+      flush()
+      blocks.push({ kind: "heading", text: h[1] })
+    } else {
+      buffer.push(line)
+    }
+  }
+  flush()
+  return blocks
+}
+
+const SUB_LEVEL: Record<Level, "h2" | "h3"> = { h1: "h2", h2: "h2", h3: "h3" }
+
+const SECTION_CSS = `
+.vs-btns{display:flex;flex-wrap:wrap;gap:0.5rem 1rem}
+@media (max-width:640px){
+.vs-btns{margin-top:0.75rem}
+.vs-btns-full{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:1fr;gap:0.75rem}
+.vs-btns-full > a{margin-top:0;width:100%;box-sizing:border-box;text-align:center}
+}
+.vs-side{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--vs-gap)}
+.vs-side > .vs-video{order:var(--vs-o-phone)}
+@media (min-width:768px){
+.vs-side{grid-template-columns:var(--vs-cols);align-items:var(--vs-align)}
+.vs-side > .vs-video{order:var(--vs-o-desk)}
+}
+.vs-play{position:absolute;top:0;right:0;bottom:0;left:0;display:block;width:100%;height:100%;cursor:pointer;border:0;padding:0;background:transparent;text-decoration:none}
+.vs-play:focus-visible{outline:3px solid #fff;outline-offset:-6px}
+.vs-dot{transition:transform 0.2s ease}
+@media (prefers-reduced-motion:no-preference){.vs-play:hover .vs-dot,.vs-play:focus-visible .vs-dot{transform:scale(1.08)}}
+`
+
+export function VideoSection({
+  className = "",
+
+  eyebrow = "",
+  heading = "",
+  headingLevel = "h2",
+  lead = "",
+  body = "",
+
+  videoLink = "",
+  videoTitle = "",
+  posterImage = "",
+  videoShape = "wide",
+  videoRadius = "medium",
+  videoShadow = true,
+  loadEagerly = false,
+  videoTrackingLabel = "",
+
+  buttonText = "",
+  buttonLink = "",
+  trackingLabel = "",
+  secondButtonText = "",
+  secondButtonLink = "",
+  secondTrackingLabel = "",
+  phoneButtons = "full",
+
+  layout = "below",
+  verticalAlign = "middle",
+  videoWidth = "medium",
+  phoneOrder = "videoFirst",
+  alignment = "left",
+  contentWidth = "medium",
+  spaceY = "large",
+  spaceTop,
+  spaceBottom,
+  spaceX = "medium",
+
+  backgroundColor,
+  lightText = false,
+  textColor,
+  headingColor,
+  eyebrowColor,
+  buttonColor,
+  buttonTextColor,
+  secondButtonColor,
+  secondButtonHoverTextColor,
+  playButtonColor,
+
+  eyebrowSize = "normal",
+  headingFont = "georgia",
+  headingSize = "large",
+  headingWeight = "bold",
+  bodyFont = "site",
+  bodySize = "medium",
+  bodyWeight = "regular",
+}: VideoSectionProps) {
+  const [playing, setPlaying] = useState(false)
+  const [thumbIndex, setThumbIndex] = useState(0)
+  const [inEditor, setInEditor] = useState(false)
+  const [secondHover, setSecondHover] = useState(false)
+  const [reduceMotion, setReduceMotion] = useState(false)
+  const iframeRef = useRef<HTMLIFrameElement>(null)
+  const warmed = useRef(false)
+  const filePlayed = useRef(false)
+
+  useEffect(() => {
+    try {
+      setInEditor(window.self !== window.top) // true inside the Plasmic Studio canvas
+    } catch {
+      setInEditor(true)
+    }
+    const query = window.matchMedia("(prefers-reduced-motion: reduce)")
+    setReduceMotion(query.matches)
+    const onChange = () => setReduceMotion(query.matches)
+    query.addEventListener("change", onChange)
+    return () => query.removeEventListener("change", onChange)
+  }, [])
+
+  useEffect(() => {
+    if (playing) iframeRef.current?.focus()
+  }, [playing])
+
+  const source = parseVideoSource(videoLink)
+  const eyebrowText = eyebrow.trim()
+  const headingText = heading.trim()
+  const leadText = lead.trim()
+  const bodyBlocks = parseBody(body)
+  const btnText = buttonText.trim()
+  const btnLink = buttonLink.trim()
+  const btn2Text = secondButtonText.trim()
+  const btn2Link = secondButtonLink.trim()
+  const hasButton = btnText.length > 0 && btnLink.length > 0
+  const hasSecond = btn2Text.length > 0 && btn2Link.length > 0
+  const hasText = !!(eyebrowText || headingText || leadText || bodyBlocks.length || hasButton || hasSecond)
+  const poster = posterImage.trim()
+
+  // Plain-text name used for screen readers and for analytics
+  const title = (videoTitle.trim() || headingText.replace(/\*+/g, "")).trim()
+
+  const isSide = layout === "left" || layout === "right"
+
+  // Automatic colors: navy/blue on light, white on dark (when "Light text" is on)
+  const colBackground = backgroundColor || WHITE
+  const colText = textColor || (lightText ? WHITE : NAVY)
+  const colHeading = headingColor || (lightText ? WHITE : NAVY)
+  const colEyebrow = eyebrowColor || (lightText ? AMBER : BLUE)
+  const colButton = buttonColor || AMBER
+  const colButtonText = buttonTextColor || NAVY
+  const colPlay = playButtonColor || AMBER
+
+  const outlineColor = secondButtonColor || (lightText ? WHITE : NAVY)
+  const outlineHoverText = secondButtonHoverTextColor || (!secondButtonColor && lightText ? NAVY : WHITE)
+  const outlineClass =
+    "mt-2 inline-flex min-h-[44px] items-center justify-center gap-2 rounded-md font-semibold no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+  const outlineStyle: CSSProperties = {
+    backgroundColor: secondHover ? outlineColor : "transparent",
+    color: secondHover ? outlineHoverText : outlineColor,
+    border: `2px solid ${outlineColor}`,
+    paddingTop: "calc(0.875rem - 2px)",
+    paddingBottom: "calc(0.875rem - 2px)",
+    paddingLeft: "calc(1.75rem - 2px)",
+    paddingRight: "calc(1.75rem - 2px)",
+    transition: reduceMotion ? "none" : "background-color 200ms ease, color 200ms ease",
+  }
+  const outlineHandlers = {
+    onMouseEnter: () => setSecondHover(true),
+    onMouseLeave: () => setSecondHover(false),
+    onFocus: () => setSecondHover(true),
+    onBlur: () => setSecondHover(false),
+  }
+
+  const Heading = headingLevel
+  const SubHeading = SUB_LEVEL[headingLevel]
+  const eyebrowStyle = EYEBROW_STYLES[eyebrowSize] ?? EYEBROW_STYLES.normal
+  const gap = "clamp(0.75rem, 1.5vw, 1.25rem)"
+  const stackGap = "clamp(1.25rem, 3vw, 2rem)"
+
+  const sendPlay = () => {
+    if (!source) return
+    trackEvent("video_play", {
+      video_title: title || undefined,
+      video_provider: source.provider,
+      video_id: source.provider === "file" ? undefined : source.id,
+      video_label: videoTrackingLabel.trim() || undefined,
+      page_path: typeof window !== "undefined" ? window.location.pathname : undefined,
+    })
+  }
+
+  const startPlaying = () => {
+    if (playing) return
+    setPlaying(true)
+    sendPlay()
+  }
+
+  // Start warming up the connection as soon as someone hovers/touches the button,
+  // so the click-to-play delay is hardly noticeable.
+  const warm = () => {
+    if (warmed.current || !source || source.provider === "file") return
+    warmed.current = true
+    const origins =
+      source.provider === "youtube"
+        ? ["https://www.youtube-nocookie.com", "https://i.ytimg.com"]
+        : ["https://player.vimeo.com", "https://i.vimeocdn.com"]
+    for (const href of origins) {
+      const link = document.createElement("link")
+      link.rel = "preconnect"
+      link.href = href
+      document.head.appendChild(link)
+    }
+  }
+
+  // ---- Video block ----------------------------------------------------------
+  const thumbSrc = poster || (source && source.thumbnailUrls[thumbIndex]) || ""
+
+  const playDot = (
+    <span
+      aria-hidden="true"
+      style={{
+        position: "absolute",
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "linear-gradient(0deg, rgba(11,18,32,0.35), rgba(11,18,32,0.05))",
+      }}
+    >
+      <span
+        className="vs-dot"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: "clamp(3.5rem, 9vw, 5rem)",
+          height: "clamp(3.5rem, 9vw, 5rem)",
+          borderRadius: "9999px",
+          backgroundColor: colPlay,
+          boxShadow: "0 8px 24px rgba(0,0,0,0.35)",
+        }}
+      >
+        <svg width="40%" height="40%" viewBox="0 0 24 24" style={{ marginLeft: "6%" }}>
+          <path d="M8 5v14l11-7z" fill={NAVY} />
+        </svg>
+      </span>
+    </span>
+  )
+
+  let videoInner: React.ReactNode = null
+  if (source) {
+    if (source.provider === "file") {
+      videoInner = (
+        <video
+          controls
+          playsInline
+          preload="none"
+          poster={poster || undefined}
+          aria-label={title || undefined}
+          onPlay={() => {
+            if (filePlayed.current) return
+            filePlayed.current = true
+            sendPlay()
+          }}
+          style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover" }}
+        >
+          <source src={source.embedUrl} />
+        </video>
+      )
+    } else if (playing) {
+      videoInner = (
+        <iframe
+          ref={iframeRef}
+          src={source.embedUrl}
+          title={title || "Video"}
+          allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+          allowFullScreen
+          style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: 0 }}
+        />
+      )
+    } else {
+      videoInner = (
+        <a
+          href={source.watchUrl}
+          role="button"
+          className="vs-play"
+          aria-label={title ? `Play video: ${title}` : "Play video"}
+          onClick={(e) => {
+            e.preventDefault()
+            startPlaying()
+          }}
+          onKeyDown={(e) => {
+            if (e.key === " ") {
+              e.preventDefault()
+              startPlaying()
+            }
+          }}
+          onPointerEnter={warm}
+          onFocus={warm}
+          onTouchStart={warm}
+        >
+          {thumbSrc && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={thumbSrc}
+              alt=""
+              decoding="async"
+              loading={loadEagerly ? "eager" : "lazy"}
+              {...(loadEagerly ? { fetchPriority: "high" as const } : {})}
+              onError={() => {
+                if (!poster) setThumbIndex((i) => i + 1)
+              }}
+              style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover" }}
+            />
+          )}
+          {playDot}
+        </a>
+      )
+    }
+  }
+
+  const placeholder =
+    !source && inEditor ? (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          aspectRatio: SHAPES[videoShape],
+          width: "100%",
+          border: "2px dashed #94a3b8",
+          borderRadius: RADII[videoRadius],
+          color: "#475569",
+          fontSize: "1rem",
+          textAlign: "center",
+          padding: "1rem",
+          boxSizing: "border-box",
+          backgroundColor: "rgba(148,163,184,0.12)",
+        }}
+      >
+        {videoLink.trim()
+          ? "This video link is not recognised. Paste a YouTube or Vimeo link, or the embed code."
+          : "Add a video link (YouTube or Vimeo) in the Video settings."}
+      </div>
+    ) : null
+
+  const videoBlock =
+    source || placeholder ? (
+      <div
+        className="vs-video"
+        style={
+          {
+            minWidth: 0,
+            width: "100%",
+            ...(videoShape === "tall" && !isSide
+              ? { maxWidth: "min(100%, 24rem)", marginLeft: alignment === "left" ? 0 : "auto", marginRight: alignment === "right" ? 0 : "auto" }
+              : {}),
+            "--vs-o-phone": phoneOrder === "videoFirst" ? -1 : 0,
+            "--vs-o-desk": layout === "left" ? -1 : 0,
+          } as CSSProperties
+        }
+      >
+        {source ? (
+          <div
+            style={{
+              position: "relative",
+              width: "100%",
+              aspectRatio: SHAPES[videoShape],
+              overflow: "hidden",
+              borderRadius: RADII[videoRadius],
+              boxShadow: videoShadow ? "0 20px 45px -20px rgba(31,45,85,0.45)" : "none",
+              backgroundColor: "#0B1220",
+            }}
+          >
+            {videoInner}
+          </div>
+        ) : (
+          placeholder
+        )}
+      </div>
+    ) : null
+
+  // ---- Text block -----------------------------------------------------------
+  const textBlock = hasText ? (
+    <div
+      style={{
+        minWidth: 0,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: ALIGN_ITEMS[alignment],
+        textAlign: alignment,
+        gap,
+        color: colText,
+        fontFamily: FONT_STACKS[bodyFont],
+      }}
+    >
+      {eyebrowText && (
+        <p
+          style={{
+            margin: 0,
+            marginBottom: eyebrowStyle.marginBottom,
+            color: colEyebrow,
+            fontSize: eyebrowStyle.fontSize,
+            fontWeight: eyebrowStyle.fontWeight,
+            letterSpacing: eyebrowStyle.letterSpacing,
+            textTransform: "uppercase",
+          }}
+        >
+          {formatInline(eyebrowText)}
+        </p>
+      )}
+
+      {headingText && (
+        <Heading
+          style={{
+            margin: 0,
+            color: colHeading,
+            fontFamily: FONT_STACKS[headingFont],
+            fontSize: HEADING_SIZES[headingSize],
+            fontWeight: WEIGHTS[headingWeight],
+            lineHeight: 1.45,
+            textWrap: "balance",
+          }}
+        >
+          {formatInline(headingText)}
+        </Heading>
+      )}
+
+      {leadText && (
+        <p style={{ margin: 0, fontSize: "clamp(1.125rem, 2.2vw, 1.5rem)", fontWeight: 500, lineHeight: 1.45 }}>
+          {formatInline(leadText)}
+        </p>
+      )}
+
+      {bodyBlocks.map((block, index) =>
+        block.kind === "heading" ? (
+          <SubHeading
+            key={index}
+            style={{
+              margin: 0,
+              color: colHeading,
+              fontFamily: FONT_STACKS[headingFont],
+              fontSize: HEADING_SIZES[headingSize],
+              fontWeight: WEIGHTS[headingWeight],
+              lineHeight: 1.45,
+              textWrap: "balance",
+            }}
+          >
+            {formatInline(block.text)}
+          </SubHeading>
+        ) : (
+          <p
+            key={index}
+            style={{
+              margin: 0,
+              fontSize: BODY_SIZES[bodySize],
+              fontWeight: WEIGHTS[bodyWeight],
+              lineHeight: 1.7,
+              whiteSpace: "pre-line",
+              textWrap: "pretty",
+            }}
+          >
+            {formatInline(block.text)}
+          </p>
+        )
+      )}
+
+      {(hasButton || hasSecond) && (
+        <div
+          className={phoneButtons === "full" ? "vs-btns vs-btns-full" : "vs-btns"}
+          style={{ justifyContent: ALIGN_ITEMS[alignment] }}
+        >
+          {hasButton &&
+            (isExternal(btnLink) ? (
+              <a
+                href={btnLink}
+                {...(/^https?:/i.test(btnLink) ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                {...(trackingLabel.trim() ? { "data-track-label": trackingLabel.trim() } : {})}
+                className="mt-2 inline-flex min-h-[44px] items-center justify-center gap-2 rounded-md px-7 py-3.5 font-semibold no-underline transition hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                style={{ backgroundColor: colButton, color: colButtonText }}
+              >
+                <span>{btnText}</span>
+                <span aria-hidden="true">{"\u2192"}</span>
+              </a>
+            ) : (
+              <Link
+                href={btnLink}
+                {...(trackingLabel.trim() ? { "data-track-label": trackingLabel.trim() } : {})}
+                className="mt-2 inline-flex min-h-[44px] items-center justify-center gap-2 rounded-md px-7 py-3.5 font-semibold no-underline transition hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                style={{ backgroundColor: colButton, color: colButtonText }}
+              >
+                <span>{btnText}</span>
+                <span aria-hidden="true">{"\u2192"}</span>
+              </Link>
+            ))}
+
+          {hasSecond &&
+            (isExternal(btn2Link) ? (
+              <a
+                href={btn2Link}
+                {...(/^https?:/i.test(btn2Link) ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                {...(secondTrackingLabel.trim() ? { "data-track-label": secondTrackingLabel.trim() } : {})}
+                className={outlineClass}
+                style={outlineStyle}
+                {...outlineHandlers}
+              >
+                <span>{btn2Text}</span>
+                <span aria-hidden="true">{"\u2192"}</span>
+              </a>
+            ) : (
+              <Link
+                href={btn2Link}
+                {...(secondTrackingLabel.trim() ? { "data-track-label": secondTrackingLabel.trim() } : {})}
+                className={outlineClass}
+                style={outlineStyle}
+                {...outlineHandlers}
+              >
+                <span>{btn2Text}</span>
+                <span aria-hidden="true">{"\u2192"}</span>
+              </Link>
+            ))}
+        </div>
+      )}
+    </div>
+  ) : null
+
+  // Nothing to show at all (blank link, no text, not in the editor): render nothing.
+  if (!videoBlock && !textBlock) return null
+
+  const [textCol, videoCol] = SIDE_COLUMNS[videoWidth]
+  const sideVars = {
+    "--vs-cols": `minmax(0, ${textCol}) minmax(0, ${videoCol})`,
+    "--vs-align": verticalAlign === "top" ? "start" : "center",
+    "--vs-gap": "clamp(1.5rem, 4vw, 3rem)",
+  } as CSSProperties
+
+  const stackedWrapStyle: CSSProperties = {
+    display: "flex",
+    flexDirection: "column",
+    gap: stackGap,
+    maxWidth: CONTENT_WIDTHS[contentWidth],
+    marginLeft: alignment === "left" ? 0 : "auto",
+    marginRight: alignment === "right" ? 0 : "auto",
+  }
+
+  return (
+    <section className={className} style={{ width: "100%", backgroundColor: colBackground }}>
+      <style>{SECTION_CSS}</style>
+      <div
+        style={{
+          width: "100%",
+          maxWidth: PAGE_MAX_WIDTH,
+          marginLeft: "auto",
+          marginRight: "auto",
+          boxSizing: "border-box",
+          paddingTop: SPACE_Y[spaceTop ?? spaceY],
+          paddingBottom: SPACE_Y[spaceBottom ?? spaceY],
+          paddingLeft: SPACE_X[spaceX],
+          paddingRight: SPACE_X[spaceX],
+        }}
+      >
+        {isSide ? (
+          <div className="vs-side" style={sideVars}>
+            {textBlock}
+            {videoBlock}
+          </div>
+        ) : (
+          <div style={stackedWrapStyle}>
+            {layout === "above" && videoBlock}
+            {textBlock}
+            {layout === "below" && videoBlock}
+          </div>
+        )}
+      </div>
+    </section>
+  )
+}
+
+export default VideoSection
+""",
+}
+
+IMPORT_ANCHOR = 'import { ContentSection } from "@/components/ContentSection"\n'
+IMPORT_NEW = IMPORT_ANCHOR + 'import { VideoSection } from "@/components/VideoSection"\n'
+
+REGISTRATION = r"""
+// VIDEO SECTION (Oct 2026): ONE reusable video block that replaces Ministry
+// Video, Video Ministries Section and the plain Iframe element. Accepts any
+// YouTube/Vimeo link or embed code (lib/video-source.ts), loads the real player
+// only after a click (picture is lazy-loaded), counts plays in Google Analytics.
+PLASMIC.registerComponent(VideoSection, {
+  name: "VideoSection",
+  displayName: "Video Section",
+  description:
+    "Video with optional text and two buttons. Paste any YouTube or Vimeo link (or the embed code). The player loads only when someone clicks play. Leave any text field blank and it disappears with no gap.",
+  props: {
+    className: {
+      type: "class",
+      displayName: "CSS Class",
+    },
+
+    // ---- Content ----
+    eyebrow: {
+      type: "string",
+      displayName: "Eyebrow (small label above heading)",
+      description: "Format words: **bold**, *italic*, ***bold and italic***.",
+      section: "Content",
+    },
+    heading: {
+      type: "string",
+      displayName: "Heading",
+      description: "Optional. Format words: **bold**, *italic*. Leave blank for a video with no text.",
+      section: "Content",
+    },
+    headingLevel: {
+      type: "choice",
+      displayName: "Heading level",
+      description: "Use H1 only ONCE per page (the main title). Everything else H2.",
+      options: [
+        { value: "h1", label: "H1 (main page title)" },
+        { value: "h2", label: "H2 (section)" },
+        { value: "h3", label: "H3 (sub-section)" },
+      ],
+      defaultValue: "h2",
+      section: "Content",
+    },
+    lead: {
+      type: "string",
+      control: "large",
+      displayName: "Lead line (large text under heading)",
+      section: "Content",
+    },
+    body: {
+      type: "string",
+      control: "large",
+      displayName: "Body text",
+      description: "Blank line = new paragraph. A line starting with ## becomes a subheading. Format words: **bold**, *italic*.",
+      section: "Content",
+    },
+
+    // ---- Video ----
+    videoLink: {
+      type: "string",
+      control: "large",
+      displayName: "Video link",
+      description:
+        "Paste ANY of these: a YouTube or Vimeo page link, a share link, an embed link, or the whole embed code. Nothing to convert.",
+      section: "Video",
+    },
+    videoTitle: {
+      type: "string",
+      displayName: "Video title (for screen readers and analytics)",
+      description: "Blank = the heading is used.",
+      section: "Video",
+    },
+    posterImage: {
+      type: "imageUrl",
+      displayName: "Poster image (optional)",
+      description:
+        "The picture shown before play. YouTube gets one automatically. Vimeo has no automatic picture, so upload one for Vimeo videos (about 150 KB is plenty).",
+      section: "Video",
+    },
+    videoShape: {
+      type: "choice",
+      displayName: "Video shape",
+      options: [
+        { value: "wide", label: "Widescreen (16:9)" },
+        { value: "classic", label: "Classic (4:3)" },
+        { value: "square", label: "Square" },
+        { value: "tall", label: "Tall / phone video (9:16)" },
+      ],
+      defaultValue: "wide",
+      section: "Video",
+    },
+    videoRadius: {
+      type: "choice",
+      displayName: "Rounded corners",
+      options: [
+        { value: "none", label: "None" },
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+      ],
+      defaultValue: "medium",
+      section: "Video",
+    },
+    videoShadow: {
+      type: "boolean",
+      displayName: "Soft shadow",
+      defaultValue: true,
+      section: "Video",
+    },
+    loadEagerly: {
+      type: "boolean",
+      displayName: "Video is visible without scrolling",
+      description: "Turn on for ONE video per page: the one you can see before scrolling. Leave off for all others (they load only when you scroll near them).",
+      defaultValue: false,
+      section: "Video",
+    },
+    videoTrackingLabel: {
+      type: "string",
+      displayName: "Tracking label (optional)",
+      description: "Short name added to the play count in Google Analytics, e.g. ukraineaid-page. Leave blank if not needed.",
+      section: "Video",
+    },
+
+    // ---- Buttons ----
+    buttonText: {
+      type: "string",
+      displayName: "Button text",
+      section: "Button",
+    },
+    buttonLink: {
+      type: "string",
+      displayName: "Button link",
+      description: "e.g. /donate, https://ukraineaidtoday.ca, mailto:info@gcmm.ca",
+      section: "Button",
+    },
+    trackingLabel: {
+      type: "string",
+      displayName: "Tracking label (optional)",
+      description: "Short name for analytics, e.g. ukraine-give. Leave blank if not needed.",
+      section: "Button",
+    },
+    secondButtonText: {
+      type: "string",
+      displayName: "Second button text (outlined)",
+      description: "Optional. Shows only when BOTH second button text and link are filled. Maximum of two buttons.",
+      section: "Button",
+    },
+    secondButtonLink: {
+      type: "string",
+      displayName: "Second button link",
+      section: "Button",
+    },
+    secondTrackingLabel: {
+      type: "string",
+      displayName: "Second button tracking label (optional)",
+      section: "Button",
+    },
+    phoneButtons: {
+      type: "choice",
+      displayName: "Buttons on phones",
+      options: [
+        { value: "full", label: "Full width" },
+        { value: "natural", label: "Natural width" },
+      ],
+      defaultValue: "full",
+      section: "Button",
+    },
+
+    // ---- Layout ----
+    layout: {
+      type: "choice",
+      displayName: "Video position",
+      options: [
+        { value: "below", label: "Below the text" },
+        { value: "above", label: "Above the text" },
+        { value: "left", label: "Beside the text (video on the left)" },
+        { value: "right", label: "Beside the text (video on the right)" },
+      ],
+      defaultValue: "below",
+      section: "Layout",
+    },
+    verticalAlign: {
+      type: "choice",
+      displayName: "Line up beside the text",
+      description: "For the side-by-side layouts: line the video up with the top of the text, or the middle.",
+      options: [
+        { value: "middle", label: "Middle" },
+        { value: "top", label: "Top" },
+      ],
+      defaultValue: "middle",
+      hidden: (props: any) => props.layout !== "left" && props.layout !== "right",
+      section: "Layout",
+    },
+    videoWidth: {
+      type: "choice",
+      displayName: "Video width (side by side)",
+      options: [
+        { value: "small", label: "Small (40%)" },
+        { value: "medium", label: "Medium (half)" },
+        { value: "large", label: "Large (60%)" },
+      ],
+      defaultValue: "medium",
+      hidden: (props: any) => props.layout !== "left" && props.layout !== "right",
+      section: "Layout",
+    },
+    phoneOrder: {
+      type: "choice",
+      displayName: "On phones, show first",
+      options: [
+        { value: "videoFirst", label: "The video" },
+        { value: "textFirst", label: "The text" },
+      ],
+      defaultValue: "videoFirst",
+      hidden: (props: any) => props.layout !== "left" && props.layout !== "right",
+      section: "Layout",
+    },
+    alignment: {
+      type: "choice",
+      displayName: "Text alignment",
+      options: ["left", "center", "right"],
+      defaultValue: "left",
+      section: "Layout",
+    },
+    contentWidth: {
+      type: "choice",
+      displayName: "Width (video above or below the text)",
+      options: [
+        { value: "narrow", label: "Narrow" },
+        { value: "medium", label: "Medium" },
+        { value: "wide", label: "Wide" },
+      ],
+      defaultValue: "medium",
+      hidden: (props: any) => props.layout === "left" || props.layout === "right",
+      section: "Layout",
+    },
+    spaceY: {
+      type: "choice",
+      displayName: "Space above & below",
+      options: [
+        { value: "none", label: "None" },
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "large",
+      section: "Layout",
+    },
+    spaceTop: {
+      type: "choice",
+      displayName: "Space above (optional)",
+      description: "Changes only the top space. Leave unset to follow 'Space above & below'.",
+      options: [
+        { value: "none", label: "None" },
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      section: "Layout",
+    },
+    spaceBottom: {
+      type: "choice",
+      displayName: "Space below (optional)",
+      description: "Changes only the bottom space. Leave unset to follow 'Space above & below'.",
+      options: [
+        { value: "none", label: "None" },
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      section: "Layout",
+    },
+    spaceX: {
+      type: "choice",
+      displayName: "Space left & right",
+      options: [
+        { value: "none", label: "None" },
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "medium",
+      section: "Layout",
+    },
+
+    // ---- Colors ----
+    backgroundColor: {
+      type: "color",
+      displayName: "Background color",
+      description: "Blank = white",
+      section: "Colors",
+    },
+    lightText: {
+      type: "boolean",
+      displayName: "Light text (for dark backgrounds)",
+      description: "Turn on when the background is dark: text becomes white and the label amber.",
+      defaultValue: false,
+      section: "Colors",
+    },
+    textColor: {
+      type: "color",
+      displayName: "Text color",
+      description: "Blank = Deep Navy (white when Light text is on)",
+      section: "Colors",
+    },
+    headingColor: {
+      type: "color",
+      displayName: "Heading color",
+      description: "Blank = automatic",
+      section: "Colors",
+    },
+    eyebrowColor: {
+      type: "color",
+      displayName: "Eyebrow color",
+      description: "Blank = automatic",
+      section: "Colors",
+    },
+    buttonColor: {
+      type: "color",
+      displayName: "Button color",
+      description: "Blank = Amber",
+      section: "Colors",
+    },
+    buttonTextColor: {
+      type: "color",
+      displayName: "Button text color",
+      description: "Blank = Deep Navy",
+      section: "Colors",
+    },
+    secondButtonColor: {
+      type: "color",
+      displayName: "Second button color",
+      description: "Border and text color of the outlined button. Blank = automatic",
+      section: "Colors",
+    },
+    secondButtonHoverTextColor: {
+      type: "color",
+      displayName: "Second button hover text color",
+      description: "Blank = automatic",
+      section: "Colors",
+    },
+    playButtonColor: {
+      type: "color",
+      displayName: "Play button color",
+      description: "Blank = Amber",
+      section: "Colors",
+    },
+
+    // ---- Text style ----
+    eyebrowSize: {
+      type: "choice",
+      displayName: "Eyebrow size",
+      options: [
+        { value: "small", label: "Small" },
+        { value: "normal", label: "Normal" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "normal",
+      section: "Text style",
+    },
+    headingFont: {
+      type: "choice",
+      displayName: "Heading font",
+      options: [
+        { value: "site", label: "Site default (Nunito)" },
+        { value: "georgia", label: "Georgia" },
+        { value: "nunito", label: "Nunito" },
+        { value: "poppins", label: "Poppins" },
+        { value: "lexend", label: "Lexend" },
+      ],
+      defaultValue: "georgia",
+      section: "Text style",
+    },
+    headingSize: {
+      type: "choice",
+      displayName: "Heading size",
+      options: [
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "large",
+      section: "Text style",
+    },
+    headingWeight: {
+      type: "choice",
+      displayName: "Heading weight",
+      options: [
+        { value: "regular", label: "Regular" },
+        { value: "medium", label: "Medium" },
+        { value: "semibold", label: "Semibold" },
+        { value: "bold", label: "Bold" },
+      ],
+      defaultValue: "bold",
+      section: "Text style",
+    },
+    bodyFont: {
+      type: "choice",
+      displayName: "Body font",
+      options: [
+        { value: "site", label: "Site default (Nunito)" },
+        { value: "georgia", label: "Georgia" },
+        { value: "nunito", label: "Nunito" },
+        { value: "poppins", label: "Poppins" },
+        { value: "lexend", label: "Lexend" },
+      ],
+      defaultValue: "site",
+      section: "Text style",
+    },
+    bodySize: {
+      type: "choice",
+      displayName: "Body size",
+      options: [
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "medium",
+      section: "Text style",
+    },
+    bodyWeight: {
+      type: "choice",
+      displayName: "Body weight",
+      options: [
+        { value: "regular", label: "Regular" },
+        { value: "medium", label: "Medium" },
+        { value: "semibold", label: "Semibold" },
+        { value: "bold", label: "Bold" },
+      ],
+      defaultValue: "regular",
+      section: "Text style",
+    },
+  },
+  importPath: "./components/VideoSection",
+} as any);
+"""
+
+
+def main():
+    if not os.path.exists(INIT):
+        sys.exit("ERROR: %s not found. Run this from the repo root (gcmmfinal)." % INIT)
+    text = open(INIT, encoding="utf-8").read()
+
+    if "registerComponent(VideoSection" in text:
+        new_init, init_status = text, "already patched"
+    else:
+        if text.count(IMPORT_ANCHOR) != 1:
+            sys.exit("ERROR: expected exactly 1 ContentSection import line in %s, found %d. Nothing was written."
+                     % (INIT, text.count(IMPORT_ANCHOR)))
+        new_init = text.replace(IMPORT_ANCHOR, IMPORT_NEW)
+        if not new_init.endswith("\n"):
+            new_init += "\n"
+        new_init += REGISTRATION
+        init_status = "will patch (1 import + registration at the end)"
+
+    for path in NEW_FILES:
+        print("%s: %s" % (path, "already exists (will be replaced with this version)" if os.path.exists(path) else "will create"))
+    print("%s: %s" % (INIT, init_status))
+
+    if DRY:
+        print("\nDry run only - nothing written.")
+        return
+
+    for path, content in NEW_FILES.items():
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        open(path, "w", encoding="utf-8").write(content)
+    if new_init != text:
+        open(INIT, "w", encoding="utf-8").write(new_init)
+    print("\nDone. Next: git diff, then branch + commit + push + preview.")
+
+
+main()
