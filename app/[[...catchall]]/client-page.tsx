@@ -20,11 +20,15 @@ type Props = {
   // Server-fetched article list for the All Stories List component (only
   // provided on pages listed in ALL_STORIES_PATHS in page.tsx).
   allStories?: StoryLink[]
+  // Ready-made CMS query results for article pages (built in page.tsx), so
+  // the server-rendered HTML contains the real article. See
+  // lib/article-query-cache.ts.
+  queryData?: Record<string, unknown>
 }
 
-function PlasmicPage({ pathname, pageData, params, query, allStories }: Props & { query: Record<string, string> }) {
+function PlasmicPage({ pathname, pageData, params, query, allStories, queryData }: Props & { query: Record<string, string> }) {
   return (
-    <PlasmicRootProvider loader={PLASMIC} prefetchedData={pageData}>
+    <PlasmicRootProvider loader={PLASMIC} prefetchedData={pageData} prefetchedQueryData={queryData}>
       <PageParamsProvider route={pathname} params={params} query={query}>
         <AllStoriesProvider stories={allStories}>
           <PlasmicComponent component={pathname} />

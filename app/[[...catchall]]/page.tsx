@@ -5,6 +5,7 @@ import { PLASMIC_SERVER } from "@/src/plasmic-init-server";
 import { isNoIndexPath } from "@/lib/indexing";
 import PlasmicClientPage from "./client-page";
 import type { StoryLink } from "@/components/all-stories-list";
+import { buildArticleQueryData } from "@/lib/article-query-cache";
 
 type Props = {
   params: Promise<{ catchall?: string[] }>;
@@ -500,6 +501,16 @@ export default async function CatchallPage({ params }: Props) {
     }
   }
 
+  // Real article data for the server-rendered HTML (see
+  // lib/article-query-cache.ts). Without this the first HTML holds the
+  // Article Template sample text until the browser loads the article.
+  // Never throws: on any problem it returns undefined and the page loads
+  // its data in the browser exactly like before.
+  const queryData =
+    slug && slug !== "donate-test-only"
+      ? await buildArticleQueryData(slug)
+      : undefined;
+
   // Server-side article list for the "All Stories List" component (only on
   // the pages that use it — see ALL_STORIES_PATHS).
   const allStories = ALL_STORIES_PATHS.has(pathname) ? await fetchAllStories() : undefined;
@@ -532,6 +543,7 @@ export default async function CatchallPage({ params }: Props) {
           pageData={pageData}
           params={pageMeta?.params}
           allStories={allStories}
+          queryData={queryData}
         />
       </Suspense>
     </>
