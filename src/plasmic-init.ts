@@ -16936,7 +16936,7 @@ PLASMIC.registerComponent(VideoSection, {
     videoTitle: {
       type: "string",
       displayName: "Video title (for screen readers and analytics)",
-      description: "Blank = the heading is used.",
+      description: "Just the name of the video, e.g. Bangalore Campaign Update (do not type 'Play video'). It is invisible on the page: screen readers and Google Analytics use it. Blank = the heading is used.",
       section: "Video",
     },
     posterImage: {

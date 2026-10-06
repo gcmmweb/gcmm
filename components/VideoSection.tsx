@@ -15,8 +15,8 @@ import { trackEvent } from "@/lib/track-event"
  *   player (about 1.7 MB for YouTube) loads ONLY after someone clicks play.
  *   The picture is lazy-loaded too, unless "Video is visible without
  *   scrolling" is turned on.
- * - The play button is a real link to the video's own page, so Google and
- *   people without JavaScript can still follow it.
+ * - The play control is a real button. For people without JavaScript (and for
+ *   search engines) a plain link to the video's own page sits behind it.
  * - Every play is counted in Google Analytics ("video_play").
  * - Text and buttons are blank-safe, exactly like Content Section: leave a
  *   field empty and it disappears with no gap.
@@ -201,7 +201,7 @@ const SECTION_CSS = `
 .vs-side{grid-template-columns:var(--vs-cols);align-items:var(--vs-align)}
 .vs-side > .vs-video{order:var(--vs-o-desk)}
 }
-.vs-play{position:absolute;top:0;right:0;bottom:0;left:0;display:block;width:100%;height:100%;cursor:pointer;border:0;padding:0;background:transparent;text-decoration:none}
+.vs-play{position:absolute;top:0;right:0;bottom:0;left:0;display:block;width:100%;height:100%;cursor:pointer;border:0;padding:0;margin:0;background:transparent;font:inherit;color:inherit;appearance:none;-webkit-appearance:none}
 .vs-play:focus-visible{outline:3px solid #fff;outline-offset:-6px}
 .vs-dot{transition:transform 0.2s ease}
 @media (prefers-reduced-motion:no-preference){.vs-play:hover .vs-dot,.vs-play:focus-visible .vs-dot{transform:scale(1.08)}}
@@ -449,21 +449,12 @@ export function VideoSection({
       )
     } else {
       videoInner = (
-        <a
-          href={source.watchUrl}
-          role="button"
+        <>
+        <button
+          type="button"
           className="vs-play"
           aria-label={title ? `Play video: ${title}` : "Play video"}
-          onClick={(e) => {
-            e.preventDefault()
-            startPlaying()
-          }}
-          onKeyDown={(e) => {
-            if (e.key === " ") {
-              e.preventDefault()
-              startPlaying()
-            }
-          }}
+          onClick={startPlaying}
           onPointerEnter={warm}
           onFocus={warm}
           onTouchStart={warm}
@@ -483,7 +474,16 @@ export function VideoSection({
             />
           )}
           {playDot}
-        </a>
+        </button>
+        {/* Without JavaScript (and for search engines) the whole picture is a plain link to the video's own page. */}
+        <noscript>
+          <a
+            href={source.watchUrl}
+            aria-label={title ? `Watch video: ${title}` : "Watch video"}
+            style={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0, zIndex: 2 }}
+          />
+        </noscript>
+        </>
       )
     }
   }
