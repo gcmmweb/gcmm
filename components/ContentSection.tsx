@@ -39,6 +39,8 @@ type FontChoice = "site" | "georgia" | "nunito" | "poppins" | "lexend"
 type SpaceChoice = "none" | "small" | "medium" | "large" | "xl"
 type WidthChoice = "narrow" | "medium" | "wide"
 type HeightChoice = "short" | "medium" | "tall"
+type LeadFontChoice = FontChoice | "body"
+type TextSpacing = "small" | "medium" | "large"
 
 interface ContentSectionProps {
   className?: string
@@ -99,6 +101,13 @@ interface ContentSectionProps {
   bodyFont?: FontChoice
   bodySize?: SizeChoice
   bodyWeight?: WeightChoice
+
+  // Lead line (the larger line under the heading) and space between text parts
+  leadSize?: SizeChoice
+  leadWeight?: WeightChoice
+  leadFont?: LeadFontChoice
+  leadColor?: string
+  textSpacing?: TextSpacing
 }
 
 const FONT_STACKS: Record<FontChoice, string> = {
@@ -128,6 +137,57 @@ const WEIGHTS: Record<WeightChoice, number> = {
   medium: 500,
   semibold: 600,
   bold: 700,
+}
+
+// Lead line sizes. "large" is the ORIGINAL size (default), so nothing changes
+// on existing pages.
+const LEAD_SIZES: Record<SizeChoice, string> = {
+  small: "1rem",
+  medium: "clamp(1.0625rem, 1.8vw, 1.25rem)",
+  large: "clamp(1.125rem, 2.2vw, 1.5rem)",
+  xl: "clamp(1.25rem, 2.8vw, 1.75rem)",
+}
+
+// Space between the text parts (eyebrow, heading, lead, body, buttons).
+// "medium" reproduces the original layout exactly. "small" pulls the header
+// parts close together (measured on the real fonts: about 18px eyebrow to
+// heading and 17px heading to lead at 1440px wide) while keeping normal
+// space between body paragraphs. "large" is roomier. `hs` is the heading
+// size, so the small adjustments scale with the heading.
+const TEXT_GAP_MEDIUM = "clamp(0.75rem, 1.5vw, 1.25rem)"
+
+function getTextSpacing(choice: TextSpacing, hs: string) {
+  if (choice === "small") {
+    return {
+      gap: "0.25rem",
+      headingLH: 1.2,
+      leadLH: 1.3,
+      eyebrowExtra: `calc(${hs} * 0.06)`,
+      leadTop: `calc(${hs} * -0.15)`,
+      bodyAfterHeading: `calc(${hs} * -0.115)`,
+      paragraphTop: `calc(${TEXT_GAP_MEDIUM} - 0.25rem)`,
+    }
+  }
+  if (choice === "large") {
+    return {
+      gap: "clamp(1rem, 2vw, 1.75rem)",
+      headingLH: 1.45,
+      leadLH: 1.45,
+      eyebrowExtra: "0px",
+      leadTop: "0px",
+      bodyAfterHeading: "0px",
+      paragraphTop: "0px",
+    }
+  }
+  return {
+    gap: TEXT_GAP_MEDIUM,
+    headingLH: 1.45,
+    leadLH: 1.45,
+    eyebrowExtra: "0px",
+    leadTop: "0px",
+    bodyAfterHeading: "0px",
+    paragraphTop: "0px",
+  }
 }
 
 const SPACE_Y: Record<SpaceChoice, string> = {
@@ -328,6 +388,13 @@ export function ContentSection({
   bodyFont = "site",
   bodySize = "medium",
   bodyWeight = "regular",
+
+  // Lead line + spacing (defaults keep the original look)
+  leadSize = "large",
+  leadWeight = "medium",
+  leadFont = "body",
+  leadColor,
+  textSpacing = "medium",
 }: ContentSectionProps) {
   // Second-button hover state (inline styles cannot do :hover, and this keeps
   // the component free of global CSS) and the reduce-motion preference.
@@ -395,7 +462,18 @@ export function ContentSection({
 
   const Heading = headingLevel
   const eyebrowStyle = EYEBROW_STYLES[eyebrowSize] ?? EYEBROW_STYLES.normal
-  const gap = "clamp(0.75rem, 1.5vw, 1.25rem)"
+  const spacing = getTextSpacing(textSpacing, HEADING_SIZES[headingSize])
+  const gap = spacing.gap
+  const hasTextAbove = !!(eyebrowText || headingText || leadText || bodyText)
+  // Extra space above a body block. Only the "small" preset needs any: the
+  // gap between parts is tight, so later paragraphs get their normal space back.
+  const blockTop = (index: number): CSSProperties => {
+    if (index > 0) return spacing.paragraphTop === "0px" ? {} : { marginTop: spacing.paragraphTop }
+    if (!leadText && headingText && spacing.bodyAfterHeading !== "0px") {
+      return { marginTop: spacing.bodyAfterHeading }
+    }
+    return {}
+  }
   const alt = imageAlt.trim() // blank alt = decorative image
 
   const imageBlock = hasImage && !isBehind && (
@@ -453,7 +531,10 @@ export function ContentSection({
               marginTop: 0,
               marginLeft: 0,
               marginRight: 0,
-              marginBottom: eyebrowStyle.marginBottom,
+              marginBottom:
+                headingText && spacing.eyebrowExtra !== "0px"
+                  ? spacing.eyebrowExtra
+                  : eyebrowStyle.marginBottom,
               color: colEyebrow,
               fontSize: eyebrowStyle.fontSize,
               fontWeight: eyebrowStyle.fontWeight,
@@ -473,7 +554,7 @@ export function ContentSection({
               fontFamily: FONT_STACKS[headingFont],
               fontSize: HEADING_SIZES[headingSize],
               fontWeight: WEIGHTS[headingWeight],
-              lineHeight: 1.45,
+              lineHeight: spacing.headingLH,
               textWrap: "balance",
             }}
           >
@@ -485,9 +566,12 @@ export function ContentSection({
           <p
             style={{
               margin: 0,
-              fontSize: "clamp(1.125rem, 2.2vw, 1.5rem)",
-              fontWeight: 500,
-              lineHeight: 1.45,
+              ...(headingText && spacing.leadTop !== "0px" ? { marginTop: spacing.leadTop } : {}),
+              ...(leadFont !== "body" ? { fontFamily: FONT_STACKS[leadFont] } : {}),
+              ...(leadColor ? { color: leadColor } : {}),
+              fontSize: LEAD_SIZES[leadSize],
+              fontWeight: WEIGHTS[leadWeight],
+              lineHeight: spacing.leadLH,
             }}
           >
             {formatInline(leadText)}
@@ -513,6 +597,7 @@ export function ContentSection({
                 lineHeight: 1.55,
                 whiteSpace: "pre-line",
                 textWrap: "pretty",
+                ...blockTop(index),
               }}
             >
               {formatInline(block.text)}
@@ -547,6 +632,7 @@ export function ContentSection({
                 fontWeight: WEIGHTS[headingWeight],
                 lineHeight: 1.45,
                 textWrap: "balance",
+                ...blockTop(index),
               }}
             >
               {formatInline(block.text)}
@@ -561,6 +647,7 @@ export function ContentSection({
                 lineHeight: 1.7,
                 whiteSpace: "pre-line",
                 textWrap: "pretty",
+                ...blockTop(index),
               }}
             >
               {formatInline(block.text)}
@@ -571,7 +658,10 @@ export function ContentSection({
         {(hasButton || hasSecond) && (
           <div
             className={phoneButtons === "full" ? "cs-btns cs-btns-full" : "cs-btns"}
-            style={{ justifyContent: ALIGN_ITEMS[alignment] }}
+            style={{
+              justifyContent: ALIGN_ITEMS[alignment],
+              ...(hasTextAbove && spacing.paragraphTop !== "0px" ? { marginTop: spacing.paragraphTop } : {}),
+            }}
           >
             <style>{BUTTON_ROW_CSS}</style>
         {hasButton &&
