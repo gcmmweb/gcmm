@@ -55,6 +55,7 @@ interface VideoSectionProps {
   lead?: string
   leadSize?: SizeChoice
   body?: string
+  paragraphGap?: ParagraphGap
 
   // Video
   videoLink?: string
@@ -197,6 +198,24 @@ function parseBody(body: string): Block[] {
   return blocks
 }
 
+type ParagraphGap = "normal" | "medium" | "small" | "tight"
+
+// Space between paragraphs (relative to the text size, so it also shrinks on
+// phones). "normal" = the original blank-line look.
+const PARAGRAPH_GAPS: Record<Exclude<ParagraphGap, "normal">, string> = {
+  medium: "1.1em",
+  small: "0.8em",
+  tight: "0.5em",
+}
+
+// Blank lines start a new paragraph; a single Enter stays a line break.
+function splitParagraphs(text: string): string[] {
+  return text
+    .split(/\n(?:[ \t]*\n)+/)
+    .map((part) => part.trim())
+    .filter(Boolean)
+}
+
 const SUB_LEVEL: Record<Level, "h2" | "h3"> = { h1: "h2", h2: "h2", h3: "h3" }
 
 const SECTION_CSS = `
@@ -231,6 +250,7 @@ export function VideoSection({
   lead = "",
   leadSize = "medium",
   body = "",
+  paragraphGap = "normal",
 
   videoLink = "",
   videoTitle = "",
@@ -645,6 +665,25 @@ export function VideoSection({
           >
             {formatInline(block.text)}
           </SubHeading>
+        ) : paragraphGap !== "normal" ? (
+          <div key={index}>
+            {splitParagraphs(block.text).map((para, i) => (
+              <p
+                key={i}
+                style={{
+                  margin: 0,
+                  marginTop: i === 0 ? 0 : PARAGRAPH_GAPS[paragraphGap],
+                  fontSize: BODY_SIZES[bodySize],
+                  fontWeight: WEIGHTS[bodyWeight],
+                  lineHeight: 1.7,
+                  whiteSpace: "pre-line",
+                  textWrap: "pretty",
+                }}
+              >
+                {formatInline(para)}
+              </p>
+            ))}
+          </div>
         ) : (
           <p
             key={index}

@@ -59,6 +59,7 @@ interface CardGridProps {
   headingLevel?: Level
   lead?: string
   leadSize?: SizeChoice
+  paragraphGap?: ParagraphGap
 
   // Cards
   cards?: CardItem[]
@@ -231,6 +232,24 @@ const CG_CSS = `
 @media (prefers-reduced-motion:no-preference){.cg-outline{transition:background-color 200ms ease,color 200ms ease}}
 `
 
+type ParagraphGap = "normal" | "medium" | "small" | "tight"
+
+// Space between paragraphs (relative to the text size, so it also shrinks on
+// phones). "normal" = the original blank-line look.
+const PARAGRAPH_GAPS: Record<Exclude<ParagraphGap, "normal">, string> = {
+  medium: "1.1em",
+  small: "0.8em",
+  tight: "0.5em",
+}
+
+// Blank lines start a new paragraph; a single Enter stays a line break.
+function splitParagraphs(text: string): string[] {
+  return text
+    .split(/\n(?:[ \t]*\n)+/)
+    .map((part) => part.trim())
+    .filter(Boolean)
+}
+
 const DEFAULT_CARDS: CardItem[] = [
   { heading: "Card heading", text: "Describe this card in a sentence or two." },
   { heading: "Card heading", text: "Describe this card in a sentence or two." },
@@ -246,6 +265,7 @@ export function CardGrid({
   headingLevel = "h2",
   lead = "",
   leadSize = "medium",
+  paragraphGap = "normal",
 
   // Cards
   cards = DEFAULT_CARDS,
@@ -383,6 +403,21 @@ export function CardGrid({
     )
   }
 
+  // Text with paragraphs. Normal = one block, blank lines stay empty lines (original).
+  const renderParagraphs = (text: string, pStyle: CSSProperties) => {
+    if (paragraphGap === "normal") return <p style={pStyle}>{formatInline(text)}</p>
+    const { margin, ...rest } = pStyle
+    return (
+      <div style={{ margin }}>
+        {splitParagraphs(text).map((para, i) => (
+          <p key={i} style={{ ...rest, margin: 0, marginTop: i === 0 ? 0 : PARAGRAPH_GAPS[paragraphGap] }}>
+            {formatInline(para)}
+          </p>
+        ))}
+      </div>
+    )
+  }
+
   const renderCard = (card: CardItem, index: number) => {
     const title = card.heading?.trim() || ""
     const body = card.text?.trim() || ""
@@ -473,19 +508,14 @@ export function CardGrid({
           </CardTitle>
         )}
 
-        {body && (
-          <p
-            style={{
-              margin: title ? "0.5rem 0 0" : 0,
-              color: colCardText,
-              fontSize: CARD_TEXT_SIZES[cardTextSize],
-              lineHeight: 1.65,
-              whiteSpace: "pre-line",
-            }}
-          >
-            {formatInline(body)}
-          </p>
-        )}
+        {body &&
+          renderParagraphs(body, {
+            margin: title ? "0.5rem 0 0" : 0,
+            color: colCardText,
+            fontSize: CARD_TEXT_SIZES[cardTextSize],
+            lineHeight: 1.65,
+            whiteSpace: "pre-line",
+          })}
       </>
     )
 
@@ -614,20 +644,15 @@ export function CardGrid({
               </SectionHeading>
             )}
 
-            {leadText && (
-              <p
-                style={{
-                  margin: 0,
-                  color: colText,
-                  fontSize: LEAD_SIZES[leadSize] ?? LEAD_SIZES.medium,
-                  lineHeight: 1.6,
-                  whiteSpace: "pre-line",
-                  textWrap: "pretty",
-                }}
-              >
-                {formatInline(leadText)}
-              </p>
-            )}
+            {leadText &&
+              renderParagraphs(leadText, {
+                margin: 0,
+                color: colText,
+                fontSize: LEAD_SIZES[leadSize] ?? LEAD_SIZES.medium,
+                lineHeight: 1.6,
+                whiteSpace: "pre-line",
+                textWrap: "pretty",
+              })}
           </div>
         )}
 
