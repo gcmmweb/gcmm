@@ -553,16 +553,22 @@ export function VideoSection({
     ) : null
 
   // ---- Text block -----------------------------------------------------------
-  const textWrapStyle: CSSProperties = {
+  const makeWrapStyle = (align: Align): CSSProperties => ({
     minWidth: 0,
     display: "flex",
     flexDirection: "column",
-    alignItems: ALIGN_ITEMS[alignment],
-    textAlign: alignment,
+    alignItems: ALIGN_ITEMS[align],
+    textAlign: align,
     gap,
     color: colText,
     fontFamily: FONT_STACKS[bodyFont],
-  }
+  })
+  const textWrapStyle = makeWrapStyle(alignment)
+
+  // With "Heading position: Above the video", only the heading part follows the
+  // Text alignment setting; the body text and buttons stay left beside the video.
+  const splitHeader = isSide && headingPosition === "aboveVideo" && (eyebrowText || headingText || leadText).length > 0
+  const bodyAlign: Align = splitHeader ? "left" : alignment
 
   // Top part of the text: small label, heading and lead text
   const headerParts = (
@@ -647,7 +653,7 @@ export function VideoSection({
       {(hasButton || hasSecond) && (
         <div
           className={phoneButtons === "full" ? "vs-btns vs-btns-full" : "vs-btns"}
-          style={{ justifyContent: ALIGN_ITEMS[alignment] }}
+          style={{ justifyContent: ALIGN_ITEMS[bodyAlign] }}
         >
           {hasButton &&
             (isExternal(btnLink) ? (
@@ -703,18 +709,16 @@ export function VideoSection({
     </>
   )
 
-  const hasHeaderText = !!(eyebrowText || headingText || leadText)
   const hasRestText = !!(bodyBlocks.length || hasButton || hasSecond)
 
   // "Heading position: Above the video" only applies to the side-by-side layouts.
   // The small label, heading and lead text go in a full-width row on top;
   // the body text and buttons stay beside the video.
-  const splitHeader = isSide && headingPosition === "aboveVideo" && hasHeaderText
 
   const headerBlock = splitHeader ? <div style={textWrapStyle}>{headerParts}</div> : null
 
   const textBlock = !hasText ? null : splitHeader ? (
-    hasRestText ? <div style={textWrapStyle}>{bodyParts}</div> : null
+    hasRestText ? <div style={makeWrapStyle(bodyAlign)}>{bodyParts}</div> : null
   ) : (
     <div style={textWrapStyle}>
       {headerParts}
@@ -759,7 +763,7 @@ export function VideoSection({
       >
         {isSide ? (
           headerBlock ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: stackGap }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "clamp(1.75rem, 4vw, 3rem)" }}>
               {headerBlock}
               <div className="vs-side" style={sideVars}>
                 {textBlock}
