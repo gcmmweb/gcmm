@@ -17055,6 +17055,19 @@ PLASMIC.registerComponent(VideoSection, {
       defaultValue: "h2",
       section: "Content",
     },
+    headingPosition: {
+      type: "choice",
+      displayName: "Heading position (side by side)",
+      description:
+        "Only for the side-by-side layouts. Beside the video = heading, lead line and text all sit next to the video. Above the video = the label, heading and lead line go across the top, and the body text and buttons stay beside the video.",
+      options: [
+        { value: "besideVideo", label: "Beside the video" },
+        { value: "aboveVideo", label: "Above the video (heading + lead line on top)" },
+      ],
+      defaultValue: "besideVideo",
+      hidden: (props: any) => props.layout !== "left" && props.layout !== "right",
+      section: "Content",
+    },
     lead: {
       type: "string",
       control: "large",

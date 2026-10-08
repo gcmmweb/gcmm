@@ -42,6 +42,7 @@ type WidthChoice = "narrow" | "medium" | "wide"
 type ShapeChoice = "wide" | "classic" | "square" | "tall"
 type RadiusChoice = "none" | "small" | "medium" | "large"
 type SideWidth = "small" | "medium" | "large"
+type HeadingPosition = "besideVideo" | "aboveVideo"
 
 interface VideoSectionProps {
   className?: string
@@ -50,6 +51,7 @@ interface VideoSectionProps {
   eyebrow?: string
   heading?: string
   headingLevel?: Level
+  headingPosition?: HeadingPosition
   lead?: string
   body?: string
 
@@ -213,6 +215,7 @@ export function VideoSection({
   eyebrow = "",
   heading = "",
   headingLevel = "h2",
+  headingPosition = "besideVideo",
   lead = "",
   body = "",
 
@@ -550,19 +553,20 @@ export function VideoSection({
     ) : null
 
   // ---- Text block -----------------------------------------------------------
-  const textBlock = hasText ? (
-    <div
-      style={{
-        minWidth: 0,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: ALIGN_ITEMS[alignment],
-        textAlign: alignment,
-        gap,
-        color: colText,
-        fontFamily: FONT_STACKS[bodyFont],
-      }}
-    >
+  const textWrapStyle: CSSProperties = {
+    minWidth: 0,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: ALIGN_ITEMS[alignment],
+    textAlign: alignment,
+    gap,
+    color: colText,
+    fontFamily: FONT_STACKS[bodyFont],
+  }
+
+  // Top part of the text: small label, heading and lead text
+  const headerParts = (
+    <>
       {eyebrowText && (
         <p
           style={{
@@ -601,6 +605,12 @@ export function VideoSection({
         </p>
       )}
 
+    </>
+  )
+
+  // Bottom part of the text: body paragraphs and buttons
+  const bodyParts = (
+    <>
       {bodyBlocks.map((block, index) =>
         block.kind === "heading" ? (
           <SubHeading
@@ -690,11 +700,30 @@ export function VideoSection({
             ))}
         </div>
       )}
+    </>
+  )
+
+  const hasHeaderText = !!(eyebrowText || headingText || leadText)
+  const hasRestText = !!(bodyBlocks.length || hasButton || hasSecond)
+
+  // "Heading position: Above the video" only applies to the side-by-side layouts.
+  // The small label, heading and lead text go in a full-width row on top;
+  // the body text and buttons stay beside the video.
+  const splitHeader = isSide && headingPosition === "aboveVideo" && hasHeaderText
+
+  const headerBlock = splitHeader ? <div style={textWrapStyle}>{headerParts}</div> : null
+
+  const textBlock = !hasText ? null : splitHeader ? (
+    hasRestText ? <div style={textWrapStyle}>{bodyParts}</div> : null
+  ) : (
+    <div style={textWrapStyle}>
+      {headerParts}
+      {bodyParts}
     </div>
-  ) : null
+  )
 
   // Nothing to show at all (blank link, no text, not in the editor): render nothing.
-  if (!videoBlock && !textBlock) return null
+  if (!videoBlock && !textBlock && !headerBlock) return null
 
   const [textCol, videoCol] = SIDE_COLUMNS[videoWidth]
   const sideVars = {
@@ -729,10 +758,20 @@ export function VideoSection({
         }}
       >
         {isSide ? (
-          <div className="vs-side" style={sideVars}>
-            {textBlock}
-            {videoBlock}
-          </div>
+          headerBlock ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: stackGap }}>
+              {headerBlock}
+              <div className="vs-side" style={sideVars}>
+                {textBlock}
+                {videoBlock}
+              </div>
+            </div>
+          ) : (
+            <div className="vs-side" style={sideVars}>
+              {textBlock}
+              {videoBlock}
+            </div>
+          )
         ) : (
           <div style={stackedWrapStyle}>
             {layout === "above" && videoBlock}
