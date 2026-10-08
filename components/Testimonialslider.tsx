@@ -48,7 +48,30 @@ const QUOTE_SIZES: Record<QuoteSize, string> = {
   small: "clamp(1.0625rem, 2vw, 1.25rem)",
   medium: "clamp(1.125rem, 2.3vw, 1.375rem)",
   large: "clamp(1.25rem, 2.8vw, 1.625rem)",
-  xl: "clamp(1.5rem, 3.4vw, 2rem)",
+  xl: "clamp(1.625rem, 3.8vw, 2.25rem)",
+}
+type MarkSize = "small" | "medium" | "large" | "xl"
+// Size of the quote mark in the new quote styles. Medium = the original size.
+const MARK_SIZES: Record<MarkSize, { pull: string; pullBox: string; inline: string }> = {
+  small: { pull: "2.5rem", pullBox: "1.25rem", inline: "1.6em" },
+  medium: { pull: "3.5rem", pullBox: "1.75rem", inline: "2.1em" },
+  large: { pull: "5rem", pullBox: "2.5rem", inline: "3em" },
+  xl: { pull: "7rem", pullBox: "3.5rem", inline: "4em" },
+}
+type SpaceChoice = "none" | "small" | "medium" | "large" | "xl"
+const SPACE_Y: Record<SpaceChoice, string> = {
+  none: "0px",
+  small: "clamp(1.5rem, 3vw, 2.5rem)",
+  medium: "clamp(2.5rem, 5vw, 4rem)",
+  large: "clamp(3.5rem, 7vw, 6rem)",
+  xl: "clamp(5rem, 10vw, 8rem)",
+}
+const SPACE_X: Record<SpaceChoice, string> = {
+  none: "0px",
+  small: "1rem",
+  medium: "clamp(1rem, 4vw, 2rem)",
+  large: "clamp(1.5rem, 6vw, 4rem)",
+  xl: "clamp(2rem, 8vw, 6rem)",
 }
 // What each style looks like when the person has not chosen a size / italic.
 const STYLE_DEFAULTS: Record<Exclude<QuoteStyle, "classic">, { size: QuoteSize; italic: boolean }> = {
@@ -132,6 +155,10 @@ interface TestimonialSliderProps {
   mobileMaxWidth?: string
   padding?: string
   mobilePadding?: string
+  spaceY?: SpaceChoice
+  spaceTop?: SpaceChoice
+  spaceBottom?: SpaceChoice
+  spaceX?: SpaceChoice
   
   // Navigation
   showArrows?: boolean
@@ -162,6 +189,7 @@ interface TestimonialSliderProps {
   quoteFace?: QuoteFace
   quoteItalic?: "auto" | "yes" | "no"
   markColor?: string
+  markSize?: MarkSize
   cardColor?: string
   lightText?: boolean
 
@@ -237,6 +265,10 @@ export function TestimonialSlider({
   mobileMaxWidth = "100%",
   padding = "3rem 1.5rem",
   mobilePadding = "2rem 0.5rem",
+  spaceY,
+  spaceTop,
+  spaceBottom,
+  spaceX,
   
   // Navigation
   showArrows = true,
@@ -262,6 +294,7 @@ export function TestimonialSlider({
   quoteFace = "georgia",
   quoteItalic = "auto",
   markColor = GOLD,
+  markSize = "medium",
   cardColor,
   lightText = false,
 
@@ -269,6 +302,13 @@ export function TestimonialSlider({
 }: TestimonialSliderProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isHovering, setIsHovering] = useState(false)
+
+  // Spacing dropdowns. Left blank = the old Padding boxes still apply, so
+  // existing pages do not change.
+  const useSpaceChoices = !!(spaceY || spaceTop || spaceBottom || spaceX)
+  const spacePadding = `${SPACE_Y[spaceTop ?? spaceY ?? "medium"]} ${SPACE_X[spaceX ?? "medium"]} ${SPACE_Y[spaceBottom ?? spaceY ?? "medium"]}`
+  const effPadding = useSpaceChoices ? spacePadding : padding
+  const effMobilePadding = useSpaceChoices ? spacePadding : mobilePadding
 
   // Display order for the testimonials. Starts as the original CMS order
   // (so the server render and the client's first render match, avoiding a
@@ -455,7 +495,7 @@ export function TestimonialSlider({
           {pill}
           <div
             aria-hidden="true"
-            style={{ fontFamily: QUOTE_FONT_STACKS.Georgia, fontSize: "3.5rem", lineHeight: 0.55, height: "1.75rem", color: markColor }}
+            style={{ fontFamily: QUOTE_FONT_STACKS.Georgia, fontSize: MARK_SIZES[markSize]?.pull ?? "3.5rem", lineHeight: 0.55, height: MARK_SIZES[markSize]?.pullBox ?? "1.75rem", color: markColor }}
           >
             {"\u201C"}
           </div>
@@ -505,7 +545,7 @@ export function TestimonialSlider({
         <div>
           {pill}
           <blockquote style={quoteCss}>
-            <span aria-hidden="true" style={{ color: markColor, fontSize: "2.1em", lineHeight: 0, verticalAlign: "-0.28em", marginRight: "0.12em" }}>
+            <span aria-hidden="true" style={{ color: markColor, fontSize: MARK_SIZES[markSize]?.inline ?? "2.1em", lineHeight: 0, verticalAlign: "-0.28em", marginRight: "0.12em" }}>
               {"\u201C"}
             </span>
             {formatInline(t.quote)}
@@ -541,10 +581,10 @@ export function TestimonialSlider({
         <style
           dangerouslySetInnerHTML={{
             __html: `
-          .testimonial-outer-wrapper { background-color: ${backgroundColor}; padding: ${padding}; }
+          .testimonial-outer-wrapper { background-color: ${backgroundColor}; padding: ${effPadding}; }
           .testimonial-content-wrapper { max-width: ${maxWidth}; }
           @media (max-width: 768px) {
-            .testimonial-outer-wrapper { padding: ${mobilePadding}; }
+            .testimonial-outer-wrapper { padding: ${effMobilePadding}; }
             .testimonial-content-wrapper { max-width: ${mobileMaxWidth}; }
           }
         `,
@@ -605,7 +645,7 @@ export function TestimonialSlider({
         __html: `
           .testimonial-outer-wrapper {
             background-color: ${backgroundColor};
-            padding: ${padding};
+            padding: ${effPadding};
           }
           .testimonial-content-wrapper {
             max-width: ${maxWidth};
@@ -622,7 +662,7 @@ export function TestimonialSlider({
           }
           @media (max-width: 768px) {
             .testimonial-outer-wrapper {
-              padding: ${mobilePadding};
+              padding: ${effMobilePadding};
             }
             .testimonial-content-wrapper {
               max-width: ${mobileMaxWidth};
