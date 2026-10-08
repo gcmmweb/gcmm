@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type CSSProperties } from 'react'
 import { Quote, ChevronLeft, ChevronRight } from 'lucide-react'
+import { formatInline } from '@/lib/inline-format'
 
 // Only the site's actual brand fonts are offered here, so this component
 // can't accidentally pull in an extra Google Font the way a free-text
@@ -25,14 +26,48 @@ function shuffleArray<T>(array: T[]): T[] {
   return result
 }
 
+// ---------------------------------------------------------------------------
+// QUOTE STYLES (Oct 2026). "classic" is the original slider look and is what
+// every existing instance keeps until someone picks another style. The four new
+// styles share one renderer below. To add a fifth style later: add its name to
+// QuoteStyle, one entry in STYLE_DEFAULTS, one branch in renderStyledQuote(), and
+// one option in the Studio registration.
+// ---------------------------------------------------------------------------
+type QuoteStyle = "classic" | "pull" | "bar" | "card" | "min"
+type QuoteSize = "small" | "medium" | "large" | "xl"
+type QuoteFace = "georgia" | "nunito" | "poppins" | "lexend"
+
+const GOLD = "#CBA86D"
+const NEW_FACES: Record<QuoteFace, string> = {
+  georgia: QUOTE_FONT_STACKS.Georgia,
+  nunito: QUOTE_FONT_STACKS.Nunito,
+  poppins: QUOTE_FONT_STACKS.Poppins,
+  lexend: QUOTE_FONT_STACKS.Lexend,
+}
+const QUOTE_SIZES: Record<QuoteSize, string> = {
+  small: "clamp(1.0625rem, 2vw, 1.25rem)",
+  medium: "clamp(1.125rem, 2.3vw, 1.375rem)",
+  large: "clamp(1.25rem, 2.8vw, 1.625rem)",
+  xl: "clamp(1.5rem, 3.4vw, 2rem)",
+}
+// What each style looks like when the person has not chosen a size / italic.
+const STYLE_DEFAULTS: Record<Exclude<QuoteStyle, "classic">, { size: QuoteSize; italic: boolean }> = {
+  pull: { size: "large", italic: true },
+  bar: { size: "medium", italic: true },
+  card: { size: "medium", italic: false },
+  min: { size: "medium", italic: true },
+}
+
 interface Testimonial {
   quote: string
   name: string
   title?: string
   organization?: string
   location?: string
+  // Optional round photo (square 240 x 240 px works well). Used by the new styles.
+  photo?: string
   // NEW: each testimony can carry its own "read more" destination.
-  // Leave this blank in the CMS for any testimony that has no full story yet —
+  // Leave this blank in the CMS for any testimony that has no full story yet -
   // the button simply won't render on that slide.
   readMoreUrl?: string
 }
@@ -121,6 +156,15 @@ interface TestimonialSliderProps {
   readMoreHoverBackgroundColor?: string
   readMoreHoverTextColor?: string
 
+  // Quote style (Oct 2026). Unset = "classic" = the original look.
+  quoteStyle?: QuoteStyle
+  quoteSize?: QuoteSize
+  quoteFace?: QuoteFace
+  quoteItalic?: "auto" | "yes" | "no"
+  markColor?: string
+  cardColor?: string
+  lightText?: boolean
+
   className?: string
 }
 
@@ -128,27 +172,11 @@ export function TestimonialSlider({
   // Content
   testimonials = [
     {
-      quote: "Through GCM's media campaigns, we've seen a 300% increase in engagement with our community outreach programs. Their strategic approach to digital ministry has transformed how we connect with people.",
-      name: "Sarah Chen",
-      title: "Ministry Leader",
-      organization: "Hope Church International",
-      location: "Singapore",
-      readMoreUrl: "",
-    },
-    {
-      quote: "The impact of their work is truly remarkable. We've reached thousands of people who might never have heard our message otherwise.",
-      name: "John Smith",
-      title: "Pastor",
-      organization: "Community Church",
-      location: "United States",
-      readMoreUrl: "",
-    },
-    {
-      quote: "Working with GCM has been a game-changer for our ministry. Their expertise in digital media is unmatched.",
-      name: "Maria Garcia",
-      title: "Communications Director",
-      organization: "Faith Ministry",
-      location: "Spain",
+      quote: "Sample quote: replace this with the words someone shared with us.",
+      name: "Name",
+      title: "",
+      organization: "",
+      location: "",
       readMoreUrl: "",
     },
   ],
@@ -217,7 +245,7 @@ export function TestimonialSlider({
   autoPlayInterval = 5000,
   randomizeOrder = false,
 
-  // Read More Button (master switch + shared styling only — URL now lives per-testimony)
+  // Read More Button (master switch + shared styling only - URL now lives per-testimony)
   showReadMore = false,
   readMoreText = "Read More",
   readMoreOpenInNewTab = false,
@@ -227,6 +255,15 @@ export function TestimonialSlider({
   readMoreTextColor = "#ffffff",
   readMoreHoverBackgroundColor = "#0A6C93",
   readMoreHoverTextColor = "#ffffff",
+
+  // Quote style (unset = classic = original look)
+  quoteStyle = "classic",
+  quoteSize,
+  quoteFace = "georgia",
+  quoteItalic = "auto",
+  markColor = GOLD,
+  cardColor,
+  lightText = false,
 
   className = "",
 }: TestimonialSliderProps) {
@@ -248,7 +285,7 @@ export function TestimonialSlider({
 
   // Auto-play functionality
   // FIX: this was previously `useState(() => {...})`, which is wrong for side effects.
-  // useState's initializer runs once to compute a value — the cleanup function it
+  // useState's initializer runs once to compute a value - the cleanup function it
   // returned was silently discarded, so the interval it created was NEVER cleared.
   // Every render (including repeated server-side renders) left one more interval
   // running forever in the background. useEffect is the correct tool here: React
@@ -311,6 +348,255 @@ export function TestimonialSlider({
   const currentReadMoreUrl = currentTestimonial.readMoreUrl?.trim()
   const canShowReadMore = showReadMore && !!currentReadMoreUrl
 
+  // ===== NEW STYLES: pull quote / gold bar / soft card / minimal =====
+  if (quoteStyle !== "classic" && STYLE_DEFAULTS[quoteStyle]) {
+    const sizeKey: QuoteSize = quoteSize ?? STYLE_DEFAULTS[quoteStyle].size
+    const italic =
+      quoteItalic === "yes" ? true : quoteItalic === "no" ? false : STYLE_DEFAULTS[quoteStyle].italic
+    const colText = lightText ? "#FFFFFF" : textColor
+    const colName = lightText ? GOLD : nameColor
+    const colTitle = lightText ? "rgba(255,255,255,0.9)" : titleColor
+    const colOrg = lightText ? "rgba(255,255,255,0.75)" : organizationColor
+    const colNav = lightText ? "#FFFFFF" : arrowColor
+    const colDot = lightText ? "#FFFFFF" : accentColor
+    const colCard = cardColor || (lightText ? "rgba(255,255,255,0.09)" : "#F3F4F6")
+    const t = currentTestimonial
+    const centered = quoteStyle === "pull"
+    const photoSize = quoteStyle === "min" ? 40 : quoteStyle === "pull" ? 60 : 64
+
+    const quoteCss: CSSProperties = {
+      margin: 0,
+      fontFamily: NEW_FACES[quoteFace] ?? NEW_FACES.georgia,
+      fontSize: QUOTE_SIZES[sizeKey],
+      lineHeight: 1.5,
+      fontStyle: italic ? "italic" : "normal",
+      fontWeight: 400,
+      color: colText,
+      whiteSpace: "pre-line",
+    }
+
+    const photoEl = t.photo && t.photo.trim() ? (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={t.photo.trim()}
+        alt=""
+        width={photoSize}
+        height={photoSize}
+        loading="lazy"
+        decoding="async"
+        style={{ width: photoSize, height: photoSize, borderRadius: "9999px", objectFit: "cover", flex: "none", display: "block" }}
+      />
+    ) : null
+
+    const hasName = showAttribution && showName && !!t.name
+    const hasTitle = showAttribution && showTitle && !!t.title
+    const hasOrg = showAttribution && showOrganization && !!t.organization
+    const lines = (align: "left" | "center") =>
+      hasName || hasTitle || hasOrg ? (
+        <div style={{ textAlign: align, fontFamily: QUOTE_FONT_STACKS.Nunito }}>
+          {hasName && (
+            <div style={{ fontSize: "0.9375rem", fontWeight: 700, lineHeight: 1.4, color: colName }}>
+              {formatInline(t.name)}
+            </div>
+          )}
+          {hasTitle && (
+            <div style={{ fontSize: "0.84375rem", lineHeight: 1.45, color: colTitle }}>{formatInline(t.title as string)}</div>
+          )}
+          {hasOrg && (
+            <div style={{ fontSize: "0.84375rem", lineHeight: 1.45, color: colOrg }}>{formatInline(t.organization as string)}</div>
+          )}
+        </div>
+      ) : null
+
+    // Short label above the quote (the "pill"). Same field as before: Location.
+    const pill =
+      showLocation && t.location ? (
+        <div style={{ marginBottom: "1rem", textAlign: centered ? "center" : "left" }}>
+          <div
+            className="inline-block px-4 py-1 rounded-full font-semibold text-sm"
+            style={{ backgroundColor: locationBadgeColor, color: locationColor }}
+          >
+            {formatInline(t.location)}
+          </div>
+        </div>
+      ) : null
+
+    // On a dark background the original navy button would vanish, so use the brand amber.
+    const rmBg = lightText ? "#F4A300" : readMoreBackgroundColor
+    const rmText = lightText ? "#1F2D55" : readMoreTextColor
+    const rmHoverBg = lightText ? "#FFFFFF" : readMoreHoverBackgroundColor
+    const rmHoverText = lightText ? "#1F2D55" : readMoreHoverTextColor
+
+    const readMore = canShowReadMore ? (
+      <div style={{ display: "flex", justifyContent: centered ? "center" : "flex-start", marginTop: "1.5rem" }}>
+        <a
+          href={currentReadMoreUrl}
+          target={readMoreOpenInNewTab ? "_blank" : undefined}
+          rel={readMoreOpenInNewTab ? "noopener noreferrer" : undefined}
+          className="inline-block px-6 py-3 rounded-lg transition-all duration-200"
+          style={{
+            fontSize: readMoreFontSize,
+            fontWeight: readMoreFontWeight,
+            backgroundColor: isHovering ? rmHoverBg : rmBg,
+            color: isHovering ? rmHoverText : rmText,
+          }}
+          onMouseEnter={() => setIsHovering(true)}
+          onMouseLeave={() => setIsHovering(false)}
+        >
+          {readMoreText}
+        </a>
+      </div>
+    ) : null
+
+    let slide: React.ReactNode = null
+    if (quoteStyle === "pull") {
+      slide = (
+        <div style={{ textAlign: "center", padding: "0 0.5rem" }}>
+          {pill}
+          <div
+            aria-hidden="true"
+            style={{ fontFamily: QUOTE_FONT_STACKS.Georgia, fontSize: "3.5rem", lineHeight: 0.55, height: "1.75rem", color: markColor }}
+          >
+            {"\u201C"}
+          </div>
+          <blockquote style={{ ...quoteCss, marginTop: "0.375rem" }}>{formatInline(t.quote)}</blockquote>
+          <div style={{ width: 40, height: 2, background: markColor, margin: "1.125rem auto 0.875rem" }} />
+          {photoEl && <div style={{ display: "flex", justifyContent: "center", marginBottom: "0.5rem" }}>{photoEl}</div>}
+          {lines("center")}
+          {readMore}
+        </div>
+      )
+    } else if (quoteStyle === "bar") {
+      slide = (
+        <div style={{ display: "flex", gap: "1rem", alignItems: "flex-start", borderLeft: `4px solid ${markColor}`, paddingLeft: "1.25rem" }}>
+          {photoEl}
+          <div style={{ minWidth: 0 }}>
+            {pill}
+            <blockquote style={quoteCss}>{"\u201C"}{formatInline(t.quote)}{"\u201D"}</blockquote>
+            <div style={{ marginTop: "0.75rem" }}>{lines("left")}</div>
+            {readMore}
+          </div>
+        </div>
+      )
+    } else if (quoteStyle === "card") {
+      slide = (
+        <div
+          style={{
+            display: "flex",
+            gap: "1rem",
+            alignItems: "flex-start",
+            background: colCard,
+            borderLeft: `4px solid ${markColor}`,
+            borderRadius: "0 0.625rem 0.625rem 0",
+            padding: "1.25rem 1.5rem",
+          }}
+        >
+          {photoEl}
+          <div style={{ minWidth: 0 }}>
+            {pill}
+            <blockquote style={quoteCss}>{formatInline(t.quote)}</blockquote>
+            <div style={{ marginTop: "0.75rem" }}>{lines("left")}</div>
+            {readMore}
+          </div>
+        </div>
+      )
+    } else {
+      slide = (
+        <div>
+          {pill}
+          <blockquote style={quoteCss}>
+            <span aria-hidden="true" style={{ color: markColor, fontSize: "2.1em", lineHeight: 0, verticalAlign: "-0.28em", marginRight: "0.12em" }}>
+              {"\u201C"}
+            </span>
+            {formatInline(t.quote)}
+            {"\u201D"}
+          </blockquote>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", marginTop: "0.75rem" }}>
+            {photoEl}
+            {lines("left")}
+          </div>
+          {readMore}
+        </div>
+      )
+    }
+
+    const many = orderedTestimonials.length > 1
+    const navBtn: CSSProperties = {
+      width: 36,
+      height: 36,
+      borderRadius: "9999px",
+      border: "1px solid currentColor",
+      background: "transparent",
+      color: colNav,
+      cursor: "pointer",
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 0,
+      opacity: 0.85,
+    }
+
+    return (
+      <div className={`relative ${className}`}>
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+          .testimonial-outer-wrapper { background-color: ${backgroundColor}; padding: ${padding}; }
+          .testimonial-content-wrapper { max-width: ${maxWidth}; }
+          @media (max-width: 768px) {
+            .testimonial-outer-wrapper { padding: ${mobilePadding}; }
+            .testimonial-content-wrapper { max-width: ${mobileMaxWidth}; }
+          }
+        `,
+          }}
+        />
+        <div className="testimonial-outer-wrapper">
+          <div
+            className="mx-auto testimonial-content-wrapper"
+            role="region"
+            aria-roledescription="carousel"
+            aria-label="Testimonials"
+          >
+            <div aria-live={autoPlay ? "off" : "polite"}>{slide}</div>
+            {many && (showArrows || showDots) && (
+              <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "0.875rem", marginTop: "1.5rem" }}>
+                {showArrows && (
+                  <button type="button" onClick={goToPrevious} style={navBtn} aria-label="Previous testimonial">
+                    <ChevronLeft size={18} />
+                  </button>
+                )}
+                {showDots &&
+                  orderedTestimonials.map((_, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => goToSlide(index)}
+                      aria-label={`Go to testimonial ${index + 1}`}
+                      style={{
+                        width: 9,
+                        height: 9,
+                        borderRadius: "9999px",
+                        border: 0,
+                        padding: 0,
+                        cursor: "pointer",
+                        backgroundColor: colDot,
+                        opacity: index === currentIndex ? 1 : 0.3,
+                      }}
+                    />
+                  ))}
+                {showArrows && (
+                  <button type="button" onClick={goToNext} style={navBtn} aria-label="Next testimonial">
+                    <ChevronRight size={18} />
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div
       className={`relative ${className}`}
@@ -367,7 +653,7 @@ export function TestimonialSlider({
               style={{ 
                 color: arrowColor,
                 focusRingColor: arrowColor,
-              }}
+              } as CSSProperties}
               aria-label="Previous testimonial"
             >
               <ChevronLeft />
@@ -395,7 +681,7 @@ export function TestimonialSlider({
                   color: locationColor,
                 }}
               >
-                {currentTestimonial.location}
+                {formatInline(currentTestimonial.location)}
               </div>
             )}
 
@@ -410,7 +696,7 @@ export function TestimonialSlider({
                 color: textColor,
               }}
             >
-              {currentTestimonial.quote}
+              {formatInline(currentTestimonial.quote)}
             </blockquote>
 
             {showAttribution && (
@@ -425,7 +711,7 @@ export function TestimonialSlider({
                       color: nameColor,
                     }}
                   >
-                    {currentTestimonial.name}
+                    {formatInline(currentTestimonial.name)}
                   </div>
                 )}
 
@@ -439,7 +725,7 @@ export function TestimonialSlider({
                       color: titleColor,
                     }}
                   >
-                    {currentTestimonial.title}
+                    {formatInline(currentTestimonial.title)}
                   </div>
                 )}
 
@@ -453,13 +739,13 @@ export function TestimonialSlider({
                       color: organizationColor,
                     }}
                   >
-                    {currentTestimonial.organization}
+                    {formatInline(currentTestimonial.organization)}
                   </div>
                 )}
               </div>
             )}
 
-            {/* Read More Button — only appears when THIS testimony has a URL */}
+            {/* Read More Button - only appears when THIS testimony has a URL */}
             {canShowReadMore && (
               <div 
                 className="mt-6"
@@ -514,7 +800,7 @@ export function TestimonialSlider({
               style={{ 
                 color: arrowColor,
                 focusRingColor: arrowColor,
-              }}
+              } as CSSProperties}
               aria-label="Next testimonial"
             >
               <ChevronRight />

@@ -810,80 +810,144 @@ PLASMIC.registerComponent(TestimonialSlider, {
     // Content
     testimonials: {
       type: "array",
-      displayName: "Testimonials",
-      description: "Add, remove, or reorder testimonials. Each testimonial will appear in the slider.",
+      displayName: "Quotes",
+      description: "Add, remove or reorder quotes (testimonies, encouragement, Bible verses). One quote shows by itself; several show with arrows and dots.",
       section: "Content",
       itemType: {
         type: "object",
-        nameFunc: (item: any) => item.name || "New Testimonial",
+        nameFunc: (item: any) => item.name || "New quote",
         fields: {
           quote: {
             type: "string",
+            control: "large",
             displayName: "Quote",
-            defaultValue: "Enter your testimonial quote here.",
-            description: "The testimonial text",
+            defaultValue: "",
+            description: "The words. Format words: **bold**, *italic*, ***bold and italic***. A blank line starts a new paragraph.",
           },
           name: {
             type: "string",
-            displayName: "Name",
-            defaultValue: "Person Name",
-            description: "Name of the person giving the testimonial",
+            displayName: "Name (or Bible reference)",
+            defaultValue: "",
+            description: "e.g. Samir, A Mother, or John 3:16. A first name or a description is fine.",
           },
           title: {
             type: "string",
-            displayName: "Title/Role",
-            defaultValue: "Job Title",
-            description: "Their job title or role",
+            displayName: "Title (line under the name)",
+            defaultValue: "",
+            description: "Optional. e.g. Pastor, or the Bible version (KJV). Leave blank to hide this line.",
           },
           organization: {
             type: "string",
-            displayName: "Organization",
-            defaultValue: "Organization Name",
-            description: "Organization or company name",
+            displayName: "Place or organization (line under the title)",
+            defaultValue: "",
+            description: "Optional. A city, a country or an organization. Leave blank to hide this line.",
           },
           location: {
             type: "string",
-            displayName: "Location",
-            defaultValue: "City, Country",
-            description: "Location badge text (e.g., 'Singapore', 'United States')",
+            displayName: "Label above the quote",
+            defaultValue: "",
+            description: "Optional short label shown as a pill above the quote: a short title like A Life Transformed, or a country like Nepal.",
           },
-          // NEW: per-testimony Read More destination.
-          // Leave blank for a testimony that has no full story yet —
-          // the button simply won't appear on that slide.
+          photo: {
+            type: "imageUrl",
+            displayName: "Photo (optional)",
+            description: "A round photo next to the quote. Square 240 x 240 px, face in the middle. Used by the new styles.",
+          },
           readMoreUrl: {
             type: "string",
             displayName: "Read More URL",
             defaultValue: "",
-            description: "Link to this testimony's full story (e.g. a News & Stories CMS article). Leave blank to hide the Read More button on this slide.",
+            description: "Link to this quote's full story (e.g. a News & Stories article). Leave blank to hide the Read More button on this quote. (Turn on Show Read More first.)",
           },
         },
       },
       defaultValue: [
         {
-          quote: "Through GCM's media campaigns, we've seen a 300% increase in engagement with our community outreach programs. Their strategic approach to digital ministry has transformed how we connect with people.",
-          name: "Sarah Chen",
-          title: "Ministry Leader",
-          organization: "Hope Church International",
-          location: "Singapore",
-          readMoreUrl: "",
-        },
-        {
-          quote: "The impact of their work is truly remarkable. We've reached thousands of people who might never have heard our message otherwise.",
-          name: "John Smith",
-          title: "Pastor",
-          organization: "Community Church",
-          location: "United States",
-          readMoreUrl: "",
-        },
-        {
-          quote: "Working with GCM has been a game-changer for our ministry. Their expertise in digital media is unmatched.",
-          name: "Maria Garcia",
-          title: "Communications Director",
-          organization: "Faith Ministry",
-          location: "Spain",
+          quote: "Sample quote: replace this with the words someone shared with us.",
+          name: "Name",
+          title: "",
+          organization: "",
+          location: "",
+          photo: "",
           readMoreUrl: "",
         },
       ],
+    },
+
+    // Quote style
+    quoteStyle: {
+      type: "choice",
+      displayName: "Quote style",
+      description: "Classic = the original slider look (existing pages keep it). The other four are the new styles.",
+      options: [
+        { value: "classic", label: "Classic (original look)" },
+        { value: "pull", label: "Pull quote (centered)" },
+        { value: "bar", label: "Gold bar" },
+        { value: "card", label: "Soft card" },
+        { value: "min", label: "Minimal" },
+      ],
+      defaultValue: "classic",
+      section: "Style",
+    },
+    quoteSize: {
+      type: "choice",
+      displayName: "Quote size",
+      description: "Blank = the best size for the chosen style.",
+      options: [
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      hidden: (props: any) => !props.quoteStyle || props.quoteStyle === "classic",
+      section: "Style",
+    },
+    quoteFace: {
+      type: "choice",
+      displayName: "Quote font",
+      options: [
+        { value: "georgia", label: "Georgia" },
+        { value: "nunito", label: "Nunito" },
+        { value: "poppins", label: "Poppins" },
+        { value: "lexend", label: "Lexend" },
+      ],
+      defaultValue: "georgia",
+      hidden: (props: any) => !props.quoteStyle || props.quoteStyle === "classic",
+      section: "Style",
+    },
+    quoteItalic: {
+      type: "choice",
+      displayName: "Italic quote text",
+      options: [
+        { value: "auto", label: "Automatic (by style)" },
+        { value: "yes", label: "Italic" },
+        { value: "no", label: "Not italic" },
+      ],
+      defaultValue: "auto",
+      hidden: (props: any) => !props.quoteStyle || props.quoteStyle === "classic",
+      section: "Style",
+    },
+    markColor: {
+      type: "color",
+      displayName: "Gold bar / quote mark color",
+      description: "Blank = gold",
+      hidden: (props: any) => !props.quoteStyle || props.quoteStyle === "classic",
+      section: "Style",
+    },
+    cardColor: {
+      type: "color",
+      displayName: "Soft card color",
+      description: "Blank = automatic (light grey, or a soft white on dark backgrounds)",
+      hidden: (props: any) => props.quoteStyle !== "card",
+      section: "Style",
+    },
+    lightText: {
+      type: "boolean",
+      displayName: "Light text (for dark backgrounds)",
+      description: "Turn on when the background color is dark: text becomes white, the name gold, and the Read More button amber.",
+      defaultValue: false,
+      hidden: (props: any) => !props.quoteStyle || props.quoteStyle === "classic",
+      section: "Style",
     },
 
     // Visibility Controls
@@ -895,6 +959,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
       section: "Visibility",
     },
     showQuoteIcon: {
+      hidden: (props: any) => !!props.quoteStyle && props.quoteStyle !== "classic",
       type: "boolean",
       displayName: "Show Quote Icon",
       defaultValue: true,
@@ -1071,6 +1136,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
       section: "Colors",
     },
     quoteIconColor: {
+      hidden: (props: any) => !!props.quoteStyle && props.quoteStyle !== "classic",
       type: "color",
       displayName: "Quote Icon Color",
       defaultValue: "#1F2D55",
@@ -1115,6 +1181,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
 
     // Typography - Quote
     quoteFont: {
+      hidden: (props: any) => !!props.quoteStyle && props.quoteStyle !== "classic",
       type: "choice",
       displayName: "Quote Font Family",
       options: ["Nunito", "Poppins", "Georgia", "Lexend"],
@@ -1123,6 +1190,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
       section: "Typography - Quote",
     },
     quoteFontSize: {
+      hidden: (props: any) => !!props.quoteStyle && props.quoteStyle !== "classic",
       type: "string",
       displayName: "Quote Font Size",
       defaultValue: "1.25rem",
@@ -1130,6 +1198,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
       section: "Typography - Quote",
     },
     quoteLineHeight: {
+      hidden: (props: any) => !!props.quoteStyle && props.quoteStyle !== "classic",
       type: "string",
       displayName: "Quote Line Height",
       defaultValue: "1.8",
@@ -1137,6 +1206,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
       section: "Typography - Quote",
     },
     quoteFontWeight: {
+      hidden: (props: any) => !!props.quoteStyle && props.quoteStyle !== "classic",
       type: "choice",
       options: ["normal", "bold"],
       displayName: "Quote Font Weight",
@@ -1144,6 +1214,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
       section: "Typography - Quote",
     },
     quoteFontStyle: {
+      hidden: (props: any) => !!props.quoteStyle && props.quoteStyle !== "classic",
       type: "choice",
       options: ["normal", "italic"],
       displayName: "Quote Font Style",
@@ -1153,6 +1224,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
 
     // Typography - Name
     nameFontSize: {
+      hidden: (props: any) => !!props.quoteStyle && props.quoteStyle !== "classic",
       type: "string",
       displayName: "Name Font Size",
       defaultValue: "1.125rem",
@@ -1160,6 +1232,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
       section: "Typography - Name",
     },
     nameLineHeight: {
+      hidden: (props: any) => !!props.quoteStyle && props.quoteStyle !== "classic",
       type: "string",
       displayName: "Name Line Height",
       defaultValue: "1.4",
@@ -1167,6 +1240,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
       section: "Typography - Name",
     },
     nameFontWeight: {
+      hidden: (props: any) => !!props.quoteStyle && props.quoteStyle !== "classic",
       type: "choice",
       options: ["normal", "bold"],
       displayName: "Name Font Weight",
@@ -1174,6 +1248,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
       section: "Typography - Name",
     },
     nameFontStyle: {
+      hidden: (props: any) => !!props.quoteStyle && props.quoteStyle !== "classic",
       type: "choice",
       options: ["normal", "italic"],
       displayName: "Name Font Style",
@@ -1183,6 +1258,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
 
     // Typography - Title
     titleFontSize: {
+      hidden: (props: any) => !!props.quoteStyle && props.quoteStyle !== "classic",
       type: "string",
       displayName: "Title Font Size",
       defaultValue: "1rem",
@@ -1190,6 +1266,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
       section: "Typography - Title",
     },
     titleLineHeight: {
+      hidden: (props: any) => !!props.quoteStyle && props.quoteStyle !== "classic",
       type: "string",
       displayName: "Title Line Height",
       defaultValue: "1.5",
@@ -1197,6 +1274,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
       section: "Typography - Title",
     },
     titleFontWeight: {
+      hidden: (props: any) => !!props.quoteStyle && props.quoteStyle !== "classic",
       type: "choice",
       options: ["normal", "bold"],
       displayName: "Title Font Weight",
@@ -1204,6 +1282,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
       section: "Typography - Title",
     },
     titleFontStyle: {
+      hidden: (props: any) => !!props.quoteStyle && props.quoteStyle !== "classic",
       type: "choice",
       options: ["normal", "italic"],
       displayName: "Title Font Style",
@@ -1213,6 +1292,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
 
     // Typography - Organization
     organizationFontSize: {
+      hidden: (props: any) => !!props.quoteStyle && props.quoteStyle !== "classic",
       type: "string",
       displayName: "Organization Font Size",
       defaultValue: "1rem",
@@ -1220,6 +1300,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
       section: "Typography - Organization",
     },
     organizationLineHeight: {
+      hidden: (props: any) => !!props.quoteStyle && props.quoteStyle !== "classic",
       type: "string",
       displayName: "Organization Line Height",
       defaultValue: "1.5",
@@ -1227,6 +1308,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
       section: "Typography - Organization",
     },
     organizationFontWeight: {
+      hidden: (props: any) => !!props.quoteStyle && props.quoteStyle !== "classic",
       type: "choice",
       options: ["normal", "bold"],
       displayName: "Organization Font Weight",
@@ -1234,6 +1316,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
       section: "Typography - Organization",
     },
     organizationFontStyle: {
+      hidden: (props: any) => !!props.quoteStyle && props.quoteStyle !== "classic",
       type: "choice",
       options: ["normal", "italic"],
       displayName: "Organization Font Style",
@@ -1243,6 +1326,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
 
     // Typography - Location
     locationFontSize: {
+      hidden: (props: any) => !!props.quoteStyle && props.quoteStyle !== "classic",
       type: "string",
       displayName: "Location Font Size",
       defaultValue: "0.875rem",
@@ -1250,6 +1334,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
       section: "Typography - Location",
     },
     locationLineHeight: {
+      hidden: (props: any) => !!props.quoteStyle && props.quoteStyle !== "classic",
       type: "string",
       displayName: "Location Line Height",
       defaultValue: "1.5",
@@ -1257,6 +1342,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
       section: "Typography - Location",
     },
     locationFontWeight: {
+      hidden: (props: any) => !!props.quoteStyle && props.quoteStyle !== "classic",
       type: "choice",
       options: ["normal", "bold"],
       displayName: "Location Font Weight",
@@ -1264,6 +1350,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
       section: "Typography - Location",
     },
     locationFontStyle: {
+      hidden: (props: any) => !!props.quoteStyle && props.quoteStyle !== "classic",
       type: "choice",
       options: ["normal", "italic"],
       displayName: "Location Font Style",
@@ -1273,6 +1360,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
 
     // Layout
     alignment: {
+      hidden: (props: any) => !!props.quoteStyle && props.quoteStyle !== "classic",
       type: "choice",
       options: ["left", "center", "right"],
       displayName: "Text Alignment",
