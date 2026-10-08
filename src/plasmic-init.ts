@@ -2438,6 +2438,51 @@ PLASMIC.registerComponent(CardGrid, {
       section: "Cards",
     },
 
+    // ---- Buttons (optional, shown under the cards) ----
+    buttonText: {
+      type: "string",
+      displayName: "Button text",
+      section: "Button",
+    },
+    buttonLink: {
+      type: "string",
+      displayName: "Button link",
+      description: "e.g. /donate, https://ukraineaidtoday.ca, mailto:info@gcmm.ca",
+      section: "Button",
+    },
+    trackingLabel: {
+      type: "string",
+      displayName: "Tracking label (optional)",
+      description: "Short name for analytics, e.g. ukraine-give. Leave blank if not needed.",
+      section: "Button",
+    },
+    secondButtonText: {
+      type: "string",
+      displayName: "Second button text (outlined)",
+      description: "Optional. Shows only when BOTH second button text and link are filled. Maximum of two buttons.",
+      section: "Button",
+    },
+    secondButtonLink: {
+      type: "string",
+      displayName: "Second button link",
+      section: "Button",
+    },
+    secondTrackingLabel: {
+      type: "string",
+      displayName: "Second button tracking label (optional)",
+      section: "Button",
+    },
+    phoneButtons: {
+      type: "choice",
+      displayName: "Buttons on phones",
+      options: [
+        { value: "full", label: "Full width" },
+        { value: "natural", label: "Natural width" },
+      ],
+      defaultValue: "full",
+      section: "Button",
+    },
+
     // ---- Layout ----
     columns: {
       type: "choice",
@@ -2538,6 +2583,30 @@ PLASMIC.registerComponent(CardGrid, {
     },
 
     // ---- Colors (pick a Style Token or any color; blank = automatic brand colors) ----
+    buttonColor: {
+      type: "color",
+      displayName: "Button color",
+      description: "Blank = Amber",
+      section: "Colors",
+    },
+    buttonTextColor: {
+      type: "color",
+      displayName: "Button text color",
+      description: "Blank = Deep Navy",
+      section: "Colors",
+    },
+    secondButtonColor: {
+      type: "color",
+      displayName: "Second button color",
+      description: "Border and text color of the outlined button. Blank = Deep Navy",
+      section: "Colors",
+    },
+    secondButtonHoverTextColor: {
+      type: "color",
+      displayName: "Second button hover text color",
+      description: "Blank = White",
+      section: "Colors",
+    },
     backgroundColor: {
       type: "color",
       displayName: "Background color",
@@ -2641,6 +2710,19 @@ PLASMIC.registerComponent(CardGrid, {
         { value: "xl", label: "Extra large" },
       ],
       defaultValue: "large",
+      section: "Text style",
+    },
+    leadSize: {
+      type: "choice",
+      displayName: "Lead line size",
+      description: "Size of the text under the heading.",
+      options: [
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "medium",
       section: "Text style",
     },
     headingWeight: {

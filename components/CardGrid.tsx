@@ -23,6 +23,7 @@ const BLUE = "#336896"
 const NEUTRAL = "#EFEFEF"
 const WHITE = "#FFFFFF"
 const SLATE = "#4B5668"
+const AMBER = "#F4A300"
 
 // Text sits inside a centered container this wide so it lines up with the
 // header on big screens. Background still runs edge to edge.
@@ -57,6 +58,7 @@ interface CardGridProps {
   heading?: string
   headingLevel?: Level
   lead?: string
+  leadSize?: SizeChoice
 
   // Cards
   cards?: CardItem[]
@@ -68,6 +70,15 @@ interface CardGridProps {
   hoverEffect?: HoverChoice
   alignment?: Align
   contentWidth?: WidthChoice
+
+  // Buttons (optional, shown under the cards)
+  buttonText?: string
+  buttonLink?: string
+  trackingLabel?: string
+  secondButtonText?: string
+  secondButtonLink?: string
+  secondTrackingLabel?: string
+  phoneButtons?: "full" | "natural"
 
   // Spacing
   spaceY?: SpaceChoice
@@ -87,6 +98,10 @@ interface CardGridProps {
   markerColor?: string
   markerTextColor?: string
   iconColor?: string
+  buttonColor?: string
+  buttonTextColor?: string
+  secondButtonColor?: string
+  secondButtonHoverTextColor?: string
 
   // Text style
   eyebrowSize?: EyebrowSizeChoice
@@ -111,6 +126,14 @@ const HEADING_SIZES: Record<SizeChoice, string> = {
   medium: "clamp(1.75rem, 4vw, 2.5rem)",
   large: "clamp(2rem, 5vw, 3.25rem)",
   xl: "clamp(2.25rem, 6vw, 4rem)",
+}
+
+// Lead line (text under the heading). Medium = the original size.
+const LEAD_SIZES: Record<SizeChoice, string> = {
+  small: "clamp(1rem, 2vw, 1.125rem)",
+  medium: "clamp(1.0625rem, 2.2vw, 1.25rem)",
+  large: "clamp(1.1875rem, 2.5vw, 1.5rem)",
+  xl: "clamp(1.3125rem, 3vw, 1.875rem)",
 }
 
 const CARD_TEXT_SIZES: Record<SizeChoice, string> = {
@@ -192,6 +215,22 @@ function isExternal(url: string) {
   return /^(https?:|mailto:|tel:)/i.test(url)
 }
 
+const BTN_BASE =
+  "mt-2 inline-flex min-h-[44px] items-center justify-center gap-2 rounded-md font-semibold no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+
+// Scoped styles (cg-* names only) for the buttons.
+const CG_CSS = `
+.cg-btns{display:flex;flex-wrap:wrap;gap:0.5rem 1rem}
+@media (max-width:640px){
+.cg-btns{margin-top:0.75rem}
+.cg-btns-full{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:1fr;gap:0.75rem}
+.cg-btns-full > a{margin-top:0;width:100%;box-sizing:border-box;text-align:center}
+}
+.cg-outline{background-color:transparent;color:var(--cg-o);border:2px solid var(--cg-o);padding:calc(0.875rem - 2px) calc(1.75rem - 2px)}
+.cg-outline:hover,.cg-outline:focus-visible{background-color:var(--cg-o);color:var(--cg-oh)}
+@media (prefers-reduced-motion:no-preference){.cg-outline{transition:background-color 200ms ease,color 200ms ease}}
+`
+
 const DEFAULT_CARDS: CardItem[] = [
   { heading: "Card heading", text: "Describe this card in a sentence or two." },
   { heading: "Card heading", text: "Describe this card in a sentence or two." },
@@ -206,6 +245,7 @@ export function CardGrid({
   heading = "",
   headingLevel = "h2",
   lead = "",
+  leadSize = "medium",
 
   // Cards
   cards = DEFAULT_CARDS,
@@ -217,6 +257,15 @@ export function CardGrid({
   hoverEffect = "lift",
   alignment = "left",
   contentWidth = "medium",
+
+  // Buttons
+  buttonText = "",
+  buttonLink = "",
+  trackingLabel = "",
+  secondButtonText = "",
+  secondButtonLink = "",
+  secondTrackingLabel = "",
+  phoneButtons = "full",
 
   // Spacing
   spaceY = "large",
@@ -236,6 +285,10 @@ export function CardGrid({
   markerColor,
   markerTextColor,
   iconColor = "",
+  buttonColor,
+  buttonTextColor,
+  secondButtonColor,
+  secondButtonHoverTextColor,
 
   // Text style
   eyebrowSize = "normal",
@@ -254,7 +307,14 @@ export function CardGrid({
     (c) => c && (c.heading?.trim() || c.text?.trim() || c.icon?.trim())
   )
 
-  if (!hasHeadingBlock && list.length === 0) return null
+  const btnText = buttonText.trim()
+  const btnLink = buttonLink.trim()
+  const btn2Text = secondButtonText.trim()
+  const btn2Link = secondButtonLink.trim()
+  const hasButton = btnText.length > 0 && btnLink.length > 0
+  const hasSecond = btn2Text.length > 0 && btn2Link.length > 0
+
+  if (!hasHeadingBlock && list.length === 0 && !hasButton && !hasSecond) return null
 
   const colBackground = backgroundColor || NEUTRAL
   const colCard = cardColor || WHITE
@@ -283,6 +343,45 @@ export function CardGrid({
     centered && markerPosition === "beside" && marker !== "none"
       ? COLUMN_CLASSES[columns].replace("grid-cols-1", "grid-cols-[minmax(0,max-content)] justify-center")
       : COLUMN_CLASSES[columns]
+
+  const colButton = buttonColor || AMBER
+  const colButtonText = buttonTextColor || NAVY
+  const colOutline = secondButtonColor || NAVY
+  const colOutlineHover = secondButtonHoverTextColor || WHITE
+
+  const renderButton = (href: string, label: string, track: string, outlined: boolean) => {
+    const className = outlined
+      ? "cg-outline " + BTN_BASE
+      : BTN_BASE + " px-7 py-3.5 transition hover:brightness-95"
+    const style: CSSProperties | undefined = outlined
+      ? undefined
+      : { backgroundColor: colButton, color: colButtonText }
+    const trackAttr = track ? { "data-track-label": track } : {}
+    const content = (
+      <>
+        <span>{label}</span>
+        <span aria-hidden="true">{"\u2192"}</span>
+      </>
+    )
+    if (isExternal(href)) {
+      return (
+        <a
+          href={href}
+          {...(/^https?:/i.test(href) ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+          {...trackAttr}
+          className={className}
+          style={style}
+        >
+          {content}
+        </a>
+      )
+    }
+    return (
+      <Link href={href} {...trackAttr} className={className} style={style}>
+        {content}
+      </Link>
+    )
+  }
 
   const renderCard = (card: CardItem, index: number) => {
     const title = card.heading?.trim() || ""
@@ -520,7 +619,7 @@ export function CardGrid({
                 style={{
                   margin: 0,
                   color: colText,
-                  fontSize: "clamp(1.0625rem, 2.2vw, 1.25rem)",
+                  fontSize: LEAD_SIZES[leadSize] ?? LEAD_SIZES.medium,
                   lineHeight: 1.6,
                   whiteSpace: "pre-line",
                   textWrap: "pretty",
@@ -536,6 +635,25 @@ export function CardGrid({
           <div className={`grid gap-3 sm:gap-5 ${gridColumns}`}>
             {list.map((card, i) => renderCard(card, i))}
           </div>
+        )}
+
+        {(hasButton || hasSecond) && (
+          <>
+            <style>{CG_CSS}</style>
+            <div
+              className={phoneButtons === "full" ? "cg-btns cg-btns-full" : "cg-btns"}
+              style={
+                {
+                  justifyContent: centered ? "center" : "flex-start",
+                  "--cg-o": colOutline,
+                  "--cg-oh": colOutlineHover,
+                } as CSSProperties
+              }
+            >
+              {hasButton && renderButton(btnLink, btnText, trackingLabel.trim(), false)}
+              {hasSecond && renderButton(btn2Link, btn2Text, secondTrackingLabel.trim(), true)}
+            </div>
+          </>
         )}
       </div>
     </section>
