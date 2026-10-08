@@ -108,6 +108,7 @@ interface ContentSectionProps {
   leadFont?: LeadFontChoice
   leadColor?: string
   textSpacing?: TextSpacing
+  paragraphGap?: ParagraphGap
 }
 
 const FONT_STACKS: Record<FontChoice, string> = {
@@ -188,6 +189,24 @@ function getTextSpacing(choice: TextSpacing, hs: string) {
     bodyAfterHeading: "0px",
     paragraphTop: "0px",
   }
+}
+
+type ParagraphGap = "normal" | "medium" | "small" | "tight"
+
+// Space between body paragraphs (relative to the body text size, so it also
+// shrinks on phones). "normal" = the original blank-line look.
+const PARAGRAPH_GAPS: Record<Exclude<ParagraphGap, "normal">, string> = {
+  medium: "1.1em",
+  small: "0.8em",
+  tight: "0.5em",
+}
+
+// Blank lines start a new paragraph; a single Enter stays a line break.
+function splitParagraphs(text: string): string[] {
+  return text
+    .split(/\n(?:[ \t]*\n)+/)
+    .map((part) => part.trim())
+    .filter(Boolean)
 }
 
 const SPACE_Y: Record<SpaceChoice, string> = {
@@ -395,6 +414,7 @@ export function ContentSection({
   leadFont = "body",
   leadColor,
   textSpacing = "medium",
+  paragraphGap = "normal",
 }: ContentSectionProps) {
   // Second-button hover state (inline styles cannot do :hover, and this keeps
   // the component free of global CSS) and the reduce-motion preference.
@@ -637,6 +657,25 @@ export function ContentSection({
             >
               {formatInline(block.text)}
             </SubHeading>
+          ) : paragraphGap !== "normal" ? (
+            <div key={index} style={blockTop(index)}>
+              {splitParagraphs(block.text).map((para, i) => (
+                <p
+                  key={i}
+                  style={{
+                    margin: 0,
+                    marginTop: i === 0 ? 0 : PARAGRAPH_GAPS[paragraphGap],
+                    fontSize: BODY_SIZES[bodySize],
+                    fontWeight: WEIGHTS[bodyWeight],
+                    lineHeight: 1.7,
+                    whiteSpace: "pre-line",
+                    textWrap: "pretty",
+                  }}
+                >
+                  {formatInline(para)}
+                </p>
+              ))}
+            </div>
           ) : (
             <p
               key={index}

@@ -2371,6 +2371,19 @@ PLASMIC.registerComponent(ContentSection, {
       defaultValue: "medium",
       section: "Text style",
     },
+    paragraphGap: {
+      type: "choice",
+      displayName: "Space between paragraphs",
+      description: "Applies when you press Enter twice (a blank line) in the Body text. Normal = the original look (a full empty line). Medium, Small and Tight give a smaller, steady gap. One Enter is still just a line break.",
+      options: [
+        { value: "normal", label: "Normal (original)" },
+        { value: "medium", label: "Medium" },
+        { value: "small", label: "Small" },
+        { value: "tight", label: "Tight" },
+      ],
+      defaultValue: "normal",
+      section: "Text style",
+    },
   },
   importPath: "./components/ContentSection",
 });
