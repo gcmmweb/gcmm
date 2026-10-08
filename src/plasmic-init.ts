@@ -17414,6 +17414,19 @@ PLASMIC.registerComponent(VideoSection, {
       defaultValue: "large",
       section: "Text style",
     },
+    leadSize: {
+      type: "choice",
+      displayName: "Lead line size",
+      description: "Size of the large line under the heading.",
+      options: [
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "medium",
+      section: "Text style",
+    },
     headingWeight: {
       type: "choice",
       displayName: "Heading weight",

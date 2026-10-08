@@ -53,6 +53,7 @@ interface VideoSectionProps {
   headingLevel?: Level
   headingPosition?: HeadingPosition
   lead?: string
+  leadSize?: SizeChoice
   body?: string
 
   // Video
@@ -130,6 +131,14 @@ const BODY_SIZES: Record<SizeChoice, string> = {
   xl: "clamp(1.125rem, 2.5vw, 1.375rem)",
 }
 
+// Lead line (large text under the heading). Medium = the original size.
+const LEAD_SIZES: Record<SizeChoice, string> = {
+  small: "clamp(1rem, 2vw, 1.25rem)",
+  medium: "clamp(1.125rem, 2.2vw, 1.5rem)",
+  large: "clamp(1.25rem, 2.6vw, 1.75rem)",
+  xl: "clamp(1.375rem, 3vw, 2.125rem)",
+}
+
 const WEIGHTS: Record<WeightChoice, number> = { regular: 400, medium: 500, semibold: 600, bold: 700 }
 
 const SPACE_Y: Record<SpaceChoice, string> = {
@@ -205,6 +214,9 @@ const SECTION_CSS = `
 }
 .vs-play{position:absolute;top:0;right:0;bottom:0;left:0;display:block;width:100%;height:100%;cursor:pointer;border:0;padding:0;margin:0;background:transparent;font:inherit;color:inherit;appearance:none;-webkit-appearance:none}
 .vs-play:focus-visible{outline:3px solid #fff;outline-offset:-6px}
+.vs-body{align-items:var(--vs-ai-phone);text-align:var(--vs-ta-phone)}
+.vs-body .vs-btns{justify-content:var(--vs-ai-phone)}
+@media (min-width:768px){.vs-body{align-items:flex-start;text-align:left}.vs-body .vs-btns{justify-content:flex-start}}
 .vs-dot{transition:transform 0.2s ease}
 @media (prefers-reduced-motion:no-preference){.vs-play:hover .vs-dot,.vs-play:focus-visible .vs-dot{transform:scale(1.08)}}
 `
@@ -217,6 +229,7 @@ export function VideoSection({
   headingLevel = "h2",
   headingPosition = "besideVideo",
   lead = "",
+  leadSize = "medium",
   body = "",
 
   videoLink = "",
@@ -553,22 +566,21 @@ export function VideoSection({
     ) : null
 
   // ---- Text block -----------------------------------------------------------
-  const makeWrapStyle = (align: Align): CSSProperties => ({
+  const makeWrapStyle = (align?: Align): CSSProperties => ({
     minWidth: 0,
     display: "flex",
     flexDirection: "column",
-    alignItems: ALIGN_ITEMS[align],
-    textAlign: align,
+    ...(align ? { alignItems: ALIGN_ITEMS[align], textAlign: align } : {}),
     gap,
     color: colText,
     fontFamily: FONT_STACKS[bodyFont],
   })
   const textWrapStyle = makeWrapStyle(alignment)
 
-  // With "Heading position: Above the video", only the heading part follows the
-  // Text alignment setting; the body text and buttons stay left beside the video.
+  // With "Heading position: Above the video", the heading part follows Text alignment
+  // everywhere. The body text and buttons stay left beside the video on computers and
+  // follow Text alignment on phones (where everything is stacked).
   const splitHeader = isSide && headingPosition === "aboveVideo" && (eyebrowText || headingText || leadText).length > 0
-  const bodyAlign: Align = splitHeader ? "left" : alignment
 
   // Top part of the text: small label, heading and lead text
   const headerParts = (
@@ -606,7 +618,7 @@ export function VideoSection({
       )}
 
       {leadText && (
-        <p style={{ margin: 0, fontSize: "clamp(1.125rem, 2.2vw, 1.5rem)", fontWeight: 500, lineHeight: 1.45 }}>
+        <p style={{ margin: 0, fontSize: LEAD_SIZES[leadSize] ?? LEAD_SIZES.medium, fontWeight: 500, lineHeight: 1.45 }}>
           {formatInline(leadText)}
         </p>
       )}
@@ -653,7 +665,7 @@ export function VideoSection({
       {(hasButton || hasSecond) && (
         <div
           className={phoneButtons === "full" ? "vs-btns vs-btns-full" : "vs-btns"}
-          style={{ justifyContent: ALIGN_ITEMS[bodyAlign] }}
+          style={splitHeader ? undefined : { justifyContent: ALIGN_ITEMS[alignment] }}
         >
           {hasButton &&
             (isExternal(btnLink) ? (
@@ -718,7 +730,14 @@ export function VideoSection({
   const headerBlock = splitHeader ? <div style={textWrapStyle}>{headerParts}</div> : null
 
   const textBlock = !hasText ? null : splitHeader ? (
-    hasRestText ? <div style={makeWrapStyle(bodyAlign)}>{bodyParts}</div> : null
+    hasRestText ? (
+      <div
+        className="vs-body"
+        style={{ ...makeWrapStyle(), "--vs-ai-phone": ALIGN_ITEMS[alignment], "--vs-ta-phone": alignment } as CSSProperties}
+      >
+        {bodyParts}
+      </div>
+    ) : null
   ) : (
     <div style={textWrapStyle}>
       {headerParts}
