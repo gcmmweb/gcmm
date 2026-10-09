@@ -276,19 +276,23 @@ function isExternal(url: string) {
 type BodyBlock =
   | { kind: "heading" | "text"; text: string }
   | { kind: "quote"; text: string; cite: string }
+  | { kind: "list"; items: string[] }
 
 const SUBHEADING_LINE = /^[ \t]*##[ \t]+(.+?)[ \t]*$/
 const QUOTE_LINE = /^[ \t]*>[ \t]?(.*)$/
+// A bullet line: "- text", "* text" or a bullet character followed by text.
+const BULLET_LINE = /^[ \t]*(?:\u2022|[-*])[ \t]+(.+?)[ \t]*$/
 const CITE_LINE = /^[ \t]*(?:\u2014|\u2013|--)/
 
 function parseBody(body: string): BodyBlock[] {
   const lines = body.split("\n")
-  if (!lines.some((line) => SUBHEADING_LINE.test(line) || QUOTE_LINE.test(line))) {
+  if (!lines.some((line) => SUBHEADING_LINE.test(line) || QUOTE_LINE.test(line) || BULLET_LINE.test(line))) {
     return body.trim() ? [{ kind: "text", text: body }] : []
   }
   const blocks: BodyBlock[] = []
   let buffer: string[] = []
   let quoteLines: string[] = []
+  let listItems: string[] = []
   const flush = () => {
     const text = buffer.join("\n").replace(/^(?:[ \t]*\n)+|(?:\n[ \t]*)+$/g, "")
     if (text.trim()) blocks.push({ kind: "text", text })
@@ -304,23 +308,42 @@ function parseBody(body: string): BodyBlock[] {
     }
     blocks.push({ kind: "quote", text: rows.join("\n"), cite })
   }
-  for (const line of lines) {
+  const flushList = () => {
+    if (listItems.length > 0) blocks.push({ kind: "list", items: listItems })
+    listItems = []
+  }
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]
     const heading = line.match(SUBHEADING_LINE)
     const quote = heading ? null : line.match(QUOTE_LINE)
+    const bullet = heading || quote ? null : line.match(BULLET_LINE)
     if (heading) {
       flush()
       flushQuote()
+      flushList()
       blocks.push({ kind: "heading", text: heading[1] })
     } else if (quote) {
       flush()
+      flushList()
       quoteLines.push(quote[1])
+    } else if (bullet) {
+      flush()
+      flushQuote()
+      listItems.push(bullet[1])
+    } else if (listItems.length > 0 && line.trim() === "") {
+      // A blank line between bullets keeps the same list; otherwise it ends the list.
+      let next = i + 1
+      while (next < lines.length && lines[next].trim() === "") next++
+      if (!(next < lines.length && BULLET_LINE.test(lines[next]))) flushList()
     } else {
       flushQuote()
+      flushList()
       buffer.push(line)
     }
   }
   flush()
   flushQuote()
+  flushList()
   return blocks
 }
 
@@ -599,7 +622,27 @@ export function ContentSection({
         )}
 
         {bodyBlocks.map((block, index) =>
-          block.kind === "quote" ? (
+          block.kind === "list" ? (
+            <ul
+              key={index}
+              style={{
+                margin: 0,
+                paddingLeft: "1.35em",
+                listStyleType: "disc",
+                textAlign: "left",
+                fontSize: BODY_SIZES[bodySize],
+                fontWeight: WEIGHTS[bodyWeight],
+                lineHeight: 1.7,
+                ...blockTop(index),
+              }}
+            >
+              {block.items.map((item, i) => (
+                <li key={i} style={{ paddingLeft: "0.25em", marginTop: i === 0 ? 0 : "0.4em" }}>
+                  {formatInline(item)}
+                </li>
+              ))}
+            </ul>
+          ) : block.kind === "quote" ? (
             <blockquote
               key={index}
               style={{

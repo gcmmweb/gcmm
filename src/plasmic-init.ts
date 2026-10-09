@@ -1989,7 +1989,7 @@ PLASMIC.registerComponent(ContentSection, {
       type: "string",
       control: "large",
       displayName: "Body text",
-      description: "Format words: **bold**, *italic*, ***bold and italic***. Example: Help **one person** discover the *mission*. Subheading: start a line with ## (example: ## Printed Gospel Resources). Repeat a ## line and its text to add more titled blocks. Quote: start the quote line with > (example: > Quote text here.). For a name under the quote, add a second line that starts with > and a long dash (example: > \u2014 Name, Place). It shows as an indented quote with a gold bar.",
+      description: "Format words: **bold**, *italic*, ***bold and italic***. Example: Help **one person** discover the *mission*. Subheading: start a line with ## (example: ## Printed Gospel Resources). Repeat a ## line and its text to add more titled blocks. Quote: start the quote line with > (example: > Quote text here.). For a name under the quote, add a second line that starts with > and a long dash (example: > \u2014 Name, Place). It shows as an indented quote with a gold bar. Bullet list: start each line with a dash and a space (example: - First point). Long bullets wrap neatly under the text.",
       section: "Content",
     },
 
