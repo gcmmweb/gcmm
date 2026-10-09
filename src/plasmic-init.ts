@@ -2468,11 +2468,12 @@ PLASMIC.registerComponent(CardGrid, {
     columns: {
       type: "choice",
       displayName: "Columns",
-      description: "Cards stack to one column on phones.",
+      description: "Cards stack to one column on phones. 4 columns show 2 across on tablets.",
       options: [
         { value: "1", label: "1" },
         { value: "2", label: "2" },
         { value: "3", label: "3" },
+        { value: "4", label: "4" },
       ],
       defaultValue: "2",
       section: "Layout",

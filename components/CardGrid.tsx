@@ -36,7 +36,7 @@ type WidthChoice = "narrow" | "medium" | "wide"
 type MarkerChoice = "none" | "number" | "icon"
 type MarkerPosition = "above" | "beside"
 type MarkerSizeChoice = "small" | "medium" | "large" | "xl"
-type ColumnsChoice = "1" | "2" | "3"
+type ColumnsChoice = "1" | "2" | "3" | "4"
 type HoverChoice = "lift" | "none"
 type SizeChoice = "small" | "medium" | "large" | "xl"
 type WeightChoice = "regular" | "medium" | "semibold" | "bold"
@@ -198,6 +198,7 @@ const COLUMN_CLASSES: Record<ColumnsChoice, string> = {
   "1": "grid-cols-1",
   "2": "grid-cols-1 md:grid-cols-2",
   "3": "grid-cols-1 md:grid-cols-2 lg:grid-cols-3",
+  "4": "grid-cols-1 md:grid-cols-2 lg:grid-cols-4",
 }
 
 const CONTENT_WIDTHS: Record<WidthChoice, string> = {
