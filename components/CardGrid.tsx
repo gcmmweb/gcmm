@@ -38,6 +38,8 @@ type MarkerPosition = "above" | "beside"
 type MarkerSizeChoice = "small" | "medium" | "large" | "xl"
 type ColumnsChoice = "1" | "2" | "3" | "4"
 type HoverChoice = "lift" | "none"
+type CardLook = "filled" | "outlined" | "plain"
+type MarkerAlign = "left" | "center"
 type SizeChoice = "small" | "medium" | "large" | "xl"
 type WeightChoice = "regular" | "medium" | "semibold" | "bold"
 type FontChoice = "site" | "georgia" | "nunito" | "poppins" | "lexend"
@@ -69,6 +71,8 @@ interface CardGridProps {
   markerCircle?: boolean
   columns?: ColumnsChoice
   hoverEffect?: HoverChoice
+  cardLook?: CardLook
+  markerAlign?: MarkerAlign
   alignment?: Align
   contentWidth?: WidthChoice
 
@@ -190,7 +194,7 @@ const SPACE_X: Record<SpaceChoice, string> = {
   small: "1rem",
   medium: "clamp(1rem, 4vw, 2rem)",
   large: "clamp(1.5rem, 6vw, 4rem)",
-  xl: "clamp(2rem, 8vw, 6rem)",
+  xl: "clamp(1rem, calc(8vw - 1rem), 6rem)",
 }
 
 // Full class strings (not built dynamically) so Tailwind can see them.
@@ -326,6 +330,8 @@ export function CardGrid({
   markerCircle = true,
   columns = "2",
   hoverEffect = "lift",
+  cardLook = "filled",
+  markerAlign = "left",
   alignment = "left",
   contentWidth = "medium",
 
@@ -342,7 +348,7 @@ export function CardGrid({
   spaceY = "large",
   spaceTop,
   spaceBottom,
-  spaceX = "medium",
+  spaceX = "xl",
 
   // Colors
   backgroundColor,
@@ -392,8 +398,9 @@ export function CardGrid({
   const colBorder = borderColor || "rgba(31, 45, 85, 0.12)"
   const colHeading = headingColor || NAVY
   const colText = textColor || SLATE
-  const colCardHeading = cardHeadingColor || NAVY
-  const colCardText = cardTextColor || SLATE
+  const filledCards = cardLook !== "outlined" && cardLook !== "plain"
+  const colCardHeading = cardHeadingColor || (filledCards ? NAVY : colHeading)
+  const colCardText = cardTextColor || (filledCards ? SLATE : colText)
   const colEyebrow = eyebrowColor || BLUE
   const colMarker = markerColor || "rgba(51, 104, 150, 0.12)"
   const colMarkerText = markerTextColor || BLUE
@@ -553,8 +560,12 @@ export function CardGrid({
     }
 
     const cardStyle = {
-      backgroundColor: colCard,
-      borderColor: colBorder,
+      backgroundColor: filledCards ? colCard : "transparent",
+      borderColor: filledCards
+        ? colBorder
+        : cardLook === "plain"
+          ? "transparent"
+          : borderColor || `color-mix(in srgb, ${colCardText} 40%, transparent)`,
       "--cg-hover": BLUE,
     } as CSSProperties
 
@@ -576,6 +587,7 @@ export function CardGrid({
             fontSize: markerFont,
             fontWeight: 700,
             marginBottom: beside ? 0 : "1rem",
+            alignSelf: !beside && markerAlign === "center" ? "center" : undefined,
             flexShrink: 0,
           }}
         >

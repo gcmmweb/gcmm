@@ -2489,6 +2489,29 @@ PLASMIC.registerComponent(CardGrid, {
       defaultValue: "lift",
       section: "Layout",
     },
+    cardLook: {
+      type: "choice",
+      displayName: "Card style",
+      description: "Filled = solid cards. Outlined = see-through with a thin border. Plain = see-through with no border. See-through cards use the section heading and text colors unless you set the card colors.",
+      options: [
+        { value: "filled", label: "Filled" },
+        { value: "outlined", label: "Outlined (transparent)" },
+        { value: "plain", label: "Plain (transparent, no border)" },
+      ],
+      defaultValue: "filled",
+      section: "Layout",
+    },
+    markerAlign: {
+      type: "choice",
+      displayName: "Icon / number position",
+      description: "Where the icon or number sits when it is above the text. The text stays left.",
+      options: [
+        { value: "left", label: "Left" },
+        { value: "center", label: "Center" },
+      ],
+      defaultValue: "left",
+      section: "Layout",
+    },
     alignment: {
       type: "choice",
       displayName: "Text alignment",
@@ -2553,6 +2576,7 @@ PLASMIC.registerComponent(CardGrid, {
     spaceX: {
       type: "choice",
       displayName: "Space left & right",
+      description: "Extra large is roomy on computers and shrinks automatically on phones, so you do not need to set it again for mobile.",
       options: [
         { value: "none", label: "None" },
         { value: "small", label: "Small" },
@@ -2560,7 +2584,7 @@ PLASMIC.registerComponent(CardGrid, {
         { value: "large", label: "Large" },
         { value: "xl", label: "Extra large" },
       ],
-      defaultValue: "medium",
+      defaultValue: "xl",
       section: "Layout",
     },
 
