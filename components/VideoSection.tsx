@@ -84,6 +84,7 @@ interface VideoSectionProps {
   alignment?: Align
   contentWidth?: WidthChoice
   stackedVideoWidth?: "same" | WidthChoice
+  stackedVideoAlign?: "text" | "left" | "center"
   spaceY?: SpaceChoice
   spaceTop?: SpaceChoice
   spaceBottom?: SpaceChoice
@@ -158,6 +159,9 @@ const SPACE_X: Record<SpaceChoice, string> = {
   large: "clamp(1.5rem, 6vw, 4rem)",
   xl: "clamp(2rem, 8vw, 6rem)",
 }
+
+// Extra space between the text and a video stacked above or below it.
+const VIDEO_GAP = "clamp(0.75rem, 2vw, 1.5rem)"
 
 const CONTENT_WIDTHS: Record<WidthChoice, string> = { narrow: "640px", medium: "800px", wide: "1100px" }
 const ALIGN_ITEMS: Record<Align, string> = { left: "flex-start", center: "center", right: "flex-end" }
@@ -277,6 +281,7 @@ export function VideoSection({
   alignment = "left",
   contentWidth = "medium",
   stackedVideoWidth = "same",
+  stackedVideoAlign = "text",
   spaceY = "large",
   spaceTop,
   spaceBottom,
@@ -345,6 +350,8 @@ export function VideoSection({
   const title = (videoTitle.trim() || headingText.replace(/\*+/g, "")).trim()
 
   const isSide = layout === "left" || layout === "right"
+  // Where a video above or below the text sits (Same as the text / Left / Center)
+  const vAlign: Align = stackedVideoAlign === "text" ? alignment : stackedVideoAlign
 
   // Automatic colors: navy/blue on light, white on dark (when "Light text" is on)
   const colBackground = backgroundColor || WHITE
@@ -560,14 +567,15 @@ export function VideoSection({
             minWidth: 0,
             width: "100%",
             ...(videoShape === "tall" && !isSide
-              ? { maxWidth: "min(100%, 24rem)", marginLeft: alignment === "left" ? 0 : "auto", marginRight: alignment === "right" ? 0 : "auto" }
+              ? { maxWidth: "min(100%, 24rem)", marginLeft: vAlign === "left" ? 0 : "auto", marginRight: vAlign === "right" ? 0 : "auto" }
               : !isSide && stackedVideoWidth !== "same"
                 ? {
                     maxWidth: CONTENT_WIDTHS[stackedVideoWidth],
-                    marginLeft: alignment === "left" ? 0 : "auto",
-                    marginRight: alignment === "right" ? 0 : "auto",
+                    marginLeft: vAlign === "left" ? 0 : "auto",
+                    marginRight: vAlign === "right" ? 0 : "auto",
                   }
                 : {}),
+            ...(!isSide && hasText ? (layout === "below" ? { marginTop: VIDEO_GAP } : { marginBottom: VIDEO_GAP }) : {}),
             "--vs-o-phone": phoneOrder === "videoFirst" ? -1 : 0,
             "--vs-o-desk": layout === "left" ? -1 : 0,
           } as CSSProperties
