@@ -69,6 +69,7 @@ interface ContentSectionProps {
   imageAlt?: string
   imagePosition?: ImagePosition
   imageHeight?: HeightChoice
+  imageFocus?: ImageFocus
   imageHeightPhone?: HeightChoice | "same"
   loadEagerly?: boolean
 
@@ -369,6 +370,17 @@ const QUOTE_SIZES: Record<SizeChoice, string> = {
   xl: "clamp(1.25rem, 2.6vw, 1.625rem)",
 }
 
+type ImageFocus = "top" | "upper" | "center" | "lower" | "bottom"
+
+// Which part of a cropped photo is kept.
+const IMAGE_FOCUS: Record<ImageFocus, string> = {
+  top: "50% 0%",
+  upper: "50% 25%",
+  center: "50% 50%",
+  lower: "50% 75%",
+  bottom: "50% 100%",
+}
+
 // Image / behind-image heights: computer size by default, the phone size below 768px.
 const IMAGE_CSS = `
 .cs-img{height:var(--cs-h)}
@@ -417,6 +429,7 @@ export function ContentSection({
   imagePosition = "below",
   imageHeight = "tall",
   imageHeightPhone = "short",
+  imageFocus = "center",
   loadEagerly = false,
 
   // Overlay
@@ -567,7 +580,7 @@ export function ContentSection({
         alt={alt}
         fill
         sizes="100vw"
-        style={{ objectFit: "cover" }}
+        style={{ objectFit: "cover", objectPosition: IMAGE_FOCUS[imageFocus] ?? "50% 50%" }}
         {...(loadEagerly ? { priority: true } : { loading: "lazy" as const })}
       />
     </div>
@@ -873,7 +886,7 @@ export function ContentSection({
             alt=""
             fill
             sizes="100vw"
-            style={{ objectFit: "cover", zIndex: 0 }}
+            style={{ objectFit: "cover", objectPosition: IMAGE_FOCUS[imageFocus] ?? "50% 50%", zIndex: 0 }}
             {...(loadEagerly ? { priority: true } : { loading: "lazy" as const })}
           />
           <div

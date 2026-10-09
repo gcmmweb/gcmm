@@ -2094,6 +2094,20 @@ PLASMIC.registerComponent(ContentSection, {
       defaultValue: "short",
       section: "Image",
     },
+    imageFocus: {
+      type: "choice",
+      displayName: "Photo focus",
+      description: "When a photo is cropped, which part is kept. Choose Top or Upper if heads are being cut off. Center = the original behaviour.",
+      options: [
+        { value: "top", label: "Top" },
+        { value: "upper", label: "Upper (a quarter down)" },
+        { value: "center", label: "Center" },
+        { value: "lower", label: "Lower" },
+        { value: "bottom", label: "Bottom" },
+      ],
+      defaultValue: "center",
+      section: "Image",
+    },
     loadEagerly: {
       type: "boolean",
       displayName: "Photo is visible without scrolling",
