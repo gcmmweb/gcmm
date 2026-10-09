@@ -161,7 +161,7 @@ const SPACE_X: Record<SpaceChoice, string> = {
 }
 
 // Extra space between the text and a video stacked above or below it.
-const VIDEO_GAP = "clamp(0.75rem, 2vw, 1.5rem)"
+const VIDEO_GAP = "clamp(0.875rem, calc(2vw + 2px), 1.625rem)"
 
 const CONTENT_WIDTHS: Record<WidthChoice, string> = { narrow: "640px", medium: "800px", wide: "1100px" }
 const ALIGN_ITEMS: Record<Align, string> = { left: "flex-start", center: "center", right: "flex-end" }
