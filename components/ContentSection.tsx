@@ -201,6 +201,14 @@ const PARAGRAPH_GAPS: Record<Exclude<ParagraphGap, "normal">, string> = {
   tight: "0.5em",
 }
 
+// Space between bullets (follows "Space between paragraphs").
+const LIST_GAPS: Record<ParagraphGap, string> = {
+  normal: "0.4em",
+  medium: "0.4em",
+  small: "0.3em",
+  tight: "0.15em",
+}
+
 // Blank lines start a new paragraph; a single Enter stays a line break.
 function splitParagraphs(text: string): string[] {
   return text
@@ -517,6 +525,17 @@ export function ContentSection({
     }
     return {}
   }
+  // With a tighter "Space between paragraphs", blocks of body text that follow each
+  // other (paragraph, bullet list) sit that close instead of the wider text-part gap.
+  const joinTop = (index: number): CSSProperties => {
+    if (paragraphGap === "normal" || index === 0) return {}
+    const prev = bodyBlocks[index - 1]
+    const cur = bodyBlocks[index]
+    if ((prev.kind === "text" || prev.kind === "list") && (cur.kind === "text" || cur.kind === "list")) {
+      return { marginTop: `calc(${PARAGRAPH_GAPS[paragraphGap]} - ${gap})` }
+    }
+    return {}
+  }
   const alt = imageAlt.trim() // blank alt = decorative image
 
   const imageBlock = hasImage && !isBehind && (
@@ -634,10 +653,11 @@ export function ContentSection({
                 fontWeight: WEIGHTS[bodyWeight],
                 lineHeight: 1.7,
                 ...blockTop(index),
+                ...joinTop(index),
               }}
             >
               {block.items.map((item, i) => (
-                <li key={i} style={{ paddingLeft: "0.25em", marginTop: i === 0 ? 0 : "0.4em" }}>
+                <li key={i} style={{ paddingLeft: "0.25em", marginTop: i === 0 ? 0 : LIST_GAPS[paragraphGap] }}>
                   {formatInline(item)}
                 </li>
               ))}
@@ -701,7 +721,7 @@ export function ContentSection({
               {formatInline(block.text)}
             </SubHeading>
           ) : paragraphGap !== "normal" ? (
-            <div key={index} style={blockTop(index)}>
+            <div key={index} style={{ fontSize: BODY_SIZES[bodySize], ...blockTop(index), ...joinTop(index) }}>
               {splitParagraphs(block.text).map((para, i) => (
                 <p
                   key={i}

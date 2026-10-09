@@ -242,6 +242,14 @@ const PARAGRAPH_GAPS: Record<Exclude<ParagraphGap, "normal">, string> = {
   tight: "0.5em",
 }
 
+// Space between bullets (follows "Space between paragraphs").
+const LIST_GAPS: Record<ParagraphGap, string> = {
+  normal: "0.4em",
+  medium: "0.4em",
+  small: "0.3em",
+  tight: "0.15em",
+}
+
 // Blank lines start a new paragraph; a single Enter stays a line break.
 function splitParagraphs(text: string): string[] {
   return text
@@ -472,7 +480,7 @@ export function CardGrid({
                 }}
               >
                 {part.items.map((item, i) => (
-                  <li key={i} style={{ paddingLeft: "0.25em", marginTop: i === 0 ? 0 : "0.4em" }}>
+                  <li key={i} style={{ paddingLeft: "0.25em", marginTop: i === 0 ? 0 : LIST_GAPS[paragraphGap] }}>
                     {formatInline(item)}
                   </li>
                 ))}
