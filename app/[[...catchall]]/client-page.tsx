@@ -28,7 +28,7 @@ type Props = {
 
 function PlasmicPage({ pathname, pageData, params, query, allStories, queryData }: Props & { query: Record<string, string> }) {
   return (
-    <PlasmicRootProvider loader={PLASMIC} prefetchedData={pageData} prefetchedQueryData={queryData}>
+    <PlasmicRootProvider loader={PLASMIC} prefetchedData={pageData} prefetchedQueryData={queryData} skipFonts>
       <PageParamsProvider route={pathname} params={params} query={query}>
         <AllStoriesProvider stories={allStories}>
           <PlasmicComponent component={pathname} />
