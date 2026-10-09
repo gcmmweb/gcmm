@@ -587,7 +587,6 @@ export function CardGrid({
             fontSize: markerFont,
             fontWeight: 700,
             marginBottom: beside ? 0 : "1rem",
-            alignSelf: !beside && markerAlign === "center" ? "center" : undefined,
             flexShrink: 0,
           }}
         >
@@ -626,7 +625,9 @@ export function CardGrid({
     const inner = (
       <div
         className={`flex h-full flex-col rounded-xl border p-4 sm:p-7 ${
-          centered ? "items-center text-center" : "items-start text-left"
+          centered || (markerAlign === "center" && !beside)
+            ? "items-center text-center"
+            : "items-start text-left"
         } ${
           lifts
             ? "transition duration-200 ease-out hover:-translate-y-1 hover:border-[var(--cg-hover)] hover:shadow-lg motion-reduce:transition-none motion-reduce:hover:translate-y-0"

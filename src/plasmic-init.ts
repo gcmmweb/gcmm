@@ -2503,8 +2503,8 @@ PLASMIC.registerComponent(CardGrid, {
     },
     markerAlign: {
       type: "choice",
-      displayName: "Icon / number position",
-      description: "Where the icon or number sits when it is above the text. The text stays left.",
+      displayName: "Card content alignment",
+      description: "Center = the icon or number and the text inside each card are all centered. The heading block above the cards keeps its own Text alignment.",
       options: [
         { value: "left", label: "Left" },
         { value: "center", label: "Center" },
