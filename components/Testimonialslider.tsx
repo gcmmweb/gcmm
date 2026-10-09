@@ -71,7 +71,7 @@ const SPACE_X: Record<SpaceChoice, string> = {
   small: "1rem",
   medium: "clamp(1rem, 4vw, 2rem)",
   large: "clamp(1.5rem, 6vw, 4rem)",
-  xl: "clamp(2rem, 8vw, 6rem)",
+  xl: "clamp(1rem, calc(8vw - 1rem), 6rem)",
 }
 // What each style looks like when the person has not chosen a size / italic.
 const STYLE_DEFAULTS: Record<Exclude<QuoteStyle, "classic">, { size: QuoteSize; italic: boolean }> = {

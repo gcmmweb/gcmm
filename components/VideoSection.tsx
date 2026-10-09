@@ -157,7 +157,7 @@ const SPACE_X: Record<SpaceChoice, string> = {
   small: "1rem",
   medium: "clamp(1rem, 4vw, 2rem)",
   large: "clamp(1.5rem, 6vw, 4rem)",
-  xl: "clamp(2rem, 8vw, 6rem)",
+  xl: "clamp(1rem, calc(8vw - 1rem), 6rem)",
 }
 
 // Extra space between the text and a video stacked above or below it.
@@ -316,7 +316,7 @@ export function VideoSection({
   spaceY = "large",
   spaceTop,
   spaceBottom,
-  spaceX = "medium",
+  spaceX = "xl",
 
   backgroundColor,
   lightText = false,

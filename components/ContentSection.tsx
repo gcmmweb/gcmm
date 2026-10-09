@@ -69,6 +69,7 @@ interface ContentSectionProps {
   imageAlt?: string
   imagePosition?: ImagePosition
   imageHeight?: HeightChoice
+  imageHeightPhone?: HeightChoice | "same"
   loadEagerly?: boolean
 
   // Overlay (only used when image is behind the text)
@@ -230,7 +231,7 @@ const SPACE_X: Record<SpaceChoice, string> = {
   small: "1rem",
   medium: "clamp(1rem, 4vw, 2rem)",
   large: "clamp(1.5rem, 6vw, 4rem)",
-  xl: "clamp(2rem, 8vw, 6rem)",
+  xl: "clamp(1rem, calc(8vw - 1rem), 6rem)",
 }
 
 const CONTENT_WIDTHS: Record<WidthChoice, string> = {
@@ -368,6 +369,15 @@ const QUOTE_SIZES: Record<SizeChoice, string> = {
   xl: "clamp(1.25rem, 2.6vw, 1.625rem)",
 }
 
+// Image / behind-image heights: computer size by default, the phone size below 768px.
+const IMAGE_CSS = `
+.cs-img{height:var(--cs-h)}
+.cs-behind{min-height:var(--cs-mh)}
+@media (max-width:767px){
+.cs-img{height:var(--cs-hp)}
+.cs-behind{min-height:var(--cs-mhp)}
+}`
+
 // Button row. Scoped class names (cs-btns) so nothing else on the page is
 // affected. On phones: optional full-width stack where every button gets the
 // same height (grid-auto-rows: 1fr), plus a little space above the buttons.
@@ -405,7 +415,8 @@ export function ContentSection({
   image = "",
   imageAlt = "",
   imagePosition = "below",
-  imageHeight = "medium",
+  imageHeight = "tall",
+  imageHeightPhone = "short",
   loadEagerly = false,
 
   // Overlay
@@ -418,7 +429,7 @@ export function ContentSection({
   spaceY = "large",
   spaceTop,
   spaceBottom,
-  spaceX = "medium",
+  spaceX = "xl",
 
   // Colors
   backgroundColor,
@@ -469,6 +480,7 @@ export function ContentSection({
 
   const hasImage = showImage && imageSrc.length > 0
   const isBehind = hasImage && imagePosition === "behind"
+  const phoneHeight: HeightChoice = imageHeightPhone === "same" ? imageHeight : imageHeightPhone
   const hasButton = btnText.length > 0 && btnLink.length > 0
   const btn2Text = secondButtonText.trim()
   const btn2Link = secondButtonLink.trim()
@@ -540,11 +552,15 @@ export function ContentSection({
 
   const imageBlock = hasImage && !isBehind && (
     <div
-      style={{
-        position: "relative",
-        width: "100%",
-        height: IMAGE_HEIGHTS[imageHeight],
-      }}
+      className="cs-img"
+      style={
+        {
+          position: "relative",
+          width: "100%",
+          "--cs-h": IMAGE_HEIGHTS[imageHeight],
+          "--cs-hp": IMAGE_HEIGHTS[phoneHeight],
+        } as CSSProperties
+      }
     >
       <Image
         src={getImageUrl(imageSrc)}
@@ -831,21 +847,25 @@ export function ContentSection({
 
   return (
     <section
-      className={className}
-      style={{
-        position: "relative",
-        width: "100%",
-        overflow: "hidden",
-        backgroundColor: colBackground,
-        ...(isBehind
-          ? {
-              minHeight: BEHIND_MIN_HEIGHTS[imageHeight],
-              display: "flex",
-              alignItems: "center",
-            }
-          : {}),
-      }}
+      className={isBehind ? `${className} cs-behind`.trim() : className}
+      style={
+        {
+          position: "relative",
+          width: "100%",
+          overflow: "hidden",
+          backgroundColor: colBackground,
+          ...(isBehind
+            ? {
+                "--cs-mh": BEHIND_MIN_HEIGHTS[imageHeight],
+                "--cs-mhp": BEHIND_MIN_HEIGHTS[phoneHeight],
+                display: "flex",
+                alignItems: "center",
+              }
+            : {}),
+        } as CSSProperties
+      }
     >
+      {hasImage && <style>{IMAGE_CSS}</style>}
       {isBehind && (
         <>
           <Image

@@ -2078,7 +2078,20 @@ PLASMIC.registerComponent(ContentSection, {
         { value: "medium", label: "Medium" },
         { value: "tall", label: "Tall" },
       ],
-      defaultValue: "medium",
+      defaultValue: "tall",
+      section: "Image",
+    },
+    imageHeightPhone: {
+      type: "choice",
+      displayName: "Image height on phones",
+      description: "How tall the image is on phones. Image height above is the computer size.",
+      options: [
+        { value: "short", label: "Short" },
+        { value: "medium", label: "Medium" },
+        { value: "tall", label: "Tall" },
+        { value: "same", label: "Same as computer" },
+      ],
+      defaultValue: "short",
       section: "Image",
     },
     loadEagerly: {
@@ -2166,6 +2179,7 @@ PLASMIC.registerComponent(ContentSection, {
     spaceX: {
       type: "choice",
       displayName: "Space left & right",
+      description: "Extra large is roomy on computers and shrinks automatically on phones, so you do not need to set it again for mobile.",
       options: [
         { value: "none", label: "None" },
         { value: "small", label: "Small" },
@@ -2173,7 +2187,7 @@ PLASMIC.registerComponent(ContentSection, {
         { value: "large", label: "Large" },
         { value: "xl", label: "Extra large" },
       ],
-      defaultValue: "medium",
+      defaultValue: "xl",
       section: "Layout",
     },
 
@@ -17502,6 +17516,7 @@ PLASMIC.registerComponent(VideoSection, {
     spaceX: {
       type: "choice",
       displayName: "Space left & right",
+      description: "Extra large is roomy on computers and shrinks automatically on phones, so you do not need to set it again for mobile.",
       options: [
         { value: "none", label: "None" },
         { value: "small", label: "Small" },
@@ -17509,7 +17524,7 @@ PLASMIC.registerComponent(VideoSection, {
         { value: "large", label: "Large" },
         { value: "xl", label: "Extra large" },
       ],
-      defaultValue: "medium",
+      defaultValue: "xl",
       section: "Layout",
     },
 
