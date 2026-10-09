@@ -250,6 +250,48 @@ function splitParagraphs(text: string): string[] {
     .filter(Boolean)
 }
 
+// A bullet line: "- text", "* text" or a bullet character followed by text.
+const BULLET_LINE = /^[ \t]*(?:\u2022|[-*])[ \t]+(.+?)[ \t]*$/
+
+type TextPart = { kind: "text"; text: string } | { kind: "list"; items: string[] }
+
+// Splits text into plain parts and bullet lists. A blank line between bullets
+// keeps the same list.
+function splitBullets(text: string): TextPart[] {
+  const lines = text.split("\n")
+  if (!lines.some((line) => BULLET_LINE.test(line))) return [{ kind: "text", text }]
+  const parts: TextPart[] = []
+  let buffer: string[] = []
+  let items: string[] = []
+  const flushText = () => {
+    const t = buffer.join("\n").replace(/^(?:[ \t]*\n)+|(?:\n[ \t]*)+$/g, "")
+    if (t.trim()) parts.push({ kind: "text", text: t })
+    buffer = []
+  }
+  const flushList = () => {
+    if (items.length > 0) parts.push({ kind: "list", items })
+    items = []
+  }
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]
+    const bullet = line.match(BULLET_LINE)
+    if (bullet) {
+      flushText()
+      items.push(bullet[1])
+    } else if (items.length > 0 && line.trim() === "") {
+      let next = i + 1
+      while (next < lines.length && lines[next].trim() === "") next++
+      if (!(next < lines.length && BULLET_LINE.test(lines[next]))) flushList()
+    } else {
+      flushList()
+      buffer.push(line)
+    }
+  }
+  flushText()
+  flushList()
+  return parts
+}
+
 const DEFAULT_CARDS: CardItem[] = [
   { heading: "Card heading", text: "Describe this card in a sentence or two." },
   { heading: "Card heading", text: "Describe this card in a sentence or two." },
@@ -403,17 +445,58 @@ export function CardGrid({
     )
   }
 
-  // Text with paragraphs. Normal = one block, blank lines stay empty lines (original).
+  // Text with paragraphs and bullet lists. Normal gap = blank lines stay empty lines (original).
   const renderParagraphs = (text: string, pStyle: CSSProperties) => {
-    if (paragraphGap === "normal") return <p style={pStyle}>{formatInline(text)}</p>
+    const parts = splitBullets(text)
+    if (paragraphGap === "normal" && parts.length === 1 && parts[0].kind === "text") {
+      return <p style={pStyle}>{formatInline(text)}</p>
+    }
     const { margin, ...rest } = pStyle
+    const partGap = paragraphGap === "normal" ? "0.75em" : PARAGRAPH_GAPS[paragraphGap]
     return (
       <div style={{ margin }}>
-        {splitParagraphs(text).map((para, i) => (
-          <p key={i} style={{ ...rest, margin: 0, marginTop: i === 0 ? 0 : PARAGRAPH_GAPS[paragraphGap] }}>
-            {formatInline(para)}
-          </p>
-        ))}
+        {parts.map((part, pIndex) => {
+          const top = pIndex === 0 ? 0 : partGap
+          if (part.kind === "list") {
+            return (
+              <ul
+                key={pIndex}
+                style={{
+                  ...rest,
+                  whiteSpace: "normal",
+                  margin: 0,
+                  marginTop: top,
+                  paddingLeft: "1.35em",
+                  listStyleType: "disc",
+                  textAlign: "left",
+                }}
+              >
+                {part.items.map((item, i) => (
+                  <li key={i} style={{ paddingLeft: "0.25em", marginTop: i === 0 ? 0 : "0.4em" }}>
+                    {formatInline(item)}
+                  </li>
+                ))}
+              </ul>
+            )
+          }
+          const paras = paragraphGap === "normal" ? [part.text] : splitParagraphs(part.text)
+          return (
+            <div key={pIndex} style={{ marginTop: top }}>
+              {paras.map((para, i) => (
+                <p
+                  key={i}
+                  style={{
+                    ...rest,
+                    margin: 0,
+                    marginTop: i === 0 ? 0 : PARAGRAPH_GAPS[paragraphGap as Exclude<ParagraphGap, "normal">],
+                  }}
+                >
+                  {formatInline(para)}
+                </p>
+              ))}
+            </div>
+          )
+        })}
       </div>
     )
   }

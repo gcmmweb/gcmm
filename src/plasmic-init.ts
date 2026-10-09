@@ -2429,7 +2429,7 @@ PLASMIC.registerComponent(CardGrid, {
       type: "string",
       control: "large",
       displayName: "Lead line (text under heading)",
-      description: "Format words: **bold**, *italic*, ***bold and italic***. Example: Help **one person** discover the *mission*.",
+      description: "Format words: **bold**, *italic*, ***bold and italic***. Example: Help **one person** discover the *mission*. Bullet list: start each line with a dash and a space (example: - First point).",
       section: "Heading block",
     },
 
@@ -2457,7 +2457,7 @@ PLASMIC.registerComponent(CardGrid, {
             type: "string",
             control: "large",
             displayName: "Text",
-            description: "Format words: **bold**, *italic*, ***bold and italic***. Example: Help **one person** discover the *mission*.",
+            description: "Format words: **bold**, *italic*, ***bold and italic***. Example: Help **one person** discover the *mission*. Bullet list: start each line with a dash and a space (example: - First point).",
           },
           icon: {
             type: "imageUrl",
@@ -17251,7 +17251,7 @@ PLASMIC.registerComponent(VideoSection, {
       type: "string",
       control: "large",
       displayName: "Body text",
-      description: "Blank line = new paragraph. A line starting with ## becomes a subheading. Format words: **bold**, *italic*.",
+      description: "Blank line = new paragraph. A line starting with ## becomes a subheading. Format words: **bold**, *italic*. Bullet list: start each line with a dash and a space (example: - First point).",
       section: "Content",
     },
 

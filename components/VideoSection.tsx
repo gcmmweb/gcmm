@@ -181,25 +181,48 @@ function isExternal(url: string) {
 
 // Body text: blank lines make paragraphs; a line starting with "## " becomes a
 // subheading (same convention as Content Section).
-type Block = { kind: "heading" | "text"; text: string }
+type Block = { kind: "heading" | "text"; text: string } | { kind: "list"; items: string[] }
+
+// A bullet line: "- text", "* text" or a bullet character followed by text.
+const BULLET_LINE = /^[ \t]*(?:\u2022|[-*])[ \t]+(.+?)[ \t]*$/
+
 function parseBody(body: string): Block[] {
   const blocks: Block[] = []
   let buffer: string[] = []
+  let items: string[] = []
   const flush = () => {
     const text = buffer.join("\n").trim()
     if (text) blocks.push({ kind: "text", text })
     buffer = []
   }
-  for (const line of body.replace(/\r/g, "").split("\n")) {
+  const flushList = () => {
+    if (items.length > 0) blocks.push({ kind: "list", items })
+    items = []
+  }
+  const lines = body.replace(/\r/g, "").split("\n")
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]
     const h = line.match(/^[ \t]*##[ \t]+(.+?)[ \t]*$/)
+    const bullet = h ? null : line.match(BULLET_LINE)
     if (h) {
       flush()
+      flushList()
       blocks.push({ kind: "heading", text: h[1] })
+    } else if (bullet) {
+      flush()
+      items.push(bullet[1])
+    } else if (items.length > 0 && line.trim() === "") {
+      // A blank line between bullets keeps the same list; otherwise it ends the list.
+      let next = i + 1
+      while (next < lines.length && lines[next].trim() === "") next++
+      if (!(next < lines.length && BULLET_LINE.test(lines[next]))) flushList()
     } else {
+      flushList()
       buffer.push(line)
     }
   }
   flush()
+  flushList()
   return blocks
 }
 
@@ -666,7 +689,26 @@ export function VideoSection({
   const bodyParts = (
     <>
       {bodyBlocks.map((block, index) =>
-        block.kind === "heading" ? (
+        block.kind === "list" ? (
+          <ul
+            key={index}
+            style={{
+              margin: 0,
+              paddingLeft: "1.35em",
+              listStyleType: "disc",
+              textAlign: "left",
+              fontSize: BODY_SIZES[bodySize],
+              fontWeight: WEIGHTS[bodyWeight],
+              lineHeight: 1.7,
+            }}
+          >
+            {block.items.map((item, i) => (
+              <li key={i} style={{ paddingLeft: "0.25em", marginTop: i === 0 ? 0 : "0.4em" }}>
+                {formatInline(item)}
+              </li>
+            ))}
+          </ul>
+        ) : block.kind === "heading" ? (
           <SubHeading
             key={index}
             style={{
