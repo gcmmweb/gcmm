@@ -9,7 +9,12 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    unoptimized: true,
+    // Photos are resized for each screen by Next (this replaces
+    // unoptimized: true). Quality 85 keeps photos sharp. Resized
+    // photos are kept for 31 days so Vercel does the work only once.
+    formats: ["image/webp"],
+    qualities: [85],
+    minimumCacheTTL: 2678400,
     remotePatterns: [
       {
         protocol: "https",
