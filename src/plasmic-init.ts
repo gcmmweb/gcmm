@@ -17433,6 +17433,20 @@ PLASMIC.registerComponent(VideoSection, {
       hidden: (props: any) => props.layout === "left" || props.layout === "right",
       section: "Layout",
     },
+    stackedVideoWidth: {
+      type: "choice",
+      displayName: "Video width (above or below the text)",
+      description: "Lets the video be narrower than the text, for example wide text with a medium video. It lines up with the Text alignment.",
+      options: [
+        { value: "same", label: "Same as the text" },
+        { value: "narrow", label: "Narrow" },
+        { value: "medium", label: "Medium" },
+        { value: "wide", label: "Wide" },
+      ],
+      defaultValue: "same",
+      hidden: (props: any) => props.layout === "left" || props.layout === "right",
+      section: "Layout",
+    },
     spaceY: {
       type: "choice",
       displayName: "Space above & below",

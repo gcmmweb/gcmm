@@ -83,6 +83,7 @@ interface VideoSectionProps {
   phoneOrder?: "textFirst" | "videoFirst"
   alignment?: Align
   contentWidth?: WidthChoice
+  stackedVideoWidth?: "same" | WidthChoice
   spaceY?: SpaceChoice
   spaceTop?: SpaceChoice
   spaceBottom?: SpaceChoice
@@ -275,6 +276,7 @@ export function VideoSection({
   phoneOrder = "videoFirst",
   alignment = "left",
   contentWidth = "medium",
+  stackedVideoWidth = "same",
   spaceY = "large",
   spaceTop,
   spaceBottom,
@@ -559,7 +561,13 @@ export function VideoSection({
             width: "100%",
             ...(videoShape === "tall" && !isSide
               ? { maxWidth: "min(100%, 24rem)", marginLeft: alignment === "left" ? 0 : "auto", marginRight: alignment === "right" ? 0 : "auto" }
-              : {}),
+              : !isSide && stackedVideoWidth !== "same"
+                ? {
+                    maxWidth: CONTENT_WIDTHS[stackedVideoWidth],
+                    marginLeft: alignment === "left" ? 0 : "auto",
+                    marginRight: alignment === "right" ? 0 : "auto",
+                  }
+                : {}),
             "--vs-o-phone": phoneOrder === "videoFirst" ? -1 : 0,
             "--vs-o-desk": layout === "left" ? -1 : 0,
           } as CSSProperties
