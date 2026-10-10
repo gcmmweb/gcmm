@@ -4,6 +4,7 @@ import "./globals.css";
 import "./fonts.css";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { TrackClicks } from "@/components/TrackClicks";
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.gcmm.ca"),
   title: "Great Commission Media Ministries",
@@ -101,6 +102,7 @@ export default function RootLayout({
         {children}
         <Analytics />
         <SpeedInsights />
+        <TrackClicks />
       </body>
     </html>
   );
