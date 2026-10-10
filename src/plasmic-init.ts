@@ -158,6 +158,7 @@ import { ContentSection } from "@/components/ContentSection"
 import { VideoSection } from "@/components/VideoSection"
 
 import { CardGrid } from "@/components/CardGrid"
+import { ButtonRow } from "@/components/ButtonRow"
 
 import { TestimonialQuote } from "@/components/Testimonialquote"
 
@@ -2290,6 +2291,183 @@ PLASMIC.registerComponent(ContentSection, {
   },
   importPath: "./components/ContentSection",
 });
+
+PLASMIC.registerComponent(ButtonRow, {
+  name: "ButtonRow",
+  displayName: "Button Row",
+  description:
+    "A row of 1 to 4 buttons. By default the first is filled and the others are outlined. Each button has its own link and tracking label. Leave a button's text or link blank and it disappears.",
+  props: {
+    className: {
+      type: "class",
+      displayName: "CSS Class",
+    },
+
+    // ---- Buttons ----
+    buttons: {
+      type: "array",
+      displayName: "Buttons",
+      description: "Click + Add item for each button. Up to 4 are shown; two side by side is usually enough.",
+      section: "Buttons",
+      defaultValue: [
+        { text: "First button", link: "/", style: "filled" },
+        { text: "Second button", link: "/", style: "outlined" },
+      ],
+      itemType: {
+        type: "object",
+        nameFunc: (item: any) => item.text || "New button",
+        fields: {
+          text: {
+            type: "string",
+            displayName: "Button text",
+          },
+          link: {
+            type: "string",
+            displayName: "Link",
+            description: "e.g. /donate or https://...",
+          },
+          trackingLabel: {
+            type: "string",
+            displayName: "Tracking label (optional)",
+            description: "Short name for analytics, e.g. satellite-give. Leave blank if not needed.",
+          },
+          style: {
+            type: "choice",
+            displayName: "Style",
+            description: "Leave unset: the first button is filled and the others are outlined.",
+            options: [
+              { value: "filled", label: "Filled (full color)" },
+              { value: "outlined", label: "Outlined (border only)" },
+            ],
+          },
+        },
+      },
+    },
+    showArrow: {
+      type: "boolean",
+      displayName: "Show arrow",
+      description: "Small arrow after the button text.",
+      defaultValue: true,
+      section: "Buttons",
+    },
+
+    // ---- Layout ----
+    alignment: {
+      type: "choice",
+      displayName: "Alignment",
+      options: [
+        { value: "left", label: "Left" },
+        { value: "center", label: "Center" },
+        { value: "right", label: "Right" },
+      ],
+      defaultValue: "center",
+      section: "Layout",
+    },
+    phoneButtons: {
+      type: "choice",
+      displayName: "Buttons on phones",
+      description: "Full width stacks the buttons at the same width and height on phones. Natural width keeps each button as wide as its text.",
+      options: [
+        { value: "full", label: "Full width" },
+        { value: "natural", label: "Natural width" },
+      ],
+      defaultValue: "full",
+      section: "Layout",
+    },
+    darkBackground: {
+      type: "boolean",
+      displayName: "On a dark background",
+      description: "Turn on when the row sits on a dark color. The outlined buttons become white.",
+      defaultValue: false,
+      section: "Layout",
+    },
+    spaceY: {
+      type: "choice",
+      displayName: "Space above & below",
+      options: [
+        { value: "none", label: "None" },
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "small",
+      section: "Layout",
+    },
+    spaceTop: {
+      type: "choice",
+      displayName: "Space above (optional)",
+      description: "Changes only the top space. Leave unset to follow 'Space above & below'.",
+      options: [
+        { value: "none", label: "None" },
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      section: "Layout",
+    },
+    spaceBottom: {
+      type: "choice",
+      displayName: "Space below (optional)",
+      description: "Changes only the bottom space. Leave unset to follow 'Space above & below'.",
+      options: [
+        { value: "none", label: "None" },
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      section: "Layout",
+    },
+    spaceX: {
+      type: "choice",
+      displayName: "Space left & right",
+      description: "Extra large is roomy on computers and shrinks automatically on phones, so you do not need to set it again for mobile.",
+      options: [
+        { value: "none", label: "None" },
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "xl",
+      section: "Layout",
+    },
+
+    // ---- Colors (pick a Style Token or any color; blank = automatic brand colors) ----
+    backgroundColor: {
+      type: "color",
+      displayName: "Background color",
+      description: "Blank = see-through (the page color shows)",
+      section: "Colors",
+    },
+    buttonColor: {
+      type: "color",
+      displayName: "Filled button color",
+      description: "Blank = Amber",
+      section: "Colors",
+    },
+    buttonTextColor: {
+      type: "color",
+      displayName: "Filled button text color",
+      description: "Blank = Deep Navy",
+      section: "Colors",
+    },
+    outlineColor: {
+      type: "color",
+      displayName: "Outlined button color",
+      description: "Border and text color of the outlined buttons. Blank = Deep Navy (white on a dark background)",
+      section: "Colors",
+    },
+    outlineHoverTextColor: {
+      type: "color",
+      displayName: "Outlined button hover text color",
+      description: "Text color once the button fills in on hover. Blank = automatic (white, or navy on a white button)",
+      section: "Colors",
+    },
+  },
+})
 
 PLASMIC.registerComponent(CardGrid, {
   name: "CardGrid",
