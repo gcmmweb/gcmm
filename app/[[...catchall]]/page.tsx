@@ -19,7 +19,10 @@ type Props = {
 // Plasmic hiccup would just see the last good cached version instead of
 // hitting the failure at all. NEEDS VERIFICATION on our actual setup before
 // we trust it — see the diagnostic log below.
-export const revalidate = 300;
+// Cost fix (Oct 2026): was 300 (5 min). Pages now rebuild at most hourly,
+// which cuts Vercel ISR Writes. The hourly CMS refresh cron still
+// pushes fresh CMS content within the hour.
+export const revalidate = 3600;
 export const fetchCache = 'default-cache';
 
 function getPathname(catchall?: string[]) {
