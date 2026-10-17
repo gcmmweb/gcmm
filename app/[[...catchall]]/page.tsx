@@ -6,6 +6,7 @@ import { isNoIndexPath } from "@/lib/indexing";
 import PlasmicClientPage from "./client-page";
 import type { StoryLink } from "@/components/all-stories-list";
 import { buildArticleQueryData } from "@/lib/article-query-cache";
+import { buildNewslettersQueryData } from "@/lib/newsletters-query-cache";
 
 type Props = {
   params: Promise<{ catchall?: string[] }>;
@@ -512,6 +513,8 @@ export default async function CatchallPage({ params }: Props) {
   const queryData =
     slug && slug !== "donate-test-only"
       ? await buildArticleQueryData(slug)
+      : pathname === "/newsletters"
+      ? await buildNewslettersQueryData()
       : undefined;
 
   // Server-side article list for the "All Stories List" component (only on
