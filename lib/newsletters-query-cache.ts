@@ -87,9 +87,21 @@ export async function buildNewslettersQueryData(): Promise<
 
     // 1) newsletters: the newest issue (the big "Latest Newsletter" card).
     const latest = await cmsRows(token, { limit: 1 });
-    cache[
-      makeQueryKey({ ...base, orderBy: "date", orderDirection: "desc", limit: 1 })
-    ] = latest;
+    // The browser's exact key for this query is not known, so file the latest
+    // issue under the plausible variants. Extras that are never looked up are harmless.
+    for (const limit of [1, "1"]) {
+      for (const extra of [{}, { offset: 0 }, { offset: "0" }]) {
+        cache[
+          makeQueryKey({
+            ...base,
+            orderBy: "date",
+            orderDirection: "desc",
+            limit,
+            ...extra,
+          })
+        ] = latest;
+      }
+    }
 
     // 2) previousNewsletters: the 6 issues after the newest one.
     const previous = await cmsRows(token, { limit: 6, offset: 1 });
