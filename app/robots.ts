@@ -10,7 +10,7 @@ const baseUrl = "https://www.gcmm.ca";
 // has no place to add crawl rules later if ever needed.
 //
 // Deliberately permissive: no Disallow rules. Pages that shouldn't be
-// indexed (e.g. /thank-you, /donate-test-only) already handle that via
+// indexed (e.g. /thank-you) already handle that via
 // their own noindex meta tag, which requires the page to actually be
 // crawled to take effect — disallowing them here would block the crawl
 // that lets Google see the noindex directive in the first place.
