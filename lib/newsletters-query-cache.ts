@@ -46,6 +46,7 @@ async function cmsRows(
 ): Promise<any[]> {
   const q = {
     limit: opts.limit,
+    fields: [],
     offset: opts.offset,
     order: [{ field: "date", dir: "desc" }],
   };
@@ -80,6 +81,7 @@ export async function buildNewslettersQueryData(): Promise<
       cmsId: CMS_ID,
       cmsPublicToken: token,
       tableId: TABLE_ID,
+      select: [],
     };
     const cache: Record<string, unknown> = {};
 
