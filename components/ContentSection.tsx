@@ -397,7 +397,7 @@ const BUTTON_ROW_CSS = `
 .cs-btns{display:flex;flex-wrap:wrap;gap:0.5rem 1rem}
 @media (max-width:640px){
 .cs-btns{margin-top:0.75rem}
-.cs-btns-full{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:1fr;gap:0.75rem}
+.cs-btns-full{width:100%;display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:1fr;gap:0.75rem}
 .cs-btns-full > a{margin-top:0;width:100%;box-sizing:border-box;text-align:center}
 }`
 
