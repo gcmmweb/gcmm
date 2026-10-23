@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, type CSSProperties } from 'react'
+import { useState, useEffect, useId, type CSSProperties } from 'react'
 import { Quote, ChevronLeft, ChevronRight } from 'lucide-react'
 import { formatInline } from '@/lib/inline-format'
 
@@ -302,6 +302,8 @@ export function TestimonialSlider({
 }: TestimonialSliderProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isHovering, setIsHovering] = useState(false)
+  // Private id so this slider's styles never touch another slider on the page.
+  const scopeId = "ts" + useId().replace(/[^a-zA-Z0-9]/g, "")
 
   // Spacing dropdowns. Left blank = the old Padding boxes still apply, so
   // existing pages do not change.
@@ -577,15 +579,15 @@ export function TestimonialSlider({
     }
 
     return (
-      <div className={`relative ${className}`}>
+      <div className={`relative ${scopeId} ${className}`}>
         <style
           dangerouslySetInnerHTML={{
             __html: `
-          .testimonial-outer-wrapper { background-color: ${backgroundColor}; padding: ${effPadding}; }
-          .testimonial-content-wrapper { max-width: ${maxWidth}; }
+          .${scopeId} .testimonial-outer-wrapper { background-color: ${backgroundColor}; padding: ${effPadding}; }
+          .${scopeId} .testimonial-content-wrapper { max-width: ${maxWidth}; }
           @media (max-width: 768px) {
-            .testimonial-outer-wrapper { padding: ${effMobilePadding}; }
-            .testimonial-content-wrapper { max-width: ${mobileMaxWidth}; }
+            .${scopeId} .testimonial-outer-wrapper { padding: ${effMobilePadding}; }
+            .${scopeId} .testimonial-content-wrapper { max-width: ${mobileMaxWidth}; }
           }
         `,
           }}
@@ -639,41 +641,41 @@ export function TestimonialSlider({
 
   return (
     <div
-      className={`relative ${className}`}
+      className={`relative ${scopeId} ${className}`}
     >
       <style dangerouslySetInnerHTML={{
         __html: `
-          .testimonial-outer-wrapper {
+          .${scopeId} .testimonial-outer-wrapper {
             background-color: ${backgroundColor};
             padding: ${effPadding};
           }
-          .testimonial-content-wrapper {
+          .${scopeId} .testimonial-content-wrapper {
             max-width: ${maxWidth};
           }
-          .testimonial-flex-container {
+          .${scopeId} .testimonial-flex-container {
             gap: 1.5rem;
           }
-          .testimonial-arrow {
+          .${scopeId} .testimonial-arrow {
             padding: 0.5rem;
           }
-          .testimonial-arrow svg {
+          .${scopeId} .testimonial-arrow svg {
             width: 2rem;
             height: 2rem;
           }
           @media (max-width: 768px) {
-            .testimonial-outer-wrapper {
+            .${scopeId} .testimonial-outer-wrapper {
               padding: ${effMobilePadding};
             }
-            .testimonial-content-wrapper {
+            .${scopeId} .testimonial-content-wrapper {
               max-width: ${mobileMaxWidth};
             }
-            .testimonial-flex-container {
+            .${scopeId} .testimonial-flex-container {
               gap: 0.5rem;
             }
-            .testimonial-arrow {
+            .${scopeId} .testimonial-arrow {
               padding: 0.25rem;
             }
-            .testimonial-arrow svg {
+            .${scopeId} .testimonial-arrow svg {
               width: 1.5rem;
               height: 1.5rem;
             }
