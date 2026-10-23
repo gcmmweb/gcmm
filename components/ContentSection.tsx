@@ -653,21 +653,46 @@ export function ContentSection({
           </Heading>
         )}
 
-        {leadText && (
-          <p
-            style={{
-              margin: 0,
-              ...(headingText && spacing.leadTop !== "0px" ? { marginTop: spacing.leadTop } : {}),
-              ...(leadFont !== "body" ? { fontFamily: FONT_STACKS[leadFont] } : {}),
-              ...(leadColor ? { color: leadColor } : {}),
-              fontSize: LEAD_SIZES[leadSize],
-              fontWeight: WEIGHTS[leadWeight],
-              lineHeight: spacing.leadLH,
-            }}
-          >
-            {formatInline(leadText)}
-          </p>
-        )}
+        {leadText &&
+          (paragraphGap !== "normal" && splitParagraphs(leadText).length > 1 ? (
+            <div
+              style={{
+                margin: 0,
+                ...(headingText && spacing.leadTop !== "0px" ? { marginTop: spacing.leadTop } : {}),
+              }}
+            >
+              {splitParagraphs(leadText).map((para, i) => (
+                <p
+                  key={i}
+                  style={{
+                    margin: 0,
+                    marginTop: i === 0 ? 0 : PARAGRAPH_GAPS[paragraphGap],
+                    ...(leadFont !== "body" ? { fontFamily: FONT_STACKS[leadFont] } : {}),
+                    ...(leadColor ? { color: leadColor } : {}),
+                    fontSize: LEAD_SIZES[leadSize],
+                    fontWeight: WEIGHTS[leadWeight],
+                    lineHeight: spacing.leadLH,
+                  }}
+                >
+                  {formatInline(para)}
+                </p>
+              ))}
+            </div>
+          ) : (
+            <p
+              style={{
+                margin: 0,
+                ...(headingText && spacing.leadTop !== "0px" ? { marginTop: spacing.leadTop } : {}),
+                ...(leadFont !== "body" ? { fontFamily: FONT_STACKS[leadFont] } : {}),
+                ...(leadColor ? { color: leadColor } : {}),
+                fontSize: LEAD_SIZES[leadSize],
+                fontWeight: WEIGHTS[leadWeight],
+                lineHeight: spacing.leadLH,
+              }}
+            >
+              {formatInline(leadText)}
+            </p>
+          ))}
 
         {bodyBlocks.map((block, index) =>
           block.kind === "list" ? (
