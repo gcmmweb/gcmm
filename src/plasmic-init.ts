@@ -2269,6 +2269,7 @@ PLASMIC.registerComponent(ContentSection, {
       description: "How far apart the eyebrow, heading, lead line and body sit. Medium is the original spacing; Small is close together (good for article headers).",
       options: [
         { value: "small", label: "Small (close together)" },
+        { value: "comfortable", label: "Small-medium (comfortable)" },
         { value: "medium", label: "Medium (original)" },
         { value: "large", label: "Large (roomier)" },
       ],

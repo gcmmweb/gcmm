@@ -40,7 +40,7 @@ type SpaceChoice = "none" | "small" | "medium" | "large" | "xl"
 type WidthChoice = "narrow" | "medium" | "wide"
 type HeightChoice = "short" | "medium" | "tall"
 type LeadFontChoice = FontChoice | "body"
-type TextSpacing = "small" | "medium" | "large"
+type TextSpacing = "small" | "comfortable" | "medium" | "large"
 
 interface ContentSectionProps {
   className?: string
@@ -169,6 +169,18 @@ function getTextSpacing(choice: TextSpacing, hs: string) {
       leadTop: `calc(${hs} * -0.15)`,
       bodyAfterHeading: `calc(${hs} * -0.115)`,
       paragraphTop: `calc(${TEXT_GAP_MEDIUM} - 0.25rem)`,
+    }
+  }
+  if (choice === "comfortable") {
+    // Halfway between small and medium.
+    return {
+      gap: "clamp(0.5rem, 1vw, 0.75rem)",
+      headingLH: 1.32,
+      leadLH: 1.38,
+      eyebrowExtra: `calc(${hs} * 0.03)`,
+      leadTop: `calc(${hs} * -0.07)`,
+      bodyAfterHeading: `calc(${hs} * -0.055)`,
+      paragraphTop: `calc(${TEXT_GAP_MEDIUM} - clamp(0.5rem, 1vw, 0.75rem))`,
     }
   }
   if (choice === "large") {
