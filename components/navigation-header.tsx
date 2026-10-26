@@ -231,7 +231,8 @@ export function NavigationHeader({
                   alt={logoAlt}
                   width={logoWidth}
                   height={logoHeight}
-                  className="h-auto max-w-none object-contain"
+                  className="h-auto object-contain"
+                  style={{ maxWidth: "calc(100vw - 130px)" }}
                 />
               </Link>
             </motion.div>
@@ -477,7 +478,8 @@ export function NavigationHeader({
                     alt={logoAlt}
                     width={logoWidth * 0.8}
                     height={logoHeight * 0.8}
-                    className="h-auto max-w-none object-contain"
+                    className="h-auto object-contain"
+                    style={{ maxWidth: "calc(min(100vw, 20rem) - 108px)" }}
                   />
                   <button
                     onClick={closeMobileMenu}
