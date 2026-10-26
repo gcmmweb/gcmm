@@ -33,7 +33,7 @@ function shuffleArray<T>(array: T[]): T[] {
 // QuoteStyle, one entry in STYLE_DEFAULTS, one branch in renderStyledQuote(), and
 // one option in the Studio registration.
 // ---------------------------------------------------------------------------
-type QuoteStyle = "classic" | "pull" | "bar" | "card" | "min"
+type QuoteStyle = "classic" | "pull" | "bar" | "card" | "min" | "feature"
 type QuoteSize = "small" | "medium" | "large" | "xl"
 type QuoteFace = "georgia" | "nunito" | "poppins" | "lexend"
 
@@ -79,6 +79,7 @@ const STYLE_DEFAULTS: Record<Exclude<QuoteStyle, "classic">, { size: QuoteSize; 
   bar: { size: "medium", italic: true },
   card: { size: "medium", italic: false },
   min: { size: "medium", italic: true },
+  feature: { size: "large", italic: true },
 }
 
 interface Testimonial {
@@ -538,6 +539,72 @@ export function TestimonialSlider({
             {pill}
             <blockquote style={quoteCss}>{formatInline(t.quote)}</blockquote>
             <div style={{ marginTop: "0.75rem" }}>{lines("left")}</div>
+            {readMore}
+          </div>
+        </div>
+      )
+    } else if (quoteStyle === "feature") {
+      // Large round photo on the left, quote + name on the right.
+      const bigPhoto =
+        t.photo && t.photo.trim() ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={t.photo.trim()}
+            alt=""
+            width={280}
+            height={280}
+            loading="lazy"
+            decoding="async"
+            style={{
+              width: "clamp(140px, 22vw, 280px)",
+              height: "auto",
+              aspectRatio: "1 / 1",
+              borderRadius: "9999px",
+              objectFit: "cover",
+              objectPosition: "center 20%",
+              flex: "none",
+              display: "block",
+            }}
+          />
+        ) : null
+      const featName = lightText ? "#FFFFFF" : colName
+      slide = (
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "clamp(1.5rem, 4vw, 3.5rem)",
+          }}
+        >
+          {bigPhoto}
+          <div style={{ flex: "1 1 20rem", minWidth: 0 }}>
+            {pill}
+            <blockquote style={quoteCss}>
+              {"\u201C"}
+              {formatInline(t.quote)}
+              {"\u201D"}
+            </blockquote>
+            {(hasName || hasTitle || hasOrg) && (
+              <div style={{ marginTop: "1.25rem", fontFamily: QUOTE_FONT_STACKS.Nunito }}>
+                {hasName && (
+                  <div style={{ fontSize: "1rem", fontWeight: 700, lineHeight: 1.4, color: featName }}>
+                    {formatInline(t.name)}
+                  </div>
+                )}
+                {hasTitle && (
+                  <div style={{ fontSize: "0.9375rem", lineHeight: 1.45, color: colTitle }}>
+                    {formatInline(t.title as string)}
+                  </div>
+                )}
+                {hasOrg && (
+                  <div style={{ fontSize: "0.9375rem", lineHeight: 1.45, color: colOrg }}>
+                    {formatInline(t.organization as string)}
+                  </div>
+                )}
+              </div>
+            )}
             {readMore}
           </div>
         </div>

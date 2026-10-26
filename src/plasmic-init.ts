@@ -761,6 +761,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
         { value: "bar", label: "Gold bar" },
         { value: "card", label: "Soft card" },
         { value: "min", label: "Minimal" },
+        { value: "feature", label: "Photo feature (large photo)" },
       ],
       defaultValue: "classic",
       section: "Style",
