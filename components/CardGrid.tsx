@@ -211,6 +211,12 @@ const CONTENT_WIDTHS: Record<WidthChoice, string> = {
   wide: "1100px",
 }
 
+// A stat value (110+, 8M+, 20,000+, 5,000+ Tonnes) is a number, not a
+// heading, so it is drawn as plain text and stays out of the page outline.
+const STAT_VALUE =
+  /^[$\u20ac\u00a3]?\d[\d,.]*\s?[kKmMbB]?(?:[+%](?:\s+[A-Za-z]+)?)?$/
+const isStatValue = (text: string) => STAT_VALUE.test(text.replace(/[*_]/g, "").trim())
+
 const NEXT_LEVEL: Record<Level, CardLevel> = {
   h1: "h2",
   h2: "h3",
@@ -594,10 +600,12 @@ export function CardGrid({
         </div>
       ) : null
 
+    const TitleTag: CardLevel | "p" = isStatValue(title) ? "p" : CardTitle
+
     const textEls = (
       <>
         {title && (
-          <CardTitle
+          <TitleTag
             style={{
               margin: 0,
               color: colCardHeading,
@@ -608,7 +616,7 @@ export function CardGrid({
             }}
           >
             {formatInline(title)}
-          </CardTitle>
+          </TitleTag>
         )}
 
         {body &&
