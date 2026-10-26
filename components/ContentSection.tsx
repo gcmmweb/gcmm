@@ -659,6 +659,7 @@ export function ContentSection({
               fontWeight: WEIGHTS[headingWeight],
               lineHeight: spacing.headingLH,
               textWrap: "balance",
+              ...(headingLevel === "h1" ? { textTransform: "capitalize" as const } : {}),
             }}
           >
             {formatInline(headingText)}
