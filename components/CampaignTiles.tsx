@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { useState } from "react"
 import type { CSSProperties } from "react"
+import { formatInline } from "@/lib/inline-format"
 
 /**
  * CampaignTiles - photo tiles for the Mega City Media Campaigns, with tabs.
@@ -43,6 +44,32 @@ const SPACE_X: Record<SpaceChoice, string> = {
 
 const CONTINENTS = ["Europe", "Asia", "Middle East", "Africa", "South America & Caribbean"]
 
+type SizeChoice = "small" | "medium" | "large" | "xl"
+type WeightChoice = "regular" | "medium" | "semibold" | "bold"
+
+const HEADING_FONT = 'Georgia, Gelasio, "Times New Roman", serif'
+
+const HEADING_SIZES: Record<SizeChoice, string> = {
+  small: "clamp(1.5rem, 3vw, 1.875rem)",
+  medium: "clamp(1.75rem, 4vw, 2.5rem)",
+  large: "clamp(2rem, 5vw, 3.25rem)",
+  xl: "clamp(2.25rem, 6vw, 4rem)",
+}
+
+const SUBHEADING_SIZES: Record<SizeChoice, string> = {
+  small: "clamp(1rem, 2vw, 1.125rem)",
+  medium: "clamp(1.0625rem, 2.2vw, 1.25rem)",
+  large: "clamp(1.1875rem, 2.5vw, 1.5rem)",
+  xl: "clamp(1.3125rem, 3vw, 1.875rem)",
+}
+
+const WEIGHTS: Record<WeightChoice, number> = {
+  regular: 400,
+  medium: 500,
+  semibold: 600,
+  bold: 700,
+}
+
 export interface CampaignItem {
   name?: string
   year?: string
@@ -58,6 +85,16 @@ interface CampaignTilesProps {
   campaigns?: CampaignItem[]
   latestCount?: number
   featureFirst?: boolean
+
+  heading?: string
+  headingLevel?: "h1" | "h2" | "h3"
+  subheading?: string
+  headingSize?: SizeChoice
+  headingWeight?: WeightChoice
+  subheadingSize?: SizeChoice
+  headingAlign?: "center" | "left"
+  headingColor?: string
+  subheadingColor?: string
 
   latestLabel?: string
   upcomingLabel?: string
@@ -99,6 +136,16 @@ export function CampaignTiles({
   campaigns = [],
   latestCount = 5,
   featureFirst = true,
+
+  heading,
+  headingLevel = "h2",
+  subheading,
+  headingSize = "medium",
+  headingWeight = "regular",
+  subheadingSize = "medium",
+  headingAlign = "center",
+  headingColor,
+  subheadingColor,
 
   latestLabel = "Latest",
   upcomingLabel = "Upcoming",
@@ -277,6 +324,13 @@ export function CampaignTiles({
     )
   }
 
+  const headingText = (heading || "").trim()
+  const subheadingText = (subheading || "").trim()
+  const centeredHeading = headingAlign !== "left"
+  const HeadingTag = (["h1", "h2", "h3"].includes(headingLevel) ? headingLevel : "h2") as "h1" | "h2" | "h3"
+  const colHeading = (headingColor || "").trim() || NAVY
+  const colSubheading = (subheadingColor || "").trim() || NAVY
+
   const sectionStyle = {
     width: "100%",
     backgroundColor: (backgroundColor || "").trim() || "transparent",
@@ -304,6 +358,51 @@ export function CampaignTiles({
           gap: "clamp(1.25rem, 2.5vw, 2rem)",
         }}
       >
+        {(headingText || subheadingText) && (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: centeredHeading ? "center" : "flex-start",
+              textAlign: centeredHeading ? "center" : "left",
+              gap: "clamp(0.75rem, 1.5vw, 1.25rem)",
+              maxWidth: "800px",
+              marginLeft: centeredHeading ? "auto" : 0,
+              marginRight: centeredHeading ? "auto" : 0,
+            }}
+          >
+            {headingText && (
+              <HeadingTag
+                style={{
+                  margin: 0,
+                  color: colHeading,
+                  fontFamily: HEADING_FONT,
+                  fontSize: HEADING_SIZES[headingSize] ?? HEADING_SIZES.medium,
+                  fontWeight: WEIGHTS[headingWeight] ?? WEIGHTS.regular,
+                  lineHeight: 1.45,
+                  textWrap: "balance",
+                }}
+              >
+                {formatInline(headingText)}
+              </HeadingTag>
+            )}
+            {subheadingText && (
+              <p
+                style={{
+                  margin: 0,
+                  color: colSubheading,
+                  fontSize: SUBHEADING_SIZES[subheadingSize] ?? SUBHEADING_SIZES.medium,
+                  lineHeight: 1.6,
+                  whiteSpace: "pre-line",
+                  textWrap: "pretty",
+                }}
+              >
+                {formatInline(subheadingText)}
+              </p>
+            )}
+          </div>
+        )}
+
         {tabs.length > 1 && (
           <div role="group" aria-label="Filter campaigns" className="flex flex-wrap justify-center gap-2">
             {tabs.map((t) => (

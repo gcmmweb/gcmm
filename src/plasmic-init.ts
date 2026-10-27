@@ -2990,6 +2990,91 @@ PLASMIC.registerComponent(CampaignTiles, {
       displayName: "CSS Class",
     },
 
+    // ---- Heading block (all optional) ----
+    heading: {
+      type: "string",
+      displayName: "Heading",
+      description: "Format words: **bold**, *italic*, ***bold and italic***. Leave blank for no heading.",
+      section: "Heading block",
+    },
+    headingLevel: {
+      type: "choice",
+      displayName: "Heading level",
+      description: "Use H2 for most sections.",
+      options: [
+        { value: "h1", label: "H1 (main page title)" },
+        { value: "h2", label: "H2 (section)" },
+        { value: "h3", label: "H3 (sub-section)" },
+      ],
+      defaultValue: "h2",
+      section: "Heading block",
+    },
+    subheading: {
+      type: "string",
+      control: "large",
+      displayName: "Subheading (text under heading)",
+      description: "Format words: **bold**, *italic*, ***bold and italic***. Leave blank for no subheading.",
+      section: "Heading block",
+    },
+    headingSize: {
+      type: "choice",
+      displayName: "Heading size",
+      options: [
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "medium",
+      section: "Heading block",
+    },
+    headingWeight: {
+      type: "choice",
+      displayName: "Heading weight",
+      options: [
+        { value: "regular", label: "Regular" },
+        { value: "medium", label: "Medium" },
+        { value: "semibold", label: "Semibold" },
+        { value: "bold", label: "Bold" },
+      ],
+      defaultValue: "regular",
+      section: "Heading block",
+    },
+    subheadingSize: {
+      type: "choice",
+      displayName: "Subheading size",
+      options: [
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "medium",
+      section: "Heading block",
+    },
+    headingAlign: {
+      type: "choice",
+      displayName: "Heading alignment",
+      options: [
+        { value: "center", label: "Centered" },
+        { value: "left", label: "Left" },
+      ],
+      defaultValue: "center",
+      section: "Heading block",
+    },
+    headingColor: {
+      type: "color",
+      displayName: "Heading color",
+      description: "Blank = Deep Navy",
+      section: "Heading block",
+    },
+    subheadingColor: {
+      type: "color",
+      displayName: "Subheading color",
+      description: "Blank = Deep Navy",
+      section: "Heading block",
+    },
+
     // ---- Campaigns ----
     campaigns: {
       type: "array",
