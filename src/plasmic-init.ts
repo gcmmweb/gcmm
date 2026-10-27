@@ -158,6 +158,7 @@ import { ContentSection } from "@/components/ContentSection"
 import { VideoSection } from "@/components/VideoSection"
 
 import { CardGrid } from "@/components/CardGrid"
+import { CampaignTiles } from "@/components/CampaignTiles"
 import { ButtonRow } from "@/components/ButtonRow"
 
 import { TestimonialQuote } from "@/components/Testimonialquote"
@@ -2976,6 +2977,375 @@ PLASMIC.registerComponent(CardGrid, {
     },
   },
   importPath: "./components/CardGrid",
+});
+
+PLASMIC.registerComponent(CampaignTiles, {
+  name: "CampaignTiles",
+  displayName: "Campaign Tiles",
+  description:
+    "Photo tiles for the Mega City Media Campaigns with tabs (Latest, Upcoming, one per continent, All). Add campaigns with + Add item and keep the list newest first. Leave a photo, year or link blank and that part simply disappears.",
+  props: {
+    className: {
+      type: "class",
+      displayName: "CSS Class",
+    },
+
+    // ---- Campaigns ----
+    campaigns: {
+      type: "array",
+      displayName: "Campaigns",
+      description:
+        "One item per campaign, newest first (the list order is the display order). Tick 'Upcoming' for campaigns that have not happened yet.",
+      section: "Campaigns",
+      defaultValue: [
+        {
+          "name": "Egypt",
+          "year": "2025",
+          "photo": "https://site-assets.plasmic.app/15be21456a7f3e89e844418b7799d359.webp",
+          "link": "/impact/egypt",
+          "continent": "Africa"
+        },
+        {
+          "name": "Senegal",
+          "year": "2024",
+          "photo": "https://site-assets.plasmic.app/3c6c2f6072f409f64a84563e0f0715e4.webp",
+          "link": "/impact/senegal",
+          "continent": "Africa"
+        },
+        {
+          "name": "Mongolia",
+          "year": "2023",
+          "photo": "https://site-assets.plasmic.app/326d3d8352ae4a20f8f1e6cd2f91bf03.webp",
+          "link": "/impact/mongolia",
+          "continent": "Asia"
+        },
+        {
+          "name": "Ukraine",
+          "year": "2007\u20132021",
+          "photo": "https://site-assets.plasmic.app/66f18b8fd0e026c8475032303704c803.webp",
+          "link": "/impact/ukraine",
+          "continent": "Europe"
+        },
+        {
+          "name": "Tanzania",
+          "year": "2019",
+          "photo": "https://site-assets.plasmic.app/b4d678ac9ddf2a498deca6ada070beaf.webp",
+          "link": "/impact/tanzania",
+          "continent": "Africa"
+        },
+        {
+          "name": "South Sudan",
+          "year": "2018",
+          "photo": "https://site-assets.plasmic.app/fb652da5dc9b51b92221e32a8d6a7014.webp",
+          "link": "/impact/southsudan",
+          "continent": "Africa"
+        },
+        {
+          "name": "Sri Lanka",
+          "year": "2016",
+          "photo": "https://site-assets.plasmic.app/b4e086d17ac03c61a0a8c3a93ccf3ed4.webp",
+          "link": "/impact/srilanka",
+          "continent": "Asia"
+        },
+        {
+          "name": "Paraguay",
+          "year": "2016",
+          "photo": "https://site-assets.plasmic.app/03b26fc29a55fbeafea168072451364c.webp",
+          "link": "/impact/paraguay",
+          "continent": "Americas"
+        },
+        {
+          "name": "Lebanon",
+          "year": "2015",
+          "photo": "https://site-assets.plasmic.app/7c616a0ccb34eed41660f6cbea8152d8.webp",
+          "link": "/impact/lebanon",
+          "continent": "Asia"
+        },
+        {
+          "name": "Suriname",
+          "year": "2014",
+          "photo": "https://site-assets.plasmic.app/fb30d5698a9893c6bca5e6a12f38b2b4.webp",
+          "link": "/impact/suriname",
+          "continent": "Americas"
+        },
+        {
+          "name": "Iraq",
+          "year": "2013",
+          "photo": "https://site-assets.plasmic.app/e0692653ce722d08c15d1b51de3568f3.webp",
+          "link": "/impact/iraq",
+          "continent": "Asia"
+        },
+        {
+          "name": "Finland",
+          "year": "2011",
+          "photo": "https://site-assets.plasmic.app/afcf35745919b60cbc0024ff8b03582f.webp",
+          "link": "/impact/finland",
+          "continent": "Europe"
+        },
+        {
+          "name": "Nepal",
+          "year": "2010\u20132011",
+          "photo": "https://site-assets.plasmic.app/42ac6aa6c1fdf8e508206d950b65c56b.webp",
+          "link": "/impact/nepal",
+          "continent": "Asia"
+        },
+        {
+          "name": "India",
+          "year": "2011",
+          "photo": "https://site-assets.plasmic.app/a6fa0e5a2226623a687264b46c18323b.webp",
+          "link": "/impact/india",
+          "continent": "Asia"
+        },
+        {
+          "name": "Russia",
+          "year": "2003\u20132011",
+          "photo": "https://site-assets.plasmic.app/d6a0685bd62c69492fcde3beb625f1a5.webp",
+          "link": "/impact/russia",
+          "continent": "Europe"
+        },
+        {
+          "name": "Guyana",
+          "year": "2010",
+          "photo": "https://site-assets.plasmic.app/83f406be7fe2ad9b76794d6660157042.webp",
+          "link": "/impact/guyana",
+          "continent": "Americas"
+        },
+        {
+          "name": "Uzbekistan",
+          "year": "2008",
+          "photo": "https://site-assets.plasmic.app/6347c177fea876405e882ae85e10066a.webp",
+          "link": "/impact/uzbekistan",
+          "continent": "Asia"
+        },
+        {
+          "name": "Kyrgyzstan",
+          "year": "2007",
+          "photo": "https://site-assets.plasmic.app/9484d6a7d5c0543ee7c8a5ac90b59aa5.webp",
+          "link": "/impact/kyrgyzstan",
+          "continent": "Asia"
+        },
+        {
+          "name": "Kazakhstan",
+          "year": "2006",
+          "photo": "https://site-assets.plasmic.app/fbe842d64c6b3558ba14a55f90d30d3f.webp",
+          "link": "/impact/kazakhstan",
+          "continent": "Asia"
+        },
+        {
+          "name": "Israel",
+          "year": "",
+          "photo": "https://site-assets.plasmic.app/38f71e38fb17f760cf25e93cf9d776df.webp",
+          "link": "/impact/israel",
+          "continent": "Asia"
+        },
+        {
+          "name": "Cuba",
+          "year": "",
+          "photo": "https://site-assets.plasmic.app/115795fec35270b237056460f07c3f1d.webp",
+          "link": "/impact/cuba",
+          "continent": "Americas"
+        },
+        {
+          "name": "Ethiopia",
+          "year": "Early 2027",
+          "photo": "https://site-assets.plasmic.app/cad17059e4055b9445e09e0401b57dcc.webp",
+          "link": "/ethiopia-campaign-taking-shape",
+          "upcoming": true
+        },
+        {
+          "name": "Moldova",
+          "year": "Early 2027",
+          "photo": "https://site-assets.plasmic.app/30dc6c462e0bb5fb9936cbeea4c5bf8e.webp",
+          "link": "/moldova-media-campaign",
+          "upcoming": true
+        }
+      ],
+      itemType: {
+        type: "object",
+        nameFunc: (item: any) => item.name || "New campaign",
+        fields: {
+          name: {
+            type: "string",
+            displayName: "Name (country)",
+          },
+          year: {
+            type: "string",
+            displayName: "Year tag (optional)",
+            description: "Shown as a small tag on the photo. e.g. 2025, 2007-2021, or Early 2027. Leave blank for no tag.",
+          },
+          photo: {
+            type: "imageUrl",
+            displayName: "Photo",
+            description: "Use a sharp photo at least 1200 pixels wide. It is cropped to fit the tile. Leave blank for a plain color block.",
+          },
+          link: {
+            type: "string",
+            displayName: "Link (optional)",
+            description: "Where the tile goes. e.g. /impact/egypt or an article. Leave blank and the tile is not clickable.",
+          },
+          continent: {
+            type: "choice",
+            displayName: "Continent",
+            description: "Decides which continent tab it appears under. Not used for upcoming campaigns.",
+            options: [
+              { value: "Europe", label: "Europe" },
+              { value: "Asia", label: "Asia" },
+              { value: "Africa", label: "Africa" },
+              { value: "Americas", label: "Americas" },
+            ],
+          },
+          upcoming: {
+            type: "boolean",
+            displayName: "Upcoming (not finished yet)",
+            description: "Upcoming campaigns only show on the Upcoming tab.",
+          },
+        },
+      },
+    },
+    latestCount: {
+      type: "number",
+      displayName: "Tiles shown on the Latest tab",
+      description: "How many of the newest campaigns the Latest tab shows.",
+      defaultValue: 5,
+      min: 1,
+      max: 12,
+      section: "Campaigns",
+    },
+    featureFirst: {
+      type: "boolean",
+      displayName: "Make the newest tile large",
+      description: "The first tile on the Latest tab is shown large, with its button text.",
+      defaultValue: true,
+      section: "Campaigns",
+    },
+
+    // ---- Tab and button text ----
+    latestLabel: {
+      type: "string",
+      displayName: "Latest tab name",
+      defaultValue: "Latest",
+      section: "Text",
+    },
+    upcomingLabel: {
+      type: "string",
+      displayName: "Upcoming tab name",
+      defaultValue: "Upcoming",
+      section: "Text",
+    },
+    allLabel: {
+      type: "string",
+      displayName: "All tab name",
+      description: "The number of campaigns is added automatically, e.g. All 21.",
+      defaultValue: "All",
+      section: "Text",
+    },
+    largeTileText: {
+      type: "string",
+      displayName: "Large tile button text",
+      defaultValue: "See what happened",
+      section: "Text",
+    },
+    upcomingTileText: {
+      type: "string",
+      displayName: "Upcoming tile button text",
+      defaultValue: "Learn more",
+      section: "Text",
+    },
+
+    // ---- Layout ----
+    spaceY: {
+      type: "choice",
+      displayName: "Space above & below",
+      options: [
+        { value: "none", label: "None" },
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "medium",
+      section: "Layout",
+    },
+    spaceTop: {
+      type: "choice",
+      displayName: "Space above (optional)",
+      description: "Changes only the top space. Leave unset to follow 'Space above & below'.",
+      options: [
+        { value: "none", label: "None" },
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      section: "Layout",
+    },
+    spaceBottom: {
+      type: "choice",
+      displayName: "Space below (optional)",
+      description: "Changes only the bottom space. Leave unset to follow 'Space above & below'.",
+      options: [
+        { value: "none", label: "None" },
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      section: "Layout",
+    },
+    spaceX: {
+      type: "choice",
+      displayName: "Space left & right",
+      description: "Extra large is roomy on computers and shrinks automatically on phones, so you do not need to set it again for mobile.",
+      options: [
+        { value: "none", label: "None" },
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "xl",
+      section: "Layout",
+    },
+
+    // ---- Colors (pick a Style Token or any color; blank = automatic brand colors) ----
+    navyColor: {
+      type: "color",
+      displayName: "Navy (tile bars, active tab)",
+      description: "Blank = Deep Navy (#1F2D55)",
+      section: "Colors",
+    },
+    barTextColor: {
+      type: "color",
+      displayName: "Text on navy",
+      description: "Blank = White",
+      section: "Colors",
+    },
+    yearTagColor: {
+      type: "color",
+      displayName: "Year tag color",
+      description: "Blank = Teal blue (#0A6C93)",
+      section: "Colors",
+    },
+    yearTagTextColor: {
+      type: "color",
+      displayName: "Year tag text color",
+      description: "Blank = White",
+      section: "Colors",
+    },
+    upcomingTagColor: {
+      type: "color",
+      displayName: "Upcoming tag color",
+      description: "Blank = same as the year tag color",
+      section: "Colors",
+    },
+    backgroundColor: {
+      type: "color",
+      displayName: "Background color",
+      description: "Blank = transparent (the page color shows through)",
+      section: "Colors",
+    },
+  },
+  importPath: "./components/CampaignTiles",
 });
 
 PLASMIC.registerComponent(Button, {
