@@ -3052,28 +3052,28 @@ PLASMIC.registerComponent(CampaignTiles, {
           "year": "2016",
           "photo": "https://site-assets.plasmic.app/03b26fc29a55fbeafea168072451364c.webp",
           "link": "/impact/paraguay",
-          "continent": "Americas"
+          "continent": "South America & Caribbean"
         },
         {
           "name": "Lebanon",
           "year": "2015",
           "photo": "https://site-assets.plasmic.app/7c616a0ccb34eed41660f6cbea8152d8.webp",
           "link": "/impact/lebanon",
-          "continent": "Asia"
+          "continent": "Middle East"
         },
         {
           "name": "Suriname",
           "year": "2014",
           "photo": "https://site-assets.plasmic.app/fb30d5698a9893c6bca5e6a12f38b2b4.webp",
           "link": "/impact/suriname",
-          "continent": "Americas"
+          "continent": "South America & Caribbean"
         },
         {
           "name": "Iraq",
           "year": "2013",
           "photo": "https://site-assets.plasmic.app/e0692653ce722d08c15d1b51de3568f3.webp",
           "link": "/impact/iraq",
-          "continent": "Asia"
+          "continent": "Middle East"
         },
         {
           "name": "Finland",
@@ -3108,7 +3108,7 @@ PLASMIC.registerComponent(CampaignTiles, {
           "year": "2010",
           "photo": "https://site-assets.plasmic.app/83f406be7fe2ad9b76794d6660157042.webp",
           "link": "/impact/guyana",
-          "continent": "Americas"
+          "continent": "South America & Caribbean"
         },
         {
           "name": "Uzbekistan",
@@ -3136,14 +3136,14 @@ PLASMIC.registerComponent(CampaignTiles, {
           "year": "",
           "photo": "https://site-assets.plasmic.app/38f71e38fb17f760cf25e93cf9d776df.webp",
           "link": "/impact/israel",
-          "continent": "Asia"
+          "continent": "Middle East"
         },
         {
           "name": "Cuba",
           "year": "",
           "photo": "https://site-assets.plasmic.app/115795fec35270b237056460f07c3f1d.webp",
           "link": "/impact/cuba",
-          "continent": "Americas"
+          "continent": "South America & Caribbean"
         },
         {
           "name": "Ethiopia",
@@ -3185,13 +3185,14 @@ PLASMIC.registerComponent(CampaignTiles, {
           },
           continent: {
             type: "choice",
-            displayName: "Continent",
-            description: "Decides which continent tab it appears under. Not used for upcoming campaigns.",
+            displayName: "Region",
+            description: "Decides which region tab it appears under. Not used for upcoming campaigns.",
             options: [
               { value: "Europe", label: "Europe" },
               { value: "Asia", label: "Asia" },
+              { value: "Middle East", label: "Middle East" },
               { value: "Africa", label: "Africa" },
-              { value: "Americas", label: "Americas" },
+              { value: "South America & Caribbean", label: "South America & Caribbean" },
             ],
           },
           upcoming: {

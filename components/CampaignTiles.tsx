@@ -41,7 +41,7 @@ const SPACE_X: Record<SpaceChoice, string> = {
   xl: "clamp(1rem, calc(8vw - 1rem), 6rem)",
 }
 
-const CONTINENTS = ["Europe", "Asia", "Africa", "Americas"]
+const CONTINENTS = ["Europe", "Asia", "Middle East", "Africa", "South America & Caribbean"]
 
 export interface CampaignItem {
   name?: string
