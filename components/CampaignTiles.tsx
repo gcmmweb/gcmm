@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import type { CSSProperties } from "react"
 import { formatInline } from "@/lib/inline-format"
 
@@ -124,7 +124,16 @@ const CT_CSS = `
 .ct-tab:hover{background:color-mix(in srgb,var(--ct-navy) 8%,transparent)}
 .ct-tab[aria-pressed="true"]{background:var(--ct-navy);color:var(--ct-bar-text);border-color:var(--ct-navy)}
 .ct-tab:focus-visible{outline:2px solid var(--ct-navy);outline-offset:2px}
-@media (max-width:640px){.ct-tab{padding:0.4rem 0.85rem;font-size:0.82rem}}
+.ct-tabs{display:flex;flex-wrap:wrap;justify-content:center;gap:0.5rem}
+@media (max-width:640px){
+.ct-tabs{position:relative;flex-wrap:nowrap;justify-content:flex-start;gap:0.375rem;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin-left:calc(var(--ct-px) * -1);margin-right:calc(var(--ct-px) * -1);padding:3px var(--ct-px);scroll-padding-left:var(--ct-px)}
+.ct-tabs::-webkit-scrollbar{display:none}
+.ct-tabs-fade-r{-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 2.5rem),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 2.5rem),transparent)}
+.ct-tabs-fade-l{-webkit-mask-image:linear-gradient(to right,transparent,#000 2.5rem);mask-image:linear-gradient(to right,transparent,#000 2.5rem)}
+.ct-tabs-fade-lr{-webkit-mask-image:linear-gradient(to right,transparent,#000 2.5rem,#000 calc(100% - 2.5rem),transparent);mask-image:linear-gradient(to right,transparent,#000 2.5rem,#000 calc(100% - 2.5rem),transparent)}
+.ct-tab{flex:none;white-space:nowrap;min-height:38px;padding:0.35rem 0.85rem;font-size:0.82rem}
+.ct-heading{font-size:clamp(1.1rem,4.6vw,1.45rem) !important}
+}
 @media (prefers-reduced-motion:no-preference){.ct-tab{transition:background-color 200ms ease,color 200ms ease}}
 .ct-feature-photo{aspect-ratio:16/9}
 @media (min-width:1024px){.ct-feature-photo{aspect-ratio:auto;flex:1 1 auto;min-height:14rem}}
@@ -166,6 +175,35 @@ export function CampaignTiles({
   spaceX = "xl",
 }: CampaignTilesProps) {
   const [active, setActive] = useState("latest")
+
+  // Phone tab row: which edges still have more tabs to swipe to.
+  const tabsRef = useRef<HTMLDivElement>(null)
+  const [fade, setFade] = useState({ left: false, right: false })
+  const updateFade = () => {
+    const el = tabsRef.current
+    if (!el) return
+    const left = el.scrollLeft > 4
+    const right = el.scrollLeft + el.clientWidth < el.scrollWidth - 4
+    setFade((f) => (f.left === left && f.right === right ? f : { left, right }))
+  }
+  useEffect(() => {
+    updateFade()
+    window.addEventListener("resize", updateFade)
+    return () => window.removeEventListener("resize", updateFade)
+  }, [])
+  useEffect(() => {
+    updateFade()
+  })
+  const centerTab = (btn: HTMLElement) => {
+    const el = tabsRef.current
+    if (!el || el.scrollWidth <= el.clientWidth) return
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    el.scrollTo({
+      left: btn.offsetLeft - (el.clientWidth - btn.offsetWidth) / 2,
+      behavior: reduce ? "auto" : "smooth",
+    })
+  }
+  const fadeClass = fade.left && fade.right ? " ct-tabs-fade-lr" : fade.left ? " ct-tabs-fade-l" : fade.right ? " ct-tabs-fade-r" : ""
 
   const items = (campaigns || []).filter((c) => c && c.name && c.name.trim())
   if (items.length === 0) return null
@@ -337,6 +375,7 @@ export function CampaignTiles({
     fontFamily: "inherit",
     "--ct-navy": colNavy,
     "--ct-bar-text": colBarText,
+    "--ct-px": SPACE_X[spaceX],
   } as CSSProperties
 
   return (
@@ -373,6 +412,7 @@ export function CampaignTiles({
           >
             {headingText && (
               <HeadingTag
+                className="ct-heading"
                 style={{
                   margin: 0,
                   color: colHeading,
@@ -404,14 +444,23 @@ export function CampaignTiles({
         )}
 
         {tabs.length > 1 && (
-          <div role="group" aria-label="Filter campaigns" className="flex flex-wrap justify-center gap-2">
+          <div
+            ref={tabsRef}
+            role="group"
+            aria-label="Filter campaigns"
+            className={"ct-tabs" + fadeClass}
+            onScroll={updateFade}
+          >
             {tabs.map((t) => (
               <button
                 key={t.key}
                 type="button"
                 className="ct-tab"
                 aria-pressed={t.key === current}
-                onClick={() => setActive(t.key)}
+                onClick={(e) => {
+                  setActive(t.key)
+                  centerTab(e.currentTarget)
+                }}
               >
                 {t.label}
                 {t.count !== undefined && (
