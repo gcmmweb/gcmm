@@ -724,7 +724,7 @@ export function MainPageCinematic({
               }}
             >
               <div className="relative h-48 w-full overflow-hidden">
-                <img src={item.image || "/placeholder.svg"} alt={item.title} className="w-full h-full object-cover" />
+                <img src={item.image || "/placeholder.svg"} alt={item.title} loading="lazy" decoding="async" className="w-full h-full object-cover" />
               </div>
               <div className="p-6 flex flex-col flex-grow">
                 <motion.div

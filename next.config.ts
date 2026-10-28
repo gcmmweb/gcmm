@@ -48,6 +48,38 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async headers() {
+    return [
+      {
+        // Self-hosted fonts: keep for 1 year. If a font file is ever replaced,
+        // give the new file a new name.
+        source: "/fonts/:path*",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+      {
+        // Hero photo and videos: keep for 7 days. If one is replaced, give the
+        // new file a new name (for example hero-loop-v2.mp4).
+        source: "/hero-poster.jpg",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=86400" },
+        ],
+      },
+      {
+        source: "/hero-loop.mp4",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=86400" },
+        ],
+      },
+      {
+        source: "/hero-loop-mobile.mp4",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=86400" },
+        ],
+      },
+    ]
+  },
   async redirects() {
     return [
       {
