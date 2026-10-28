@@ -347,6 +347,18 @@ export function MainPageCinematic({
   // breakpoint's wrapper just shows the lightweight poster image instead.
   const [isDesktop, setIsDesktop] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [videoReady, setVideoReady] = useState(false)
+  useEffect(() => {
+    // Start the mobile hero video only after the page has finished loading,
+    // so the video download does not compete with the page itself.
+    if (document.readyState === "complete") {
+      setVideoReady(true)
+      return
+    }
+    const onLoad = () => setVideoReady(true)
+    window.addEventListener("load", onLoad)
+    return () => window.removeEventListener("load", onLoad)
+  }, [])
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 768px)")
     setIsDesktop(mq.matches)
@@ -411,63 +423,52 @@ export function MainPageCinematic({
         md:[aspect-ratio:16/9]
       "
     >
-      {/* --- MOBILE: video as a normal block at the top, white background under it --- */}
+      {/* --- MOBILE: poster photo always stays in the page; the video is layered on top after load --- */}
       <div className="block md:hidden w-full bg-white">
-        <div className="w-full aspect-[16/9]">
-          {mounted && !isDesktop ? (
-            youTubeId ? (
-              <iframe
-                className="w-full h-full"
-                src={`https://www.youtube.com/embed/${youTubeId}?autoplay=1&mute=1&loop=1&playlist=${youTubeId}&controls=0&modestbranding=1&playsinline=1`}
-                title="Background video"
-                allow="autoplay; encrypted-media; picture-in-picture"
-                allowFullScreen={false}
-              />
-            ) : vimeoId ? (
-              <iframe
-                className="w-full h-full"
-                src={`https://player.vimeo.com/video/${vimeoId}?autoplay=1&muted=1&loop=1&background=1&controls=0`}
-                title="Background video"
-                allow="autoplay; fullscreen; picture-in-picture"
-              />
-            ) : (
-              <video
-                autoPlay
-                muted
-                loop
-                playsInline
-                fetchPriority="high"
-                className="w-full h-full"
-                poster={videoPosterUrl}
-                onEnded={(e) => {
-                  // SAFETY NET (Sep 2026): reported that the native `loop`
-                  // attribute doesn't always restart playback reliably on
-                  // some mobile browsers (iOS Chrome, and inconsistently
-                  // Safari). This only fires if the browser reaches a true
-                  // "ended" state without looping on its own -- if native
-                  // loop works, this never runs, so it can't conflict with
-                  // or double-trigger anything.
-                  const v = e.currentTarget
-                  v.currentTime = 0
-                  v.play().catch(() => {})
-                }}
-              >
-                <source src={mobileSource} type="video/mp4" />
-                <img
-                  src={videoPosterUrl || "/placeholder.svg"}
-                  alt="Mountain landscape"
-                  className="w-full h-full"
-                />
-              </video>
-            )
-          ) : (
-            <img
-              src={videoPosterUrl || "/placeholder.svg"}
-              alt="Mountain landscape"
-              fetchPriority="high"
-              className="w-full h-full object-cover"
+        <div className="relative w-full aspect-[16/9]">
+          {/* The poster photo is in the first HTML and is never removed, so the
+              browser counts it as the main picture right away instead of waiting
+              for JavaScript to swap in a video. */}
+          <img
+            src={videoPosterUrl || "/placeholder.svg"}
+            alt="Mountain landscape"
+            fetchPriority="high"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          {mounted && !isDesktop && youTubeId ? (
+            <iframe
+              className="absolute inset-0 w-full h-full"
+              src={`https://www.youtube.com/embed/${youTubeId}?autoplay=1&mute=1&loop=1&playlist=${youTubeId}&controls=0&modestbranding=1&playsinline=1`}
+              title="Background video"
+              allow="autoplay; encrypted-media; picture-in-picture"
+              allowFullScreen={false}
             />
-          )}
+          ) : mounted && !isDesktop && vimeoId ? (
+            <iframe
+              className="absolute inset-0 w-full h-full"
+              src={`https://player.vimeo.com/video/${vimeoId}?autoplay=1&muted=1&loop=1&background=1&controls=0`}
+              title="Background video"
+              allow="autoplay; fullscreen; picture-in-picture"
+            />
+          ) : mounted && !isDesktop && videoReady ? (
+            <video
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="absolute inset-0 w-full h-full object-cover"
+              poster={videoPosterUrl}
+              onEnded={(e) => {
+                // Safety net: only runs if the browser reaches a true "ended"
+                // state without looping on its own.
+                const v = e.currentTarget
+                v.currentTime = 0
+                v.play().catch(() => {})
+              }}
+            >
+              <source src={mobileSource} type="video/mp4" />
+            </video>
+          ) : null}
         </div>
       </div>
 
