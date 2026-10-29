@@ -4490,7 +4490,7 @@ const getMinistryKeyFromString = (ministryString: string): string | null => {
         </div>
 
         {/* Dynamic Legend - CLICKABLE */}
-        <div className="flex flex-wrap justify-center gap-4">
+        <div className="flex flex-wrap justify-center gap-x-4 gap-y-1">
           {Object.entries(MINISTRY_COLORS).map(([key, color]) => {
             if (!MINISTRY_VISIBILITY[key]) return null
 
@@ -4509,7 +4509,7 @@ const getMinistryKeyFromString = (ministryString: string): string | null => {
                   href={url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 hover:opacity-70 transition-opacity cursor-pointer"
+                  className="flex items-center gap-2 hover:opacity-70 transition-opacity cursor-pointer min-h-[44px] px-2 md:min-h-0 md:px-0"
                 >
                   {content}
                 </a>
@@ -4517,7 +4517,7 @@ const getMinistryKeyFromString = (ministryString: string): string | null => {
             }
 
             return (
-              <div key={key} className="flex items-center gap-2">
+              <div key={key} className="flex items-center gap-2 min-h-[36px] px-2 md:min-h-0 md:px-0">
                 {content}
               </div>
             )
