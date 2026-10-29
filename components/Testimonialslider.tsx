@@ -655,6 +655,9 @@ export function TestimonialSlider({
           @media (max-width: 768px) {
             .${scopeId} .testimonial-outer-wrapper { padding: ${effMobilePadding}; }
             .${scopeId} .testimonial-content-wrapper { max-width: ${mobileMaxWidth}; }
+            .${scopeId} .tm-nav { width: 44px !important; height: 44px !important; }
+            .${scopeId} .tm-dot { width: 44px !important; height: 44px !important; padding: 17.5px !important; box-sizing: border-box !important; background-clip: content-box !important; }
+            .${scopeId} .tm-nav-row { gap: 0.25rem !important; }
           }
         `,
           }}
@@ -668,9 +671,9 @@ export function TestimonialSlider({
           >
             <div aria-live={autoPlay ? "off" : "polite"}>{slide}</div>
             {many && (showArrows || showDots) && (
-              <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "0.875rem", marginTop: "1.5rem" }}>
+              <div className="tm-nav-row" style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "0.875rem", marginTop: "1.5rem" }}>
                 {showArrows && (
-                  <button type="button" onClick={goToPrevious} style={navBtn} aria-label="Previous testimonial">
+                  <button type="button" onClick={goToPrevious} className="tm-nav" style={navBtn} aria-label="Previous testimonial">
                     <ChevronLeft size={18} />
                   </button>
                 )}
@@ -681,6 +684,7 @@ export function TestimonialSlider({
                       type="button"
                       onClick={() => goToSlide(index)}
                       aria-label={`Go to testimonial ${index + 1}`}
+                      className="tm-dot"
                       style={{
                         width: 9,
                         height: 9,
@@ -694,7 +698,7 @@ export function TestimonialSlider({
                     />
                   ))}
                 {showArrows && (
-                  <button type="button" onClick={goToNext} style={navBtn} aria-label="Next testimonial">
+                  <button type="button" onClick={goToNext} className="tm-nav" style={navBtn} aria-label="Next testimonial">
                     <ChevronRight size={18} />
                   </button>
                 )}
@@ -741,6 +745,24 @@ export function TestimonialSlider({
             }
             .${scopeId} .testimonial-arrow {
               padding: 0.25rem;
+              min-width: 44px;
+              min-height: 44px;
+              margin: 0 -6px;
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+            }
+            .${scopeId} .testimonial-dot {
+              width: 44px;
+              height: 44px;
+              padding: 18px;
+              box-sizing: border-box;
+              background-clip: content-box;
+            }
+            .${scopeId} .testimonial-dots-row {
+              gap: 0;
+              margin-left: -18px;
+              margin-right: -18px;
             }
             .${scopeId} .testimonial-arrow svg {
               width: 1.5rem;
@@ -884,12 +906,12 @@ export function TestimonialSlider({
 
             {/* Dots Navigation */}
             {showDots && orderedTestimonials.length > 1 && (
-              <div className="flex gap-2 mt-8" style={{ justifyContent: alignment === "center" ? "center" : alignment === "right" ? "flex-end" : "flex-start" }}>
+              <div className="flex gap-2 mt-8 testimonial-dots-row" style={{ justifyContent: alignment === "center" ? "center" : alignment === "right" ? "flex-end" : "flex-start" }}>
                 {orderedTestimonials.map((_, index) => (
                   <button
                     key={index}
                     onClick={() => goToSlide(index)}
-                    className="w-2 h-2 rounded-full transition-all focus:outline-none"
+                    className="w-2 h-2 rounded-full transition-all focus:outline-none testimonial-dot"
                     style={{
                       backgroundColor: index === currentIndex ? accentColor : textColor,
                       opacity: index === currentIndex ? 1 : 0.3,
