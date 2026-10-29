@@ -10,7 +10,7 @@ import { normalizeAnnouncement, type SiteAnnouncementData } from "@/lib/site-ann
 // Same CMS database and read-only token the news articles already use.
 const PLASMIC_CMS_DATABASE_ID = "bYeJVtRFReZ4zCMpwREGgw"
 // Must match the model's identifier shown in Plasmic CMS (Site Announcement model).
-const ANNOUNCEMENT_TABLE = "siteAnnouncements"
+const ANNOUNCEMENT_TABLE = "siteAnnouncement"
 
 export async function getSiteAnnouncement(): Promise<SiteAnnouncementData | null> {
   const token = process.env.PLASMIC_CMS_PUBLIC_TOKEN
