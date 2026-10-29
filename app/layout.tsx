@@ -5,6 +5,8 @@ import "./fonts.css";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { TrackClicks } from "@/components/TrackClicks";
+import { SiteAnnouncement } from "@/components/site-announcement";
+import { getSiteAnnouncement } from "@/lib/site-announcement-server";
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.gcmm.ca"),
   title: "Great Commission Media Ministries",
@@ -34,11 +36,12 @@ export const metadata: Metadata = {
   },
 };
 const isProduction = process.env.VERCEL_ENV === "production";
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const announcement = await getSiteAnnouncement();
   return (
     <html lang="en">
       <head>
@@ -99,6 +102,7 @@ export default function RootLayout({
         )}
       </head>
       <body className="antialiased">
+        <SiteAnnouncement data={announcement} />
         {children}
         <Analytics />
         <SpeedInsights />
