@@ -78,6 +78,16 @@ const MainPageCinematic = dynamic(() =>
   import("@/components/main-page-cinematic").then((m) => ({ default: m.MainPageCinematic }))
 );
 
+// Split out of MainPageCinematic (Oct 2026): the hero and the ministry cards as two
+// separate components so other sections (like an appeal band) can sit between them.
+// Lazy-loaded exactly like the original, so the hero loads the same way as before.
+const HomeHero = dynamic(() =>
+  import("@/components/home-hero").then((m) => ({ default: m.HomeHero }))
+);
+const HomeFeatureCards = dynamic(() =>
+  import("@/components/home-feature-cards").then((m) => ({ default: m.HomeFeatureCards }))
+);
+
 // REVERTED (Sep 2026): tried lazy-loading this (45KB, only used on the
 // archived /donate-test-only page) alongside the 5 other conversions below,
 // but it broke Plasmic's ability to resolve this component's registered
@@ -8725,6 +8735,461 @@ PLASMIC.registerComponent(MainPageCinematic, {
     },
   },
   importPath: "./components/main-page-cinematic",
+});
+
+// Split out of MainPageCinematic (Oct 2026). Same setting names and defaults as the
+// old component, so values can carry over in Studio (Swap component keeps matching settings).
+PLASMIC.registerComponent(HomeHero, {
+  name: "HomeHero",
+  displayName: "Home Hero",
+  description:
+    "The homepage hero: video or poster background, title, three buttons and three statistics. Same settings as the old Cinematic Main Page (hero part only).",
+  props: {
+    heroTitle: {
+      type: "string",
+      displayName: "Hero Title",
+      defaultValue: "45 Years of Global",
+      description: "First part of the main hero title",
+    },
+    heroHighlight: {
+      type: "string",
+      displayName: "Hero Highlight",
+      defaultValue: "Ministry Commitment",
+      description: "Highlighted part of the hero title",
+    },
+    heroSubtitle: {
+      type: "string",
+      displayName: "Hero Subtitle",
+      defaultValue:
+        "GCM Ministries partners with indigenous churches worldwide to share the Gospel through strategic media campaigns and compassionate outreach.",
+      description: "Subtitle text below the main hero title",
+    },
+    videoUrl: {
+      type: "string",
+      displayName: "Background Video (MP4, YouTube, or Vimeo URL)",
+      defaultValue: "/clip_1080p.mp4",
+      description:
+        "MP4 file path (e.g. /clip_1080p.mp4), YouTube URL (e.g. https://youtu.be/XXXX), or Vimeo URL (e.g. https://vimeo.com/123456789). Videos will loop automatically.",
+    },
+    mobileVideoUrl: {
+      type: "string",
+      displayName: "Mobile Background Video (MP4, lightweight)",
+      defaultValue: "/hero-loop-mobile.mp4",
+      description:
+        "Separate, smaller MP4 used only in the mobile hero (phones autoplay this instead of the full desktop video, since phones are on slower connections). Keep this well under 500KB. Leave blank to fall back to the main Background Video above.",
+    },
+    videoPosterUrl: {
+      type: "string",
+      displayName: "Video Poster URL",
+      defaultValue: "/images/skdimore.jpeg",
+      description: "URL to the video poster image (used when an MP4 file is provided).",
+    },
+    heroOverlayColor: {
+      type: "string",
+      displayName: "Hero Overlay Color",
+      defaultValue: "#00000066",
+      description: "Hex color with opacity for video overlay (e.g., #00000066, #1e3a8a80)",
+    },
+    heroTitleColor: {
+      type: "string",
+      displayName: "Hero Title Color",
+      defaultValue: "#ffffff",
+      description: "Hex color for hero title text",
+    },
+    heroSubtitleColor: {
+      type: "string",
+      displayName: "Hero Subtitle Color",
+      defaultValue: "#e5e5e5",
+      description: "Hex color for hero subtitle text",
+    },
+    button1Text: {
+      type: "string",
+      displayName: "Button 1 Text",
+      defaultValue: "Watch Our Story",
+      description: "Text displayed on the first button",
+    },
+    button1Link: {
+      type: "string",
+      displayName: "Button 1 Link",
+      defaultValue: "/videos",
+      description: "URL for the first button",
+    },
+    button1BgColor: {
+      type: "string",
+      displayName: "Button 1 Background Color",
+      defaultValue: "#ffffff",
+      description: "Hex color for first button background",
+    },
+    button1TextColor: {
+      type: "string",
+      displayName: "Button 1 Text Color",
+      defaultValue: "#000000",
+      description: "Hex color for first button text",
+    },
+    button1HoverBgColor: {
+      type: "string",
+      displayName: "Button 1 Hover Background Color",
+      defaultValue: "#e5e5e5",
+      description: "Hex color for first button background on hover",
+    },
+    button2Text: {
+      type: "string",
+      displayName: "Button 2 Text",
+      defaultValue: "Explore Ministries",
+      description: "Text displayed on the second button",
+    },
+    button2Link: {
+      type: "string",
+      displayName: "Button 2 Link",
+      defaultValue: "/ministries",
+      description: "URL for the second button",
+    },
+    button2BorderColor: {
+      type: "string",
+      displayName: "Button 2 Border Color",
+      defaultValue: "#ffffff80",
+      description: "Hex color for second button border",
+    },
+    button2TextColor: {
+      type: "string",
+      displayName: "Button 2 Text Color",
+      defaultValue: "#ffffff",
+      description: "Hex color for second button text",
+    },
+    button2HoverBgColor: {
+      type: "string",
+      displayName: "Button 2 Hover Background Color",
+      defaultValue: "#ffffff",
+      description: "Hex color for second button background on hover",
+    },
+    button2HoverTextColor: {
+      type: "string",
+      displayName: "Button 2 Hover Text Color",
+      defaultValue: "#000000",
+      description: "Hex color for second button text on hover",
+    },
+    button3Text: {
+      type: "string",
+      displayName: "Button 3 Text",
+      defaultValue: "Sign Up for Our Newsletter",
+      description: "Text displayed on the third button",
+    },
+    button3Link: {
+      type: "string",
+      displayName: "Button 3 Link",
+      defaultValue: "/signup",
+      description: "URL for the third button",
+    },
+    button3BorderColor: {
+      type: "string",
+      displayName: "Button 3 Border Color",
+      defaultValue: "#ffffff80",
+      description: "Hex color for third button border",
+    },
+    button3TextColor: {
+      type: "string",
+      displayName: "Button 3 Text Color",
+      defaultValue: "#ffffff",
+      description: "Hex color for third button text",
+    },
+    button3HoverBgColor: {
+      type: "string",
+      displayName: "Button 3 Hover Background Color",
+      defaultValue: "#ffffff",
+      description: "Hex color for third button background on hover",
+    },
+    button3HoverTextColor: {
+      type: "string",
+      displayName: "Button 3 Hover Text Color",
+      defaultValue: "#000000",
+      description: "Hex color for third button text on hover",
+    },
+    stat1: {
+      type: "number",
+      displayName: "Statistic 1 (People Reached)",
+      defaultValue: 450,
+      description: "First statistic number (People Reached in millions)",
+    },
+    stat2: {
+      type: "number",
+      displayName: "Statistic 2 (City Campaigns)",
+      defaultValue: 112,
+      description: "Second statistic number (City Campaigns)",
+    },
+    stat3: {
+      type: "number",
+      displayName: "Statistic 3 (Countries)",
+      defaultValue: 100,
+      description: "Third statistic number (Countries Served)",
+    },
+    stat1Label: {
+      type: "string",
+      displayName: "Statistic 1 Label",
+      defaultValue: "People Reached",
+      description: "Label text below Statistic 1",
+    },
+    stat1Suffix: {
+      type: "string",
+      displayName: "Statistic 1 Suffix",
+      defaultValue: "M+",
+      description: "Suffix appended to Statistic 1 number (e.g. M+, +, %)",
+    },
+    stat2Label: {
+      type: "string",
+      displayName: "Statistic 2 Label",
+      defaultValue: "City Campaigns",
+      description: "Label text below Statistic 2",
+    },
+    stat2Suffix: {
+      type: "string",
+      displayName: "Statistic 2 Suffix",
+      defaultValue: "+",
+      description: "Suffix appended to Statistic 2 number (e.g. M+, +, %)",
+    },
+    stat3Label: {
+      type: "string",
+      displayName: "Statistic 3 Label",
+      defaultValue: "Countries Served",
+      description: "Label text below Statistic 3",
+    },
+    stat3Suffix: {
+      type: "string",
+      displayName: "Statistic 3 Suffix",
+      defaultValue: "+",
+      description: "Suffix appended to Statistic 3 number (e.g. M+, +, %)",
+    },
+    statsTextColor: {
+      type: "string",
+      displayName: "Stats Text Color",
+      defaultValue: "#ffffff",
+      description: "Hex color for statistics numbers",
+    },
+    statsLabelColor: {
+      type: "string",
+      displayName: "Stats Label Color",
+      defaultValue: "#ffffffb3",
+      description: "Hex color for statistics labels",
+    },
+    statsBottomSpacingMobile: {
+      type: "number",
+      displayName: "Stats Bottom Spacing (Mobile)",
+      defaultValue: 64,
+      description: "Bottom spacing for stats section on mobile in pixels (e.g., 32, 64, 96)",
+    },
+  },
+  importPath: "./components/home-hero",
+});
+
+PLASMIC.registerComponent(HomeFeatureCards, {
+  name: "HomeFeatureCards",
+  displayName: "Home Ministry Cards",
+  description:
+    "The row of five ministry cards on the homepage. Same settings as the old Cinematic Main Page (cards part only).",
+  props: {
+    featureCardBgColor: {
+      type: "string",
+      displayName: "Feature Card Background Color",
+      defaultValue: "#ffffff",
+      description: "Hex color for feature card background",
+    },
+    featureCardBorderColor: {
+      type: "string",
+      displayName: "Feature Card Border Color",
+      defaultValue: "#e5e7eb",
+      description: "Hex color for feature card border",
+    },
+    featureCardIconBgColor: {
+      type: "string",
+      displayName: "Feature Card Icon Background Color",
+      defaultValue: "#f1f5f9",
+      description: "Hex color for feature card icon background",
+    },
+    featureCardIconColor: {
+      type: "string",
+      displayName: "Feature Card Icon Color",
+      defaultValue: "#334155",
+      description: "Hex color for feature card icon",
+    },
+    featureCardTitleColor: {
+      type: "string",
+      displayName: "Feature Card Title Color",
+      defaultValue: "#0f172a",
+      description: "Hex color for feature card title",
+    },
+    featureCardSubtitleColor: {
+      type: "string",
+      displayName: "Feature Card Subtitle Color",
+      defaultValue: "#475569",
+      description: "Hex color for feature card subtitle",
+    },
+    featureCardDescriptionColor: {
+      type: "string",
+      displayName: "Feature Card Description Color",
+      defaultValue: "#475569",
+      description: "Hex color for feature card description",
+    },
+    featureCardButtonBorderColor: {
+      type: "string",
+      displayName: "Feature Card Button Border Color",
+      defaultValue: "#e5e7eb",
+      description: "Hex color for feature card button border",
+    },
+    featureCardButtonTextColor: {
+      type: "string",
+      displayName: "Feature Card Button Text Color",
+      defaultValue: "#000000",
+      description: "Hex color for feature card button text",
+    },
+    featureCardButtonHoverBgColor: {
+      type: "string",
+      displayName: "Feature Card Button Hover Background Color",
+      defaultValue: "#f9fafb",
+      description: "Hex color for feature card button background on hover",
+    },
+    contentSectionBgColor: {
+      type: "string",
+      displayName: "Content Section Background Color",
+      defaultValue: "#ffffff",
+      description: "Hex color for content section background",
+    },
+    contentSectionPaddingY: {
+      type: "number",
+      displayName: "Content Section Vertical Padding",
+      defaultValue: 96,
+      description: "Vertical padding for content section in pixels (e.g., 64, 96, 128)",
+    },
+    feature1Title: {
+      type: "string",
+      displayName: "Feature 1 - Title",
+      defaultValue: "Mega City Media Campaigns",
+    },
+    feature1Subtitle: {
+      type: "string",
+      displayName: "Feature 1 - Subtitle",
+      defaultValue: "How do you evangelize to a whole city?",
+    },
+    feature1Description: {
+      type: "string",
+      displayName: "Feature 1 - Description",
+      defaultValue:
+        "Through 30-day Mega City Media Campaigns, GCMM partners with local churches to bring evangelism to an unprecedented scale\u2014saturating cities with the Gospel through TV, radio, billboards, and digital media, fulfilling the Great Commission, one city at a time.",
+    },
+    feature1Image: {
+      type: "imageUrl",
+      displayName: "Feature 1 - Image",
+      defaultValue: "/city-media-campaign-billboard.jpg",
+    },
+    feature1Link: {
+      type: "string",
+      displayName: "Feature 1 - Link",
+      defaultValue: "/campaigns",
+    },
+    feature2Title: {
+      type: "string",
+      displayName: "Feature 2 - Title",
+      defaultValue: "Media Outreach to the 10/40 Window",
+    },
+    feature2Subtitle: {
+      type: "string",
+      displayName: "Feature 2 - Subtitle",
+      defaultValue: "Reaching Hearts Behind Closed Doors",
+    },
+    feature2Description: {
+      type: "string",
+      displayName: "Feature 2 - Description",
+      defaultValue:
+        "GCMM reaches millions in the Arabic world through satellite TV and social media\u2014broadcasting in 7 languages via 18 satellites. With 1,300 programs produced annually and 200,000 monthly viewer interactions, we provide personal discipleship and partner with underground churches.",
+    },
+    feature2Image: {
+      type: "imageUrl",
+      displayName: "Feature 2 - Image",
+      defaultValue: "/satellite-dish-broadcasting.jpg",
+    },
+    feature2Link: {
+      type: "string",
+      displayName: "Feature 2 - Link",
+      defaultValue: "/arabic-ministry",
+    },
+    feature3Title: {
+      type: "string",
+      displayName: "Feature 3 - Title",
+      defaultValue: "Recovery from Trauma",
+    },
+    feature3Subtitle: {
+      type: "string",
+      displayName: "Feature 3 - Subtitle",
+      defaultValue: "Restoring Souls in a Wounded Nation",
+    },
+    feature3Description: {
+      type: "string",
+      displayName: "Feature 3 - Description",
+      defaultValue:
+        "GCMM's Christ-centred book, Recovery from Trauma, brings healing through Psalm 23, expert guidance, and real-life stories. Created with Ukrainian Christian psychologists, it offers peace to a hurting nation\u2014meeting spiritual hunger with Gospel hope.",
+    },
+    feature3Image: {
+      type: "imageUrl",
+      displayName: "Feature 3 - Image",
+      defaultValue: "/healing-book-recovery.jpg",
+    },
+    feature3Link: {
+      type: "string",
+      displayName: "Feature 3 - Link",
+      defaultValue: "/trauma-recovery",
+    },
+    feature4Title: {
+      type: "string",
+      displayName: "Feature 4 - Title",
+      defaultValue: "Israel Jewish Ministry",
+    },
+    feature4Subtitle: {
+      type: "string",
+      displayName: "Feature 4 - Subtitle",
+      defaultValue: "Blessing Israel, Reaching the Jewish People",
+    },
+    feature4Description: {
+      type: "string",
+      displayName: "Feature 4 - Description",
+      defaultValue:
+        "GCMM is committed to blessing Israel and the Jewish people through media outreach, humanitarian aid, and education. We produce media for Jews in Israel and beyond, support refugees and new immigrants, and host healing camps for youth.",
+    },
+    feature4Image: {
+      type: "imageUrl",
+      displayName: "Feature 4 - Image",
+      defaultValue: "/jerusalem-israel-ministry.jpg",
+    },
+    feature4Link: {
+      type: "string",
+      displayName: "Feature 4 - Link",
+      defaultValue: "/israel-ministry",
+    },
+    feature5Title: {
+      type: "string",
+      displayName: "Feature 5 - Title",
+      defaultValue: "Humanitarian Aid to Ukraine",
+    },
+    feature5Subtitle: {
+      type: "string",
+      displayName: "Feature 5 - Subtitle",
+      defaultValue: "Faith in Action: Serving Ukraine in Its Darkest Hour",
+    },
+    feature5Description: {
+      type: "string",
+      displayName: "Feature 5 - Description",
+      defaultValue:
+        "In war-torn Ukraine, GCMM brings life-saving aid and the love of Christ. We've delivered over 5,000 tons of food, medical supplies, ambulances, and 12,000 wood-burning stoves, working through local churches and 400 chaplains.",
+    },
+    feature5Image: {
+      type: "imageUrl",
+      displayName: "Feature 5 - Image",
+      defaultValue: "/humanitarian-aid-supplies.jpg",
+    },
+    feature5Link: {
+      type: "string",
+      displayName: "Feature 5 - Link",
+      defaultValue: "/ukraine-aid",
+    },
+  },
+  importPath: "./components/home-feature-cards",
 });
 
 
