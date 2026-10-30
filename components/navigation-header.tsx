@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { motion, AnimatePresence } from "framer-motion"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { X, Menu, Search, ChevronDown } from "lucide-react"
 import { useRouter } from "next/navigation"
 
@@ -119,6 +119,28 @@ export function NavigationHeader({
   const [mobileOpenDropdown, setMobileOpenDropdown] = useState<string | null>(null)
   const router = useRouter()
 
+  // After scrolling down a little, the header gets slimmer (smaller logo, less padding).
+  // The two different numbers (80 to shrink, 20 to grow back) stop it from flickering
+  // when the page is scrolled right at the edge.
+  const [isScrolled, setIsScrolled] = useState(false)
+  useEffect(() => {
+    let waiting = false
+    const update = () => {
+      const y = window.scrollY
+      setIsScrolled((was) => (was ? y > 20 : y > 80))
+      waiting = false
+    }
+    const onScroll = () => {
+      if (!waiting) {
+        waiting = true
+        window.requestAnimationFrame(update)
+      }
+    }
+    update()
+    window.addEventListener("scroll", onScroll, { passive: true })
+    return () => window.removeEventListener("scroll", onScroll)
+  }, [])
+
   const visibilityMap = {
     Home: showHome,
     "Who we are": showWhoWeAre,
@@ -207,11 +229,21 @@ export function NavigationHeader({
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
-        style={{ backgroundColor: headerBackgroundColor }}
-        className={cn(`border-b border-black sticky top-0 z-50 backdrop-blur-md`, className)}
+        data-site-header
+        style={{ backgroundColor: headerBackgroundColor, gridColumn: "1 / -1" }}
+        className={cn(
+          `border-b border-black sticky top-0 z-50 backdrop-blur-md transition-shadow duration-200 motion-reduce:transition-none`,
+          isScrolled && "shadow-md",
+          className,
+        )}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-5">
+          <div
+            className={cn(
+              "flex justify-between items-center transition-[padding] duration-200 motion-reduce:transition-none",
+              isScrolled ? "py-2" : "py-5",
+            )}
+          >
             {/* Logo */}
             <motion.div
               initial={{ opacity: 0 }}
@@ -231,8 +263,12 @@ export function NavigationHeader({
                   alt={logoAlt}
                   width={logoWidth}
                   height={logoHeight}
-                  className="h-auto object-contain"
-                  style={{ maxWidth: "calc(100vw - 130px)" }}
+                  className="h-auto object-contain motion-reduce:transition-none"
+                  style={{
+                    maxWidth: "calc(100vw - 130px)",
+                    width: isScrolled ? Math.round(logoWidth * 0.7) : logoWidth,
+                    transition: "width 200ms ease",
+                  }}
                 />
               </Link>
             </motion.div>

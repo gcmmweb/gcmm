@@ -24,3 +24,12 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* STICKY HEADER FIX (Oct 2026)
+   Plasmic wraps the header in a box that is only as tall as the header, which
+   stops position: sticky from working. This makes that box transparent to the
+   layout so the header can stay at the top of the whole page while scrolling.
+   The header marks itself with data-site-header (components/navigation-header.tsx). */
+div:has(> nav[data-site-header]) {
+  display: contents;
+}
