@@ -8748,26 +8748,25 @@ PLASMIC.registerComponent(HomeHero, {
     heroTitle: {
       type: "string",
       displayName: "Hero Title",
-      defaultValue: "45 Years of Global",
+      defaultValue: "Media Is the Tool. ",
       description: "First part of the main hero title",
     },
     heroHighlight: {
       type: "string",
       displayName: "Hero Highlight",
-      defaultValue: "Ministry Commitment",
+      defaultValue: "Jesus Is the Hope.",
       description: "Highlighted part of the hero title",
     },
     heroSubtitle: {
       type: "string",
       displayName: "Hero Subtitle",
-      defaultValue:
-        "GCM Ministries partners with indigenous churches worldwide to share the Gospel through strategic media campaigns and compassionate outreach.",
+      defaultValue: "Through media, compassion, and follow-up, GCMM helps people encounter Christ in their own language and moment of need \u2014 where traditional ministry is difficult, restricted, or out of reach.",
       description: "Subtitle text below the main hero title",
     },
     videoUrl: {
       type: "string",
       displayName: "Background Video (MP4, YouTube, or Vimeo URL)",
-      defaultValue: "/clip_1080p.mp4",
+      defaultValue: "/hero-loop.mp4",
       description:
         "MP4 file path (e.g. /clip_1080p.mp4), YouTube URL (e.g. https://youtu.be/XXXX), or Vimeo URL (e.g. https://vimeo.com/123456789). Videos will loop automatically.",
     },
@@ -8781,7 +8780,7 @@ PLASMIC.registerComponent(HomeHero, {
     videoPosterUrl: {
       type: "string",
       displayName: "Video Poster URL",
-      defaultValue: "/images/skdimore.jpeg",
+      defaultValue: "/hero-poster.jpg",
       description: "URL to the video poster image (used when an MP4 file is provided).",
     },
     heroOverlayColor: {
@@ -8805,13 +8804,13 @@ PLASMIC.registerComponent(HomeHero, {
     button1Text: {
       type: "string",
       displayName: "Button 1 Text",
-      defaultValue: "Watch Our Story",
+      defaultValue: "Our Story",
       description: "Text displayed on the first button",
     },
     button1Link: {
       type: "string",
       displayName: "Button 1 Link",
-      defaultValue: "/videos",
+      defaultValue: "/history",
       description: "URL for the first button",
     },
     button1BgColor: {
@@ -8835,13 +8834,13 @@ PLASMIC.registerComponent(HomeHero, {
     button2Text: {
       type: "string",
       displayName: "Button 2 Text",
-      defaultValue: "Explore Ministries",
+      defaultValue: "Three Continents Vision",
       description: "Text displayed on the second button",
     },
     button2Link: {
       type: "string",
       displayName: "Button 2 Link",
-      defaultValue: "/ministries",
+      defaultValue: "/50",
       description: "URL for the second button",
     },
     button2BorderColor: {
@@ -8871,13 +8870,13 @@ PLASMIC.registerComponent(HomeHero, {
     button3Text: {
       type: "string",
       displayName: "Button 3 Text",
-      defaultValue: "Sign Up for Our Newsletter",
+      defaultValue: "Give Today",
       description: "Text displayed on the third button",
     },
     button3Link: {
       type: "string",
       displayName: "Button 3 Link",
-      defaultValue: "/signup",
+      defaultValue: "/donate",
       description: "URL for the third button",
     },
     button3BorderColor: {
@@ -8907,19 +8906,19 @@ PLASMIC.registerComponent(HomeHero, {
     stat1: {
       type: "number",
       displayName: "Statistic 1 (People Reached)",
-      defaultValue: 450,
+      defaultValue: 500,
       description: "First statistic number (People Reached in millions)",
     },
     stat2: {
       type: "number",
       displayName: "Statistic 2 (City Campaigns)",
-      defaultValue: 112,
+      defaultValue: 110,
       description: "Second statistic number (City Campaigns)",
     },
     stat3: {
       type: "number",
       displayName: "Statistic 3 (Countries)",
-      defaultValue: 100,
+      defaultValue: 45,
       description: "Third statistic number (Countries Served)",
     },
     stat1Label: {
@@ -9066,127 +9065,122 @@ PLASMIC.registerComponent(HomeFeatureCards, {
     feature1Subtitle: {
       type: "string",
       displayName: "Feature 1 - Subtitle",
-      defaultValue: "How do you evangelize to a whole city?",
+      defaultValue: "Help an entire city encounter the message of Christ.",
     },
     feature1Description: {
       type: "string",
       displayName: "Feature 1 - Description",
-      defaultValue:
-        "Through 30-day Mega City Media Campaigns, GCMM partners with local churches to bring evangelism to an unprecedented scale\u2014saturating cities with the Gospel through TV, radio, billboards, and digital media, fulfilling the Great Commission, one city at a time.",
+      defaultValue: "",
     },
     feature1Image: {
       type: "imageUrl",
       displayName: "Feature 1 - Image",
-      defaultValue: "/city-media-campaign-billboard.jpg",
+      defaultValue: "https://site-assets.plasmic.app/3c6c2f6072f409f64a84563e0f0715e4.webp",
     },
     feature1Link: {
       type: "string",
       displayName: "Feature 1 - Link",
-      defaultValue: "/campaigns",
+      defaultValue: "/megacitymediacampaigns",
     },
     feature2Title: {
       type: "string",
       displayName: "Feature 2 - Title",
-      defaultValue: "Media Outreach to the 10/40 Window",
+      defaultValue: "Satellite Media Outreach in the 10/40 Window",
     },
     feature2Subtitle: {
       type: "string",
       displayName: "Feature 2 - Subtitle",
-      defaultValue: "Reaching Hearts Behind Closed Doors",
+      defaultValue: "Bring Gospel to seekers beyond ordinary access.",
     },
     feature2Description: {
       type: "string",
       displayName: "Feature 2 - Description",
-      defaultValue:
-        "GCMM reaches millions in the Arabic world through satellite TV and social media\u2014broadcasting in 7 languages via 18 satellites. With 1,300 programs produced annually and 200,000 monthly viewer interactions, we provide personal discipleship and partner with underground churches.",
+      defaultValue: "",
     },
     feature2Image: {
       type: "imageUrl",
       displayName: "Feature 2 - Image",
-      defaultValue: "/satellite-dish-broadcasting.jpg",
+      defaultValue: "https://site-assets.plasmic.app/0bc259f4fe692a5c053db674009e935e.webp",
     },
     feature2Link: {
       type: "string",
       displayName: "Feature 2 - Link",
-      defaultValue: "/arabic-ministry",
+      defaultValue: "/10-40-media-outreach",
     },
     feature3Title: {
       type: "string",
       displayName: "Feature 3 - Title",
-      defaultValue: "Recovery from Trauma",
+      defaultValue: "Media Outreach in Ukraine",
     },
     feature3Subtitle: {
       type: "string",
       displayName: "Feature 3 - Subtitle",
-      defaultValue: "Restoring Souls in a Wounded Nation",
+      defaultValue: "Bring Gospel & trauma resources to people living through the war.",
     },
     feature3Description: {
       type: "string",
       displayName: "Feature 3 - Description",
-      defaultValue:
-        "GCMM's Christ-centred book, Recovery from Trauma, brings healing through Psalm 23, expert guidance, and real-life stories. Created with Ukrainian Christian psychologists, it offers peace to a hurting nation\u2014meeting spiritual hunger with Gospel hope.",
+      defaultValue: "",
     },
     feature3Image: {
       type: "imageUrl",
       displayName: "Feature 3 - Image",
-      defaultValue: "/healing-book-recovery.jpg",
+      defaultValue: "https://site-assets.plasmic.app/c0e492a8ebfcddf9273d44e09ad742fc.webp",
     },
     feature3Link: {
       type: "string",
       displayName: "Feature 3 - Link",
-      defaultValue: "/trauma-recovery",
+      defaultValue: "/media-outreach-in-ukraine",
     },
     feature4Title: {
       type: "string",
       displayName: "Feature 4 - Title",
-      defaultValue: "Israel Jewish Ministry",
+      defaultValue: "Jewish Ministry",
     },
     feature4Subtitle: {
       type: "string",
       displayName: "Feature 4 - Subtitle",
-      defaultValue: "Blessing Israel, Reaching the Jewish People",
+      defaultValue: "Bless the people of Israel through trauma resources, media, and compassionate care.",
     },
     feature4Description: {
       type: "string",
       displayName: "Feature 4 - Description",
-      defaultValue:
-        "GCMM is committed to blessing Israel and the Jewish people through media outreach, humanitarian aid, and education. We produce media for Jews in Israel and beyond, support refugees and new immigrants, and host healing camps for youth.",
+      defaultValue: "",
     },
     feature4Image: {
       type: "imageUrl",
       displayName: "Feature 4 - Image",
-      defaultValue: "/jerusalem-israel-ministry.jpg",
+      defaultValue: "https://site-assets.plasmic.app/90ab16a2c52e4afbd1d9683f2d4158e8.webp",
     },
     feature4Link: {
       type: "string",
       displayName: "Feature 4 - Link",
-      defaultValue: "/israel-ministry",
+      defaultValue: "/israel-jewish-ministries",
     },
     feature5Title: {
       type: "string",
       displayName: "Feature 5 - Title",
-      defaultValue: "Humanitarian Aid to Ukraine",
+      defaultValue: "UkraineAid",
     },
     feature5Subtitle: {
       type: "string",
       displayName: "Feature 5 - Subtitle",
-      defaultValue: "Faith in Action: Serving Ukraine in Its Darkest Hour",
+      defaultValue: "Help families survive the realities of war with wood-burning stoves, medical supplies, and food.",
     },
     feature5Description: {
       type: "string",
       displayName: "Feature 5 - Description",
-      defaultValue:
-        "In war-torn Ukraine, GCMM brings life-saving aid and the love of Christ. We've delivered over 5,000 tons of food, medical supplies, ambulances, and 12,000 wood-burning stoves, working through local churches and 400 chaplains.",
+      defaultValue: "",
     },
     feature5Image: {
       type: "imageUrl",
       displayName: "Feature 5 - Image",
-      defaultValue: "/humanitarian-aid-supplies.jpg",
+      defaultValue: "https://site-assets.plasmic.app/923d7350db73b3af668b0311dec7c4e4.webp",
     },
     feature5Link: {
       type: "string",
       displayName: "Feature 5 - Link",
-      defaultValue: "/ukraine-aid",
+      defaultValue: "/ukraineaid",
     },
   },
   importPath: "./components/home-feature-cards",
