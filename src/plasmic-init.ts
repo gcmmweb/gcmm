@@ -88,6 +88,11 @@ const HomeFeatureCards = dynamic(() =>
   import("@/components/home-feature-cards").then((m) => ({ default: m.HomeFeatureCards }))
 );
 
+// Appeal Band (Oct 2026): reusable full-width photo band for campaign appeals.
+const AppealBand = dynamic(() =>
+  import("@/components/appeal-band").then((m) => ({ default: m.AppealBand }))
+);
+
 // REVERTED (Sep 2026): tried lazy-loading this (45KB, only used on the
 // archived /donate-test-only page) alongside the 5 other conversions below,
 // but it broke Plasmic's ability to resolve this component's registered
@@ -9184,6 +9189,138 @@ PLASMIC.registerComponent(HomeFeatureCards, {
     },
   },
   importPath: "./components/home-feature-cards",
+});
+
+// Appeal Band (Oct 2026).
+PLASMIC.registerComponent(AppealBand, {
+  name: "AppealBand",
+  displayName: "Appeal Band",
+  description:
+    "A full-width photo band for a campaign appeal: photo background with a dark layer, a small label, a headline, up to two short paragraphs, a main button and a text link. Made for the homepage (between the hero and the ministry cards) but reusable for any campaign.",
+  props: {
+    eyebrow: {
+      type: "string",
+      displayName: "Label (small text above the headline)",
+      defaultValue: "UKRAINEAID WINTER APPEAL",
+      description: "Short label in capitals, up to about 30 characters. Leave blank to hide it.",
+    },
+    headline: {
+      type: "string",
+      control: "large",
+      displayName: "Headline",
+      defaultValue: "A single stove changes what winter looks like for a family.",
+      description: "The big line. Up to about 70 characters reads best.",
+    },
+    bodyMain: {
+      type: "string",
+      control: "large",
+      displayName: "Paragraph 1",
+      defaultValue:
+        "Freezing temperatures are only weeks away. Your gift of $150 will provide a wood-burning stove to families in Ukraine.",
+      description: "Main message. Up to about 150 characters. Leave blank to hide it.",
+    },
+    bodySecondary: {
+      type: "string",
+      control: "large",
+      displayName: "Paragraph 2 (optional)",
+      defaultValue:
+        "These stoves also open the door for ongoing relationships with our local teams, who share the hope of the Gospel.",
+      description: "Smaller second paragraph. Up to about 150 characters. Leave blank to hide it.",
+    },
+    buttonText: {
+      type: "string",
+      displayName: "Main button text",
+      defaultValue: "Help a Family Stay Warm",
+      description: "Up to about 28 characters. The arrow is added for you.",
+    },
+    buttonLink: {
+      type: "string",
+      displayName: "Main button link",
+      defaultValue: "/donate",
+      description:
+        "Where the button goes. Start with / for a page on this site (for example /donate) or https:// for another site. The button is hidden if this is blank.",
+    },
+    linkText: {
+      type: "string",
+      displayName: "Second link text (optional)",
+      defaultValue: "About UkraineAid",
+      description: "Underlined text link next to the button. Leave blank to hide it.",
+    },
+    linkUrl: {
+      type: "string",
+      displayName: "Second link address",
+      defaultValue: "/ukraineaid",
+      description: "Where the second link goes. Start with / or https://.",
+    },
+    backgroundImage: {
+      type: "imageUrl",
+      displayName: "Background photo",
+      defaultValue: "https://site-assets.plasmic.app/923d7350db73b3af668b0311dec7c4e4.webp",
+      description:
+        "The full-width photo behind the text. Wide photos work best (at least 1600 pixels across). The text sits on a dark layer so any photo stays readable.",
+    },
+    imageFocus: {
+      type: "choice",
+      displayName: "Photo focus (which part stays in view)",
+      options: [
+        { value: "center", label: "Center" },
+        { value: "top", label: "Top" },
+        { value: "bottom", label: "Bottom" },
+        { value: "left", label: "Left" },
+        { value: "right", label: "Right" },
+      ],
+      defaultValue: "center",
+      description: "On narrow screens the photo is cropped. Choose the part that matters most.",
+    },
+    overlay: {
+      type: "choice",
+      displayName: "Dark layer over the photo",
+      options: [
+        { value: "light", label: "Light" },
+        { value: "medium", label: "Medium" },
+        { value: "strong", label: "Strong" },
+      ],
+      defaultValue: "medium",
+      description: "Darker makes the text easier to read. Use Strong for bright photos.",
+    },
+    height: {
+      type: "choice",
+      displayName: "Height",
+      options: [
+        { value: "compact", label: "Compact" },
+        { value: "standard", label: "Standard" },
+        { value: "tall", label: "Tall" },
+      ],
+      defaultValue: "standard",
+      description: "How much space there is above and below the text.",
+    },
+    align: {
+      type: "choice",
+      displayName: "Text position",
+      options: [
+        { value: "left", label: "Left" },
+        { value: "center", label: "Centered" },
+      ],
+      defaultValue: "left",
+    },
+    accent: {
+      type: "choice",
+      displayName: "Accent color (label and button)",
+      options: [
+        { value: "gold", label: "Gold" },
+        { value: "white", label: "White" },
+      ],
+      defaultValue: "gold",
+    },
+    endDate: {
+      type: "string",
+      displayName: "End date (optional)",
+      defaultValue: "",
+      description:
+        "Format: 2027-03-31. The band hides itself after the end of that day (Pacific time). Leave blank to keep it showing. Note: after this date the band also disappears here in Studio.",
+    },
+  },
+  importPath: "./components/appeal-band",
 });
 
 
