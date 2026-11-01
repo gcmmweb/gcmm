@@ -47,6 +47,28 @@ const ACCENT: Record<Accent, { color: string }> = {
 const NAVY_TEXT = "#1E2B45"
 const OVERLAY_RGB = "12, 22, 45"
 
+// Optional percentage boxes in Studio (0 to 100). Blank = not used, the dropdowns apply instead.
+function toPercent(value: unknown): number | null {
+  const n = typeof value === "number" ? value : typeof value === "string" && value.trim() !== "" ? Number(value) : NaN
+  if (!Number.isFinite(n)) return null
+  return Math.min(100, Math.max(0, n))
+}
+
+// Turns a picked color (#rgb, #rrggbb or rgb()/rgba()) into "r, g, b". Blank or unreadable = null (navy is used).
+function parseRgb(value: unknown): string | null {
+  const v = typeof value === "string" ? value.trim() : ""
+  if (!v) return null
+  const hex = /^#([0-9a-f]{6}|[0-9a-f]{3})(?:[0-9a-f]{2})?$/i.exec(v)
+  if (hex) {
+    let h = hex[1]
+    if (h.length === 3) h = h.split("").map((c) => c + c).join("")
+    return `${parseInt(h.slice(0, 2), 16)}, ${parseInt(h.slice(2, 4), 16)}, ${parseInt(h.slice(4, 6), 16)}`
+  }
+  const m = /^rgba?\(\s*(\d{1,3})\s*[, ]\s*(\d{1,3})\s*[, ]\s*(\d{1,3})/i.exec(v)
+  if (m) return `${Math.min(255, Number(m[1]))}, ${Math.min(255, Number(m[2]))}, ${Math.min(255, Number(m[3]))}`
+  return null
+}
+
 // Only links that start with /, https://, http:// or mailto: are used.
 function safeLink(value: string | undefined): string {
   const v = (value || "").trim()
@@ -82,7 +104,11 @@ export function AppealBand({
   linkUrl = "/ukraineaid",
   backgroundImage = "https://site-assets.plasmic.app/923d7350db73b3af668b0311dec7c4e4.webp",
   imageFocus = "center",
+  focusX,
+  focusY,
   overlay = "medium",
+  overlayPercent,
+  overlayColor,
   height = "standard",
   align = "left",
   accent = "gold",
@@ -99,7 +125,11 @@ export function AppealBand({
   linkUrl?: string
   backgroundImage?: string
   imageFocus?: Focus
+  focusX?: number
+  focusY?: number
   overlay?: Overlay
+  overlayPercent?: number
+  overlayColor?: string
   height?: Height
   align?: Align
   accent?: Accent
@@ -113,13 +143,24 @@ export function AppealBand({
   }, [endsAt])
   if (isExpired(endsAt) || expiredInBrowser) return null
 
-  const [left, right] = OVERLAY[overlay] ?? OVERLAY.medium
-  const even = (left + right) / 2 + 0.05
+  const pct = toPercent(overlayPercent)
+  const [presetLeft, presetRight] = OVERLAY[overlay] ?? OVERLAY.medium
+  // A typed percentage wins over the Light / Medium / Strong choice.
+  // Computers: that strength next to the text, fading to about half on the far side. Phones: even.
+  const left = pct !== null ? Math.round(pct * 10) / 1000 : presetLeft
+  const right = pct !== null ? left * 0.5 : presetRight
+  const even = pct !== null ? left : (left + right) / 2 + 0.05
+  const phoneAlpha = pct !== null ? left : Math.max(left, even)
+  const rgb = parseRgb(overlayColor) ?? OVERLAY_RGB
   const pad = PADDING[height] ?? PADDING.standard
   const centered = align === "center"
   const accentColor = (ACCENT[accent] ?? ACCENT.gold).color
   const mainHref = safeLink(buttonLink)
   const secondHref = safeLink(linkUrl)
+  // Typed focus percentages win over the Center / Top / Bottom / Left / Right choice.
+  const px = toPercent(focusX)
+  const py = toPercent(focusY)
+  const objectPosition = px !== null || py !== null ? `${px ?? 50}% ${py ?? 50}%` : FOCUS[imageFocus] ?? "center"
 
   return (
     <section className={cn("relative w-full overflow-hidden text-white", className)} aria-label={eyebrow || headline}>
@@ -131,7 +172,7 @@ export function AppealBand({
           loading="lazy"
           decoding="async"
           className="absolute inset-0 h-full w-full object-cover"
-          style={{ objectPosition: FOCUS[imageFocus] ?? "center" }}
+          style={{ objectPosition }}
         />
       ) : (
         <div className="absolute inset-0" style={{ backgroundColor: "#1F2D55" }} />
@@ -142,11 +183,11 @@ export function AppealBand({
         className="absolute inset-0 hidden md:block"
         style={{
           background: centered
-            ? `rgba(${OVERLAY_RGB}, ${even})`
-            : `linear-gradient(90deg, rgba(${OVERLAY_RGB}, ${left}) 0%, rgba(${OVERLAY_RGB}, ${left}) 45%, rgba(${OVERLAY_RGB}, ${right}) 100%)`,
+            ? `rgba(${rgb}, ${even})`
+            : `linear-gradient(90deg, rgba(${rgb}, ${left}) 0%, rgba(${rgb}, ${left}) 45%, rgba(${rgb}, ${right}) 100%)`,
         }}
       />
-      <div className="absolute inset-0 md:hidden" style={{ background: `rgba(${OVERLAY_RGB}, ${Math.max(left, even)})` }} />
+      <div className="absolute inset-0 md:hidden" style={{ background: `rgba(${rgb}, ${phoneAlpha})` }} />
 
       <div className="relative mx-auto max-w-[1160px] px-6" style={{ paddingTop: pad, paddingBottom: pad }}>
         <div className={cn("max-w-[560px]", centered && "mx-auto text-center")}>

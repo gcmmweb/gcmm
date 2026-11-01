@@ -9272,6 +9272,18 @@ PLASMIC.registerComponent(AppealBand, {
       defaultValue: "center",
       description: "On narrow screens the photo is cropped. Choose the part that matters most.",
     },
+    focusX: {
+      type: "number",
+      displayName: "Photo focus across (%, optional)",
+      description:
+        "Type 0 to 100: 0 = far left, 50 = middle, 100 = far right. Leave blank to use the Photo focus choice above. Example: 70 keeps something right of center in view.",
+    },
+    focusY: {
+      type: "number",
+      displayName: "Photo focus up and down (%, optional)",
+      description:
+        "Type 0 to 100: 0 = top, 50 = middle, 100 = bottom. Leave blank to use the Photo focus choice above.",
+    },
     overlay: {
       type: "choice",
       displayName: "Dark layer over the photo",
@@ -9282,6 +9294,17 @@ PLASMIC.registerComponent(AppealBand, {
       ],
       defaultValue: "medium",
       description: "Darker makes the text easier to read. Use Strong for bright photos.",
+    },
+    overlayPercent: {
+      type: "number",
+      displayName: "Dark layer strength (%, optional)",
+      description:
+        "Type 0 to 100, for example 40 for light or 85 for dark. Leave blank to use the Light / Medium / Strong choice above. On computers it fades to about half on the far side from the text; on phones it is even.",
+    },
+    overlayColor: {
+      type: "color",
+      displayName: "Dark layer color (optional)",
+      description: "Pick a color for the layer over the photo. Blank = deep navy.",
     },
     height: {
       type: "choice",
