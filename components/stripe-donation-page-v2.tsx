@@ -509,6 +509,19 @@ export function StripeDonationPage({
 
   const donationRef = useRef<HTMLElement>(null)
 
+  // Campaign preselect (Nov 2026): /donate?campaign=ukraineaid opens with that campaign chosen.
+  // It is matched on the "Campaign ID" in Plasmic. An unknown or missing value is ignored.
+  // The donor can still change it, and no amount is ever filled in.
+  useEffect(() => {
+    const wanted = (new URLSearchParams(window.location.search).get("campaign") || "").trim().toLowerCase()
+    if (!wanted) return
+    const index = campaigns.findIndex((c) => (c.campaignId || "").trim().toLowerCase() === wanted)
+    if (index < 0) return
+    setDonationForm((prev) => ({ ...prev, campaignIndex: String(index) }))
+    // Runs once when the page opens.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const selectedCampaign: Campaign | undefined = campaigns[Number(donationForm.campaignIndex)]
 
   // Build the object sent to route.ts — one clean campaign object instead of
