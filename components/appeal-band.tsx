@@ -69,6 +69,24 @@ function parseRgb(value: unknown): string | null {
   return null
 }
 
+// Builds the dark layer color with its see-through strength. Hex and rgb() colors are converted.
+// Anything else the color picker gives (like a saved brand color) is mixed with "transparent" by the browser.
+function layerColor(value: unknown, alpha: number): string {
+  const v = typeof value === "string" ? value.trim() : ""
+  const rgbText = parseRgb(v)
+  if (!rgbText && v && /^[a-z0-9#(),.%\s\/-]+$/i.test(v)) {
+    return `color-mix(in srgb, ${v} ${Math.round(alpha * 1000) / 10}%, transparent)`
+  }
+  return `rgba(${rgbText ?? OVERLAY_RGB}, ${alpha})`
+}
+
+// A number from a Studio box or slider, kept between min and max. Blank = the fallback.
+function clampNum(value: unknown, min: number, max: number, fallback: number): number {
+  const n = typeof value === "number" ? value : typeof value === "string" && value.trim() !== "" ? Number(value) : NaN
+  if (!Number.isFinite(n)) return fallback
+  return Math.min(max, Math.max(min, n))
+}
+
 // Only links that start with /, https://, http:// or mailto: are used.
 function safeLink(value: string | undefined): string {
   const v = (value || "").trim()
@@ -109,6 +127,11 @@ export function AppealBand({
   overlay = "medium",
   overlayPercent,
   overlayColor,
+  phoneLayout = "behind",
+  phonePhotoHeight = 240,
+  phonePhotoZoom = 190,
+  phonePhotoX = 91,
+  phonePhotoY = 56,
   height = "standard",
   align = "left",
   accent = "gold",
@@ -130,6 +153,11 @@ export function AppealBand({
   overlay?: Overlay
   overlayPercent?: number
   overlayColor?: string
+  phoneLayout?: "behind" | "above"
+  phonePhotoHeight?: number
+  phonePhotoZoom?: number
+  phonePhotoX?: number
+  phonePhotoY?: number
   height?: Height
   align?: Align
   accent?: Accent
@@ -151,7 +179,13 @@ export function AppealBand({
   const right = pct !== null ? left * 0.5 : presetRight
   const even = pct !== null ? left : (left + right) / 2 + 0.05
   const phoneAlpha = pct !== null ? left : Math.max(left, even)
-  const rgb = parseRgb(overlayColor) ?? OVERLAY_RGB
+  // "Photo above the text" on phones: a photo strip on top, the text below on a solid color.
+  const stacked = phoneLayout === "above" && !!backgroundImage
+  const stripH = clampNum(phonePhotoHeight, 120, 600, 240)
+  const stripZoom = clampNum(phonePhotoZoom, 100, 400, 190)
+  const stripX = clampNum(phonePhotoX, 0, 100, 91)
+  const stripY = clampNum(phonePhotoY, 0, 100, 56)
+  const phoneBg = typeof overlayColor === "string" && overlayColor.trim() ? overlayColor.trim() : "#1F2D55"
   const pad = PADDING[height] ?? PADDING.standard
   const centered = align === "center"
   const accentColor = (ACCENT[accent] ?? ACCENT.gold).color
@@ -163,7 +197,11 @@ export function AppealBand({
   const objectPosition = px !== null || py !== null ? `${px ?? 50}% ${py ?? 50}%` : FOCUS[imageFocus] ?? "center"
 
   return (
-    <section className={cn("relative w-full overflow-hidden text-white", className)} aria-label={eyebrow || headline}>
+    <section
+      className={cn("relative w-full overflow-hidden text-white", className)}
+      style={stacked ? { backgroundColor: phoneBg } : undefined}
+      aria-label={eyebrow || headline}
+    >
       {backgroundImage ? (
         <img
           src={backgroundImage}
@@ -171,7 +209,7 @@ export function AppealBand({
           aria-hidden="true"
           loading="lazy"
           decoding="async"
-          className="absolute inset-0 h-full w-full object-cover"
+          className={cn("absolute inset-0 h-full w-full object-cover", stacked && "hidden md:block")}
           style={{ objectPosition }}
         />
       ) : (
@@ -183,13 +221,34 @@ export function AppealBand({
         className="absolute inset-0 hidden md:block"
         style={{
           background: centered
-            ? `rgba(${rgb}, ${even})`
-            : `linear-gradient(90deg, rgba(${rgb}, ${left}) 0%, rgba(${rgb}, ${left}) 45%, rgba(${rgb}, ${right}) 100%)`,
+            ? layerColor(overlayColor, even)
+            : `linear-gradient(90deg, ${layerColor(overlayColor, left)} 0%, ${layerColor(overlayColor, left)} 45%, ${layerColor(overlayColor, right)} 100%)`,
         }}
       />
-      <div className="absolute inset-0 md:hidden" style={{ background: `rgba(${rgb}, ${phoneAlpha})` }} />
+      <div className={cn("absolute inset-0 md:hidden", stacked && "hidden")} style={{ background: layerColor(overlayColor, phoneAlpha) }} />
 
-      <div className="relative mx-auto max-w-[1160px] px-6" style={{ paddingTop: pad, paddingBottom: pad }}>
+      {stacked ? (
+        <div
+          aria-hidden="true"
+          className="relative w-full md:hidden"
+          style={{
+            height: stripH,
+            backgroundColor: phoneBg,
+            backgroundImage: `url(${JSON.stringify(backgroundImage)})`,
+            backgroundRepeat: "no-repeat",
+            backgroundSize: `${stripZoom}% auto`,
+            backgroundPosition: `${stripX}% ${stripY}%`,
+          }}
+        />
+      ) : null}
+
+      <div
+        className={cn(
+          "relative mx-auto max-w-[1160px] px-6",
+          stacked && "pt-7 pb-10 md:pt-[var(--band-pad)] md:pb-[var(--band-pad)]"
+        )}
+        style={stacked ? ({ "--band-pad": pad } as React.CSSProperties) : { paddingTop: pad, paddingBottom: pad }}
+      >
         <div className={cn("max-w-[560px]", centered && "mx-auto text-center")}>
           {eyebrow ? (
             <div className="text-[13px] font-bold tracking-[3px]" style={{ color: accentColor }}>
