@@ -4222,6 +4222,64 @@ PLASMIC.registerComponent(PhotoCarousel, {
       description: "Additional CSS classes",
     },
 
+    eyebrow: {
+      type: "string",
+      displayName: "Eyebrow (small label above heading)",
+      description: "Optional. Leave all the heading boxes blank for no heading. Format words: **bold**, *italic*.",
+    },
+    heading: {
+      type: "string",
+      displayName: "Heading",
+      description: "Optional heading above the photos. Looks and behaves like the Content Section. Format words: **bold**, *italic*.",
+    },
+    headingLevel: {
+      type: "choice",
+      displayName: "Heading level",
+      description: "Use H1 only ONCE per page (the main title). Everything else H2.",
+      options: [
+        { value: "h1", label: "H1 (main page title)" },
+        { value: "h2", label: "H2 (section)" },
+        { value: "h3", label: "H3 (sub-section)" },
+      ],
+      defaultValue: "h2",
+    },
+    lead: {
+      type: "string",
+      control: "large",
+      displayName: "Lead line (large text under heading)",
+      description: "Optional. Format words: **bold**, *italic*.",
+    },
+    body: {
+      type: "string",
+      control: "large",
+      displayName: "Body text",
+      description: "Optional. Blank line = new paragraph. Format words: **bold**, *italic*. A line starting with ## becomes a subheading.",
+    },
+    headerAlignment: {
+      type: "choice",
+      displayName: "Heading alignment",
+      options: [
+        { value: "left", label: "Left" },
+        { value: "center", label: "Center" },
+      ],
+      defaultValue: "left",
+    },
+    headingColor: {
+      type: "color",
+      displayName: "Heading color (optional)",
+      description: "Blank = the Content Section default (navy).",
+    },
+    textColor: {
+      type: "color",
+      displayName: "Text color (optional)",
+      description: "Blank = the Content Section default (navy). Use a light color if the carousel background is dark.",
+    },
+    eyebrowColor: {
+      type: "color",
+      displayName: "Eyebrow color (optional)",
+      description: "Blank = the Content Section default (blue).",
+    },
+
     carouselStyle: {
       type: "choice",
       displayName: "Style",

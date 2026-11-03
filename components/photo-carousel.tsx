@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import Image from "next/image"
 import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ContentSection } from "@/components/ContentSection"
 
 interface Photo {
   image: string
@@ -42,6 +43,7 @@ type SwipeRowProps = {
   showCaptions: boolean
   borderRadius: string
   sectionPaddingY: string
+  sectionPaddingTop?: string
   sectionPaddingX: string
   arrowSize: string
   arrowIconSize: string
@@ -65,6 +67,7 @@ function SwipeRow({
   showCaptions,
   borderRadius,
   sectionPaddingY,
+  sectionPaddingTop,
   sectionPaddingX,
   arrowSize,
   arrowIconSize,
@@ -147,7 +150,7 @@ function SwipeRow({
       className={className || ""}
       style={{
         backgroundColor,
-        paddingTop: sectionPaddingY,
+        paddingTop: sectionPaddingTop ?? sectionPaddingY,
         paddingBottom: sectionPaddingY,
         width: "100%",
         overflow: "hidden",
@@ -338,6 +341,15 @@ export function PhotoCarousel({
   randomizeOrder = false,
   carouselStyle = "classic",
   captionPlacement = "below",
+  eyebrow = "",
+  heading = "",
+  headingLevel = "h2",
+  lead = "",
+  body = "",
+  headerAlignment = "left",
+  headingColor,
+  textColor,
+  eyebrowColor,
 }: {
   className?: string
   photos?: Photo[]
@@ -369,6 +381,16 @@ export function PhotoCarousel({
   // Swipe row only: "below" = under the photo, "hover" = slides up over the photo on hover
   // (phones and tablets show it under the photo instead).
   captionPlacement?: "below" | "hover"
+  // Optional heading block above the photos (styled like the Content Section).
+  eyebrow?: string
+  heading?: string
+  headingLevel?: "h1" | "h2" | "h3"
+  lead?: string
+  body?: string
+  headerAlignment?: "left" | "center"
+  headingColor?: string
+  textColor?: string
+  eyebrowColor?: string
 }) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isLeftHovered, setIsLeftHovered] = useState(false)
@@ -455,9 +477,33 @@ export function PhotoCarousel({
   // This sits after every hook above, so hook order is unchanged.
   if (!photos || photos.length === 0) return null
 
+  // Optional heading block above the photos. It is the real Content Section (text only), so it
+  // looks exactly like the other sections on the page. No text at all = nothing is added.
+  const hasHeader = [eyebrow, heading, lead, body].some((v) => typeof v === "string" && v.trim() !== "")
+  const HEADER_GAP = "clamp(1.5rem, 3vw, 2.5rem)"
+  const header = hasHeader ? (
+    <ContentSection
+      eyebrow={eyebrow || ""}
+      heading={heading || ""}
+      headingLevel={headingLevel}
+      lead={lead || ""}
+      body={body || ""}
+      alignment={headerAlignment}
+      showImage={false}
+      backgroundColor={backgroundColor}
+      spaceBottom="none"
+      headingColor={headingColor || undefined}
+      textColor={textColor || undefined}
+      eyebrowColor={eyebrowColor || undefined}
+    />
+  ) : null
+
   if (carouselStyle === "swipe") {
     return (
+      <>
+      {header}
       <SwipeRow
+        sectionPaddingTop={hasHeader ? HEADER_GAP : undefined}
         className={className}
         photos={orderedPhotos.length > 0 ? orderedPhotos : photos}
         photoWidth={photoWidth}
@@ -479,17 +525,20 @@ export function PhotoCarousel({
         arrowIconSize={arrowIconSize}
         getImageUrl={getImageUrl}
       />
+      </>
     )
   }
 
   const visiblePhotos = orderedPhotos.slice(currentIndex, currentIndex + actualPhotosPerView)
 
   return (
+    <>
+    {header}
     <section
       className={className || ""}
       style={{
         backgroundColor,
-        paddingTop: sectionPaddingY,
+        paddingTop: hasHeader ? HEADER_GAP : sectionPaddingY,
         paddingBottom: sectionPaddingY,
         width: "100%",
         overflow: "hidden",
@@ -682,5 +731,6 @@ export function PhotoCarousel({
         )}
       </div>
     </section>
+    </>
   )
 }
