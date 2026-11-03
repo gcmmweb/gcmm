@@ -4319,6 +4319,17 @@ PLASMIC.registerComponent(PhotoCarousel, {
       defaultValue: true,
       description: "Show photo captions on hover",
     },
+    captionPlacement: {
+      type: "choice",
+      displayName: "Captions (Swipe row)",
+      options: [
+        { value: "below", label: "Under the photo" },
+        { value: "hover", label: "On hover (under the photo on phones)" },
+      ],
+      defaultValue: "below",
+      description:
+        "Swipe row only. On hover: the caption slides up over the bottom of the photo when someone points at it with a mouse. Phones and tablets show it under the photo instead, so it is never hidden.",
+    },
     captionColor: {
       type: "string",
       displayName: "Caption Text Color",

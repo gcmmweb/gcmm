@@ -37,6 +37,8 @@ type SwipeRowProps = {
   arrowBackgroundColor: string
   arrowBackgroundHoverColor: string
   captionColor: string
+  captionBackgroundColor: string
+  captionPlacement: "below" | "hover"
   showCaptions: boolean
   borderRadius: string
   sectionPaddingY: string
@@ -58,6 +60,8 @@ function SwipeRow({
   arrowBackgroundColor,
   arrowBackgroundHoverColor,
   captionColor,
+  captionBackgroundColor,
+  captionPlacement,
   showCaptions,
   borderRadius,
   sectionPaddingY,
@@ -149,7 +153,11 @@ function SwipeRow({
         overflow: "hidden",
       }}
     >
-      <style>{".pc-swipe-track::-webkit-scrollbar{display:none}"}</style>
+      <style>{`.pc-swipe-track::-webkit-scrollbar{display:none}
+.pc-cap-hover{opacity:0;transform:translateY(100%);transition:all .3s ease-out}
+.pc-fig:hover .pc-cap-hover,.pc-fig:focus-within .pc-cap-hover{opacity:1;transform:translateY(0)}
+.pc-cap-hover-fallback{display:none}
+@media (hover:none),(pointer:coarse){.pc-cap-hover{display:none}.pc-cap-hover-fallback{display:block}}`}</style>
       <div style={{ maxWidth: "1400px", marginLeft: "auto", marginRight: "auto" }}>
         <div
           ref={trackRef}
@@ -171,7 +179,7 @@ function SwipeRow({
           }}
         >
           {photos.map((photo, index) => (
-            <figure key={index} style={{ margin: 0, flex: "0 0 auto", width: slideWidth, scrollSnapAlign: "start" }}>
+            <figure key={index} className="pc-fig" style={{ margin: 0, flex: "0 0 auto", width: slideWidth, scrollSnapAlign: "start" }}>
               <div
                 style={{
                   position: "relative",
@@ -192,9 +200,35 @@ function SwipeRow({
                     e.currentTarget.src = "/placeholder.svg?height=400&width=600"
                   }}
                 />
+                {showCaptions && photo.caption && captionPlacement === "hover" ? (
+                  <div
+                    className="pc-cap-hover"
+                    style={{
+                      position: "absolute",
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      padding: "12px 16px",
+                      backgroundColor: captionBackgroundColor,
+                      color: captionColor,
+                      fontSize: "0.875rem",
+                      fontWeight: 500,
+                    }}
+                  >
+                    {photo.caption}
+                  </div>
+                ) : null}
               </div>
-              {showCaptions && photo.caption ? (
+              {showCaptions && photo.caption && captionPlacement !== "hover" ? (
                 <figcaption style={{ marginTop: "10px", fontSize: "15px", lineHeight: 1.5, color: captionColor }}>
+                  {photo.caption}
+                </figcaption>
+              ) : null}
+              {showCaptions && photo.caption && captionPlacement === "hover" ? (
+                <figcaption
+                  className="pc-cap-hover-fallback"
+                  style={{ marginTop: "10px", fontSize: "15px", lineHeight: 1.5, color: captionColor }}
+                >
                   {photo.caption}
                 </figcaption>
               ) : null}
@@ -303,6 +337,7 @@ export function PhotoCarousel({
   arrowIconSize = "24px",
   randomizeOrder = false,
   carouselStyle = "classic",
+  captionPlacement = "below",
 }: {
   className?: string
   photos?: Photo[]
@@ -331,6 +366,9 @@ export function PhotoCarousel({
   // "classic" = arrows and dots, one photo at a time (the default, unchanged).
   // "swipe" = a row you swipe or scroll, with captions under the photos.
   carouselStyle?: "classic" | "swipe"
+  // Swipe row only: "below" = under the photo, "hover" = slides up over the photo on hover
+  // (phones and tablets show it under the photo instead).
+  captionPlacement?: "below" | "hover"
 }) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isLeftHovered, setIsLeftHovered] = useState(false)
@@ -431,6 +469,8 @@ export function PhotoCarousel({
         arrowBackgroundColor={arrowBackgroundColor}
         arrowBackgroundHoverColor={arrowBackgroundHoverColor}
         captionColor={captionColor}
+        captionBackgroundColor={captionBackgroundColor}
+        captionPlacement={captionPlacement}
         showCaptions={showCaptions}
         borderRadius={borderRadius}
         sectionPaddingY={sectionPaddingY}
