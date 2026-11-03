@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { Fragment, useState, useEffect, useRef } from "react"
 import Image from "next/image"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { ContentSection } from "@/components/ContentSection"
@@ -44,6 +44,7 @@ type SwipeRowProps = {
   borderRadius: string
   sectionPaddingY: string
   sectionPaddingTop?: string
+  alignWithHeader?: boolean
   sectionPaddingX: string
   arrowSize: string
   arrowIconSize: string
@@ -68,6 +69,7 @@ function SwipeRow({
   borderRadius,
   sectionPaddingY,
   sectionPaddingTop,
+  alignWithHeader,
   sectionPaddingX,
   arrowSize,
   arrowIconSize,
@@ -123,6 +125,10 @@ function SwipeRow({
     track.scrollBy({ left: direction * stepSize(), behavior: scrollBehavior() })
   }
 
+  // With a heading, the photos use the same page width and side space as the Content Sections,
+  // so the first photo starts exactly under the heading text.
+  const edge = alignWithHeader ? "clamp(1rem, calc(8vw - 1rem), 6rem)" : sectionPaddingX
+  const innerMax = alignWithHeader ? "1280px" : "1400px"
   const ratio = `${parseInt(photoWidth) || 400} / ${parseInt(photoHeight) || 300}`
   // On phones the photo takes 82% of the row so the next photo peeks in.
   const slideWidth = `min(${photoWidth}, 82%)`
@@ -161,7 +167,7 @@ function SwipeRow({
 .pc-fig:hover .pc-cap-hover,.pc-fig:focus-within .pc-cap-hover{opacity:1;transform:translateY(0)}
 .pc-cap-hover-fallback{display:none}
 @media (hover:none),(pointer:coarse){.pc-cap-hover{display:none}.pc-cap-hover-fallback{display:block}}`}</style>
-      <div style={{ maxWidth: "1400px", marginLeft: "auto", marginRight: "auto" }}>
+      <div style={{ maxWidth: innerMax, marginLeft: "auto", marginRight: "auto" }}>
         <div
           ref={trackRef}
           className="pc-swipe-track"
@@ -174,9 +180,9 @@ function SwipeRow({
             gap,
             overflowX: "auto",
             scrollSnapType: "x mandatory",
-            scrollPaddingLeft: sectionPaddingX,
-            paddingLeft: sectionPaddingX,
-            paddingRight: sectionPaddingX,
+            scrollPaddingLeft: edge,
+            paddingLeft: edge,
+            paddingRight: edge,
             paddingBottom: "8px",
             scrollbarWidth: "none",
           }}
@@ -246,8 +252,8 @@ function SwipeRow({
               alignItems: "center",
               justifyContent: narrow ? "center" : "space-between",
               marginTop: "16px",
-              paddingLeft: sectionPaddingX,
-              paddingRight: sectionPaddingX,
+              paddingLeft: edge,
+              paddingRight: edge,
             }}
           >
             <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center" }}>
@@ -492,19 +498,25 @@ export function PhotoCarousel({
       showImage={false}
       backgroundColor={backgroundColor}
       spaceBottom="none"
+      spaceTop="medium"
+      contentWidth="wide"
       headingColor={headingColor || undefined}
       textColor={textColor || undefined}
       eyebrowColor={eyebrowColor || undefined}
     />
   ) : null
+  // With a heading, one full-width box is the root and carries the layout settings from Studio.
+  const Root: React.ElementType = hasHeader ? "div" : Fragment
+  const rootProps = hasHeader ? { className, style: { width: "100%" } } : {}
 
   if (carouselStyle === "swipe") {
     return (
-      <>
+      <Root {...rootProps}>
       {header}
       <SwipeRow
         sectionPaddingTop={hasHeader ? HEADER_GAP : undefined}
-        className={className}
+        alignWithHeader={hasHeader}
+        className={hasHeader ? undefined : className}
         photos={orderedPhotos.length > 0 ? orderedPhotos : photos}
         photoWidth={photoWidth}
         photoHeight={photoHeight}
@@ -525,17 +537,17 @@ export function PhotoCarousel({
         arrowIconSize={arrowIconSize}
         getImageUrl={getImageUrl}
       />
-      </>
+      </Root>
     )
   }
 
   const visiblePhotos = orderedPhotos.slice(currentIndex, currentIndex + actualPhotosPerView)
 
   return (
-    <>
+    <Root {...rootProps}>
     {header}
     <section
-      className={className || ""}
+      className={hasHeader ? "" : className || ""}
       style={{
         backgroundColor,
         paddingTop: hasHeader ? HEADER_GAP : sectionPaddingY,
@@ -731,6 +743,6 @@ export function PhotoCarousel({
         )}
       </div>
     </section>
-    </>
+    </Root>
   )
 }
