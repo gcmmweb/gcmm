@@ -4222,6 +4222,18 @@ PLASMIC.registerComponent(PhotoCarousel, {
       description: "Additional CSS classes",
     },
 
+    carouselStyle: {
+      type: "choice",
+      displayName: "Style",
+      options: [
+        { value: "classic", label: "Classic (arrows, one photo at a time)" },
+        { value: "swipe", label: "Swipe row (swipe or scroll, captions under photos)" },
+      ],
+      defaultValue: "classic",
+      description:
+        "Swipe row: photos sit in a row you swipe or scroll, the next photo peeks in, and captions show under each photo. Photo Width decides how many show at once; Photos Per View and Autoplay are for Classic only.",
+    },
+
     // Layout Settings
     photosPerView: {
       type: "number",
@@ -4377,7 +4389,7 @@ sectionPaddingX: {
           caption: {
             type: "string",
             displayName: "Caption",
-            description: "Optional caption shown on hover",
+            description: "Optional caption (shown on hover in Classic, under the photo in Swipe row)",
           },
         },
       },

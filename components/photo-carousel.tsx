@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Image from "next/image"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 
@@ -20,6 +20,263 @@ function shuffled<T>(list: T[]): T[] {
     a[j] = tmp
   }
   return a
+}
+
+// "Swipe row" style: photos sit in a row you can swipe or scroll (each photo snaps into place),
+// the next photo peeks in, captions are always shown under the photo, and the arrows and dots
+// are big enough to tap. Used when Style is set to "Swipe row".
+type SwipeRowProps = {
+  className?: string
+  photos: Photo[]
+  photoWidth: string
+  photoHeight: string
+  gap: string
+  backgroundColor: string
+  arrowColor: string
+  arrowHoverColor: string
+  arrowBackgroundColor: string
+  arrowBackgroundHoverColor: string
+  captionColor: string
+  showCaptions: boolean
+  borderRadius: string
+  sectionPaddingY: string
+  sectionPaddingX: string
+  arrowSize: string
+  arrowIconSize: string
+  getImageUrl: (url: string) => string
+}
+
+function SwipeRow({
+  className,
+  photos,
+  photoWidth,
+  photoHeight,
+  gap,
+  backgroundColor,
+  arrowColor,
+  arrowHoverColor,
+  arrowBackgroundColor,
+  arrowBackgroundHoverColor,
+  captionColor,
+  showCaptions,
+  borderRadius,
+  sectionPaddingY,
+  sectionPaddingX,
+  arrowSize,
+  arrowIconSize,
+  getImageUrl,
+}: SwipeRowProps) {
+  const trackRef = useRef<HTMLDivElement>(null)
+  const [active, setActive] = useState(0)
+  const [atStart, setAtStart] = useState(true)
+  const [atEnd, setAtEnd] = useState(false)
+  const [narrow, setNarrow] = useState(false)
+  const [leftHover, setLeftHover] = useState(false)
+  const [rightHover, setRightHover] = useState(false)
+
+  // Distance from one photo to the next (photo width + gap), measured from the real page.
+  const stepSize = () => {
+    const track = trackRef.current
+    const first = track ? (track.children[0] as HTMLElement | undefined) : undefined
+    if (!track || !first) return 0
+    const g = parseFloat(window.getComputedStyle(track).columnGap) || 0
+    return first.offsetWidth + g
+  }
+
+  const update = () => {
+    const track = trackRef.current
+    if (!track) return
+    const step = stepSize()
+    const end = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4
+    setAtStart(track.scrollLeft <= 4)
+    setAtEnd(end)
+    setActive(end ? photos.length - 1 : step > 0 ? Math.min(photos.length - 1, Math.round(track.scrollLeft / step)) : 0)
+    setNarrow(window.innerWidth < 640)
+  }
+
+  useEffect(() => {
+    update()
+    window.addEventListener("resize", update)
+    return () => window.removeEventListener("resize", update)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [photos.length])
+
+  const scrollBehavior = (): ScrollBehavior =>
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"
+
+  const goTo = (i: number) => {
+    const track = trackRef.current
+    if (!track) return
+    track.scrollTo({ left: i * stepSize(), behavior: scrollBehavior() })
+  }
+
+  const nudge = (direction: number) => {
+    const track = trackRef.current
+    if (!track) return
+    track.scrollBy({ left: direction * stepSize(), behavior: scrollBehavior() })
+  }
+
+  const ratio = `${parseInt(photoWidth) || 400} / ${parseInt(photoHeight) || 300}`
+  // On phones the photo takes 82% of the row so the next photo peeks in.
+  const slideWidth = `min(${photoWidth}, 82%)`
+  const canScroll = !(atStart && atEnd)
+
+  const arrowStyle = (hovered: boolean, disabled: boolean): React.CSSProperties => ({
+    width: arrowSize,
+    height: arrowSize,
+    minWidth: "44px",
+    minHeight: "44px",
+    borderRadius: "50%",
+    backgroundColor: hovered && !disabled ? arrowBackgroundHoverColor : arrowBackgroundColor,
+    border: `2px solid ${arrowColor}`,
+    cursor: disabled ? "default" : "pointer",
+    opacity: disabled ? 0.35 : 1,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 0,
+    transition: "all 0.3s ease-out",
+  })
+
+  return (
+    <section
+      className={className || ""}
+      style={{
+        backgroundColor,
+        paddingTop: sectionPaddingY,
+        paddingBottom: sectionPaddingY,
+        width: "100%",
+        overflow: "hidden",
+      }}
+    >
+      <style>{".pc-swipe-track::-webkit-scrollbar{display:none}"}</style>
+      <div style={{ maxWidth: "1400px", marginLeft: "auto", marginRight: "auto" }}>
+        <div
+          ref={trackRef}
+          className="pc-swipe-track"
+          onScroll={update}
+          tabIndex={0}
+          role="region"
+          aria-label="Photo carousel"
+          style={{
+            display: "flex",
+            gap,
+            overflowX: "auto",
+            scrollSnapType: "x mandatory",
+            scrollPaddingLeft: sectionPaddingX,
+            paddingLeft: sectionPaddingX,
+            paddingRight: sectionPaddingX,
+            paddingBottom: "8px",
+            scrollbarWidth: "none",
+          }}
+        >
+          {photos.map((photo, index) => (
+            <figure key={index} style={{ margin: 0, flex: "0 0 auto", width: slideWidth, scrollSnapAlign: "start" }}>
+              <div
+                style={{
+                  position: "relative",
+                  width: "100%",
+                  aspectRatio: ratio,
+                  borderRadius,
+                  overflow: "hidden",
+                  boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+                }}
+              >
+                <Image
+                  src={getImageUrl(photo.image)}
+                  alt={photo.alt || `Photo ${index + 1}`}
+                  fill
+                  sizes="(max-width: 640px) 82vw, 400px"
+                  style={{ objectFit: "cover" }}
+                  onError={(e) => {
+                    e.currentTarget.src = "/placeholder.svg?height=400&width=600"
+                  }}
+                />
+              </div>
+              {showCaptions && photo.caption ? (
+                <figcaption style={{ marginTop: "10px", fontSize: "15px", lineHeight: 1.5, color: captionColor }}>
+                  {photo.caption}
+                </figcaption>
+              ) : null}
+            </figure>
+          ))}
+        </div>
+
+        {canScroll && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: narrow ? "center" : "space-between",
+              marginTop: "16px",
+              paddingLeft: sectionPaddingX,
+              paddingRight: sectionPaddingX,
+            }}
+          >
+            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center" }}>
+              {photos.map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => goTo(i)}
+                  aria-label={`Go to photo ${i + 1}`}
+                  aria-current={i === active ? "true" : undefined}
+                  style={{
+                    width: "44px",
+                    height: "44px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    background: "none",
+                    border: "none",
+                    padding: 0,
+                    cursor: "pointer",
+                  }}
+                >
+                  <span
+                    style={{
+                      display: "block",
+                      width: i === active ? "28px" : "8px",
+                      height: "8px",
+                      borderRadius: "4px",
+                      backgroundColor: i === active ? arrowColor : "#d1d5db",
+                      transition: "all 0.3s ease-out",
+                    }}
+                  />
+                </button>
+              ))}
+            </div>
+            {!narrow && (
+              <div style={{ display: "flex", gap: "12px" }}>
+                <button
+                  type="button"
+                  onClick={() => nudge(-1)}
+                  disabled={atStart}
+                  aria-label="Previous photo"
+                  onMouseEnter={() => setLeftHover(true)}
+                  onMouseLeave={() => setLeftHover(false)}
+                  style={arrowStyle(leftHover, atStart)}
+                >
+                  <ChevronLeft style={{ width: arrowIconSize, height: arrowIconSize, color: leftHover ? arrowHoverColor : arrowColor }} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => nudge(1)}
+                  disabled={atEnd}
+                  aria-label="Next photo"
+                  onMouseEnter={() => setRightHover(true)}
+                  onMouseLeave={() => setRightHover(false)}
+                  style={arrowStyle(rightHover, atEnd)}
+                >
+                  <ChevronRight style={{ width: arrowIconSize, height: arrowIconSize, color: rightHover ? arrowHoverColor : arrowColor }} />
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </section>
+  )
 }
 
 export function PhotoCarousel({
@@ -45,6 +302,7 @@ export function PhotoCarousel({
   arrowSize = "48px",
   arrowIconSize = "24px",
   randomizeOrder = false,
+  carouselStyle = "classic",
 }: {
   className?: string
   photos?: Photo[]
@@ -70,6 +328,9 @@ export function PhotoCarousel({
   // Shuffles the photo order once per page load (browser only).
   // Off by default so existing carousels keep their current order.
   randomizeOrder?: boolean
+  // "classic" = arrows and dots, one photo at a time (the default, unchanged).
+  // "swipe" = a row you swipe or scroll, with captions under the photos.
+  carouselStyle?: "classic" | "swipe"
 }) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isLeftHovered, setIsLeftHovered] = useState(false)
@@ -155,6 +416,31 @@ export function PhotoCarousel({
   // No photos -> render nothing (no empty section, no sample photos).
   // This sits after every hook above, so hook order is unchanged.
   if (!photos || photos.length === 0) return null
+
+  if (carouselStyle === "swipe") {
+    return (
+      <SwipeRow
+        className={className}
+        photos={orderedPhotos.length > 0 ? orderedPhotos : photos}
+        photoWidth={photoWidth}
+        photoHeight={photoHeight}
+        gap={gap}
+        backgroundColor={backgroundColor}
+        arrowColor={arrowColor}
+        arrowHoverColor={arrowHoverColor}
+        arrowBackgroundColor={arrowBackgroundColor}
+        arrowBackgroundHoverColor={arrowBackgroundHoverColor}
+        captionColor={captionColor}
+        showCaptions={showCaptions}
+        borderRadius={borderRadius}
+        sectionPaddingY={sectionPaddingY}
+        sectionPaddingX={sectionPaddingX}
+        arrowSize={arrowSize}
+        arrowIconSize={arrowIconSize}
+        getImageUrl={getImageUrl}
+      />
+    )
+  }
 
   const visiblePhotos = orderedPhotos.slice(currentIndex, currentIndex + actualPhotosPerView)
 
