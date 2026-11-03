@@ -4279,6 +4279,39 @@ PLASMIC.registerComponent(PhotoCarousel, {
       displayName: "Eyebrow color (optional)",
       description: "Blank = the Content Section default (blue).",
     },
+    eyebrowSize: {
+      type: "choice",
+      displayName: "Eyebrow size",
+      options: [
+        { value: "small", label: "Small" },
+        { value: "normal", label: "Normal" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "large",
+    },
+    headingSize: {
+      type: "choice",
+      displayName: "Heading size",
+      options: [
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "large",
+    },
+    headingWeight: {
+      type: "choice",
+      displayName: "Heading weight",
+      options: [
+        { value: "regular", label: "Regular" },
+        { value: "medium", label: "Medium" },
+        { value: "semibold", label: "Semibold" },
+        { value: "bold", label: "Bold" },
+      ],
+      defaultValue: "regular",
+    },
 
     carouselStyle: {
       type: "choice",

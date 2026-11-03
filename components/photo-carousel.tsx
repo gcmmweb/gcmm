@@ -5,6 +5,9 @@ import Image from "next/image"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { ContentSection } from "@/components/ContentSection"
 
+// The text-style choices come straight from the Content Section, so they always match it.
+type HeaderStyle = React.ComponentProps<typeof ContentSection>
+
 interface Photo {
   image: string
   alt: string
@@ -356,6 +359,9 @@ export function PhotoCarousel({
   headingColor,
   textColor,
   eyebrowColor,
+  eyebrowSize = "large",
+  headingSize = "large",
+  headingWeight = "regular",
 }: {
   className?: string
   photos?: Photo[]
@@ -397,6 +403,9 @@ export function PhotoCarousel({
   headingColor?: string
   textColor?: string
   eyebrowColor?: string
+  eyebrowSize?: HeaderStyle["eyebrowSize"]
+  headingSize?: HeaderStyle["headingSize"]
+  headingWeight?: HeaderStyle["headingWeight"]
 }) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isLeftHovered, setIsLeftHovered] = useState(false)
@@ -503,6 +512,9 @@ export function PhotoCarousel({
       headingColor={headingColor || undefined}
       textColor={textColor || undefined}
       eyebrowColor={eyebrowColor || undefined}
+      eyebrowSize={eyebrowSize}
+      headingSize={headingSize}
+      headingWeight={headingWeight}
     />
   ) : null
   // With a heading, one full-width box is the root and carries the layout settings from Studio.
