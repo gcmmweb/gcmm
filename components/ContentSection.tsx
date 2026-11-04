@@ -41,6 +41,9 @@ type WidthChoice = "narrow" | "medium" | "wide"
 type HeightChoice = "short" | "medium" | "tall"
 type LeadFontChoice = FontChoice | "body"
 type TextSpacing = "small" | "comfortable" | "medium" | "large"
+type PhoneSize = SizeChoice | "auto" | "same"
+type PhoneTextSpacing = TextSpacing | "auto" | "same"
+type PhoneParagraphGap = "auto" | "same" | "normal" | "medium" | "small" | "tight"
 
 interface ContentSectionProps {
   className?: string
@@ -111,6 +114,13 @@ interface ContentSectionProps {
   leadColor?: string
   textSpacing?: TextSpacing
   paragraphGap?: ParagraphGap
+
+  // Phone sizes (below 768px). "auto" = smaller automatically, "same" = like the computer.
+  headingSizePhone?: PhoneSize
+  bodySizePhone?: PhoneSize
+  leadSizePhone?: PhoneSize
+  textSpacingPhone?: PhoneTextSpacing
+  paragraphGapPhone?: PhoneParagraphGap
 }
 
 const FONT_STACKS: Record<FontChoice, string> = {
@@ -221,6 +231,39 @@ const LIST_GAPS: Record<ParagraphGap, string> = {
   medium: "0.4em",
   small: "0.3em",
   tight: "0.15em",
+}
+
+// A blank line in the original look is exactly one line of text (line height 1.7).
+const PARAGRAPH_GAP_CSS: Record<ParagraphGap, string> = { normal: "1.7em", ...PARAGRAPH_GAPS }
+
+// ---- Automatic phone sizes ------------------------------------------------
+// "auto" only steps a LARGE choice down to MEDIUM on phones. Extra large is kept,
+// because choosing it is a deliberate decision (for example a hero heading).
+function resolvePhoneSize(choice: PhoneSize | undefined, desktop: SizeChoice): SizeChoice {
+  if (choice === "same") return desktop
+  if (choice && choice !== "auto") return choice
+  return desktop === "large" ? "medium" : desktop
+}
+
+function resolvePhoneSpacing(choice: PhoneTextSpacing | undefined, desktop: TextSpacing): TextSpacing {
+  if (choice === "same") return desktop
+  if (choice && choice !== "auto") return choice
+  if (desktop === "medium") return "comfortable"
+  if (desktop === "large") return "medium"
+  return desktop
+}
+
+function resolvePhoneParagraphGap(
+  choice: PhoneParagraphGap | undefined,
+  desktop: ParagraphGap
+): ParagraphGap {
+  if (choice === "same") return desktop
+  if (choice && choice !== "auto") return choice
+  return desktop === "normal" ? "medium" : desktop
+}
+
+function cssValue(v: string | number): string {
+  return typeof v === "number" ? v + "px" : v
 }
 
 // Blank lines start a new paragraph; a single Enter stays a line break.
@@ -402,13 +445,22 @@ const IMAGE_CSS = `
 .cs-behind{min-height:var(--cs-mhp)}
 }`
 
+// Computer and phone values are both written on the section as CSS variables
+// (-d = computer, -p = phone). This rule picks one, so the browser decides before
+// the page is shown and nothing jumps after loading.
+const PHONE_CSS = `
+.cs-root{--cs-hs:var(--cs-hs-d);--cs-bs:var(--cs-bs-d);--cs-ls:var(--cs-ls-d);--cs-qs:var(--cs-qs-d);--cs-gap:var(--cs-gap-d);--cs-hlh:var(--cs-hlh-d);--cs-llh:var(--cs-llh-d);--cs-eyb:var(--cs-eyb-d);--cs-ltop:var(--cs-ltop-d);--cs-bah:var(--cs-bah-d);--cs-ptop:var(--cs-ptop-d);--cs-jt:var(--cs-jt-d);--cs-pg:var(--cs-pg-d);--cs-lg:var(--cs-lg-d)}
+@media (max-width:767px){
+.cs-root{--cs-hs:var(--cs-hs-p);--cs-bs:var(--cs-bs-p);--cs-ls:var(--cs-ls-p);--cs-qs:var(--cs-qs-p);--cs-gap:var(--cs-gap-p);--cs-hlh:var(--cs-hlh-p);--cs-llh:var(--cs-llh-p);--cs-eyb:var(--cs-eyb-p);--cs-ltop:var(--cs-ltop-p);--cs-bah:var(--cs-bah-p);--cs-ptop:var(--cs-ptop-p);--cs-jt:var(--cs-jt-p);--cs-pg:var(--cs-pg-p);--cs-lg:var(--cs-lg-p)}
+}`
+
 // Button row. Scoped class names (cs-btns) so nothing else on the page is
 // affected. On phones: optional full-width stack where every button gets the
 // same height (grid-auto-rows: 1fr), plus a little space above the buttons.
 const BUTTON_ROW_CSS = `
-.cs-btns{display:flex;flex-wrap:wrap;gap:0.5rem 1rem}
+.cs-btns{display:flex;flex-wrap:wrap;gap:0.5rem 1rem;margin-top:var(--cs-bt-d,0px)}
 @media (max-width:640px){
-.cs-btns{margin-top:0.75rem}
+.cs-btns{margin-top:var(--cs-bt-p,0.75rem)}
 .cs-btns-full{width:100%;display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:1fr;gap:0.75rem}
 .cs-btns-full > a{margin-top:0;width:100%;box-sizing:border-box;text-align:center}
 }`
@@ -482,6 +534,13 @@ export function ContentSection({
   leadColor,
   textSpacing = "medium",
   paragraphGap = "normal",
+
+  // Phone sizes (automatic by default)
+  headingSizePhone = "auto",
+  bodySizePhone = "auto",
+  leadSizePhone = "auto",
+  textSpacingPhone = "auto",
+  paragraphGapPhone = "auto",
 }: ContentSectionProps) {
   // Second-button hover state (inline styles cannot do :hover, and this keeps
   // the component free of global CSS) and the reduce-motion preference.
@@ -550,26 +609,71 @@ export function ContentSection({
 
   const Heading = headingLevel
   const eyebrowStyle = EYEBROW_STYLES[eyebrowSize] ?? EYEBROW_STYLES.normal
+  // Sizes and spacing for computers and for phones (below 768px). Both sets are
+  // written as CSS variables on the section and the browser picks one.
+  const headingSizeP = resolvePhoneSize(headingSizePhone, headingSize)
+  const bodySizeP = resolvePhoneSize(bodySizePhone, bodySize)
+  const leadSizeP = resolvePhoneSize(leadSizePhone, leadSize)
+  const textSpacingP = resolvePhoneSpacing(textSpacingPhone, textSpacing)
+  const paragraphGapP = resolvePhoneParagraphGap(paragraphGapPhone, paragraphGap)
   const spacing = getTextSpacing(textSpacing, HEADING_SIZES[headingSize])
-  const gap = spacing.gap
+  const spacingP = getTextSpacing(textSpacingP, HEADING_SIZES[headingSizeP])
   const hasTextAbove = !!(eyebrowText || headingText || leadText || bodyText)
-  // Extra space above a body block. Only the "small" preset needs any: the
-  // gap between parts is tight, so later paragraphs get their normal space back.
+  const splitBodyParagraphs = paragraphGap !== "normal" || paragraphGapP !== "normal"
+  type Spacing = ReturnType<typeof getTextSpacing>
+  const eyebrowMarginOf = (sp: Spacing) =>
+    cssValue(headingText && sp.eyebrowExtra !== "0px" ? sp.eyebrowExtra : eyebrowStyle.marginBottom)
+  const leadTopOf = (sp: Spacing) => (headingText ? sp.leadTop : "0px")
+  const bodyAfterOf = (sp: Spacing) => (!leadText && headingText ? sp.bodyAfterHeading : "0px")
+  // Space above a body block that follows another text block. Original look
+  // ("normal") keeps the plain text-part spacing; tighter settings use their own gap.
+  const joinOf = (sp: Spacing, pg: ParagraphGap) =>
+    pg === "normal" ? sp.paragraphTop : `calc(${PARAGRAPH_GAP_CSS[pg]} - ${sp.gap})`
+  const phoneVars = {
+    "--cs-hs-d": HEADING_SIZES[headingSize],
+    "--cs-hs-p": HEADING_SIZES[headingSizeP],
+    "--cs-bs-d": BODY_SIZES[bodySize],
+    "--cs-bs-p": BODY_SIZES[bodySizeP],
+    "--cs-ls-d": LEAD_SIZES[leadSize],
+    "--cs-ls-p": LEAD_SIZES[leadSizeP],
+    "--cs-qs-d": QUOTE_SIZES[bodySize],
+    "--cs-qs-p": QUOTE_SIZES[bodySizeP],
+    "--cs-gap-d": spacing.gap,
+    "--cs-gap-p": spacingP.gap,
+    "--cs-hlh-d": String(spacing.headingLH),
+    "--cs-hlh-p": String(spacingP.headingLH),
+    "--cs-llh-d": String(spacing.leadLH),
+    "--cs-llh-p": String(spacingP.leadLH),
+    "--cs-eyb-d": eyebrowMarginOf(spacing),
+    "--cs-eyb-p": eyebrowMarginOf(spacingP),
+    "--cs-ltop-d": leadTopOf(spacing),
+    "--cs-ltop-p": leadTopOf(spacingP),
+    "--cs-bah-d": bodyAfterOf(spacing),
+    "--cs-bah-p": bodyAfterOf(spacingP),
+    "--cs-ptop-d": spacing.paragraphTop,
+    "--cs-ptop-p": spacingP.paragraphTop,
+    "--cs-jt-d": joinOf(spacing, paragraphGap),
+    "--cs-jt-p": joinOf(spacingP, paragraphGapP),
+    "--cs-pg-d": PARAGRAPH_GAP_CSS[paragraphGap],
+    "--cs-pg-p": PARAGRAPH_GAP_CSS[paragraphGapP],
+    "--cs-lg-d": LIST_GAPS[paragraphGap],
+    "--cs-lg-p": LIST_GAPS[paragraphGapP],
+    "--cs-bt-d": hasTextAbove ? spacing.paragraphTop : "0px",
+    "--cs-bt-p": hasTextAbove && spacingP.paragraphTop !== "0px" ? spacingP.paragraphTop : "0.75rem",
+  } as CSSProperties
+  // Extra space above a body block (index 0 = right after the heading or lead).
   const blockTop = (index: number): CSSProperties => {
-    if (index > 0) return spacing.paragraphTop === "0px" ? {} : { marginTop: spacing.paragraphTop }
-    if (!leadText && headingText && spacing.bodyAfterHeading !== "0px") {
-      return { marginTop: spacing.bodyAfterHeading }
-    }
+    if (index > 0) return { marginTop: "var(--cs-ptop)" }
+    if (!leadText && headingText) return { marginTop: "var(--cs-bah)" }
     return {}
   }
-  // With a tighter "Space between paragraphs", blocks of body text that follow each
-  // other (paragraph, bullet list) sit that close instead of the wider text-part gap.
+  // Blocks of body text that follow each other (paragraph, bullet list).
   const joinTop = (index: number): CSSProperties => {
-    if (paragraphGap === "normal" || index === 0) return {}
+    if (index === 0) return {}
     const prev = bodyBlocks[index - 1]
     const cur = bodyBlocks[index]
     if ((prev.kind === "text" || prev.kind === "list") && (cur.kind === "text" || cur.kind === "list")) {
-      return { marginTop: `calc(${PARAGRAPH_GAPS[paragraphGap]} - ${gap})` }
+      return { marginTop: "var(--cs-jt)" }
     }
     return {}
   }
@@ -620,7 +724,7 @@ export function ContentSection({
           flexDirection: "column",
           alignItems: ALIGN_ITEMS[alignment],
           textAlign: alignment,
-          gap,
+          gap: "var(--cs-gap)",
           maxWidth: CONTENT_WIDTHS[contentWidth],
           marginLeft: alignment === "left" ? 0 : "auto",
           marginRight: alignment === "right" ? 0 : "auto",
@@ -634,10 +738,7 @@ export function ContentSection({
               marginTop: 0,
               marginLeft: 0,
               marginRight: 0,
-              marginBottom:
-                headingText && spacing.eyebrowExtra !== "0px"
-                  ? spacing.eyebrowExtra
-                  : eyebrowStyle.marginBottom,
+              marginBottom: "var(--cs-eyb)",
               color: colEyebrow,
               fontSize: eyebrowStyle.fontSize,
               fontWeight: eyebrowStyle.fontWeight,
@@ -655,9 +756,9 @@ export function ContentSection({
               margin: 0,
               color: colHeading,
               fontFamily: FONT_STACKS[headingFont],
-              fontSize: HEADING_SIZES[headingSize],
+              fontSize: "var(--cs-hs)",
               fontWeight: WEIGHTS[headingWeight],
-              lineHeight: spacing.headingLH,
+              lineHeight: "var(--cs-hlh)",
               textWrap: "balance",
               ...(headingLevel === "h1" ? { textTransform: "capitalize" as const } : {}),
             }}
@@ -671,7 +772,7 @@ export function ContentSection({
             <div
               style={{
                 margin: 0,
-                ...(headingText && spacing.leadTop !== "0px" ? { marginTop: spacing.leadTop } : {}),
+                marginTop: "var(--cs-ltop)",
               }}
             >
               {splitParagraphs(leadText).map((para, i) => (
@@ -682,9 +783,9 @@ export function ContentSection({
                     marginTop: i === 0 ? 0 : PARAGRAPH_GAPS[paragraphGap],
                     ...(leadFont !== "body" ? { fontFamily: FONT_STACKS[leadFont] } : {}),
                     ...(leadColor ? { color: leadColor } : {}),
-                    fontSize: LEAD_SIZES[leadSize],
+                    fontSize: "var(--cs-ls)",
                     fontWeight: WEIGHTS[leadWeight],
-                    lineHeight: spacing.leadLH,
+                    lineHeight: "var(--cs-llh)",
                   }}
                 >
                   {formatInline(para)}
@@ -695,12 +796,12 @@ export function ContentSection({
             <p
               style={{
                 margin: 0,
-                ...(headingText && spacing.leadTop !== "0px" ? { marginTop: spacing.leadTop } : {}),
+                marginTop: "var(--cs-ltop)",
                 ...(leadFont !== "body" ? { fontFamily: FONT_STACKS[leadFont] } : {}),
                 ...(leadColor ? { color: leadColor } : {}),
-                fontSize: LEAD_SIZES[leadSize],
+                fontSize: "var(--cs-ls)",
                 fontWeight: WEIGHTS[leadWeight],
-                lineHeight: spacing.leadLH,
+                lineHeight: "var(--cs-llh)",
               }}
             >
               {formatInline(leadText)}
@@ -716,7 +817,7 @@ export function ContentSection({
                 paddingLeft: "1.35em",
                 listStyleType: "disc",
                 textAlign: "left",
-                fontSize: BODY_SIZES[bodySize],
+                fontSize: "var(--cs-bs)",
                 fontWeight: WEIGHTS[bodyWeight],
                 lineHeight: 1.7,
                 ...blockTop(index),
@@ -724,7 +825,7 @@ export function ContentSection({
               }}
             >
               {block.items.map((item, i) => (
-                <li key={i} style={{ paddingLeft: "0.25em", marginTop: i === 0 ? 0 : LIST_GAPS[paragraphGap] }}>
+                <li key={i} style={{ paddingLeft: "0.25em", marginTop: i === 0 ? 0 : "var(--cs-lg)" }}>
                   {formatInline(item)}
                 </li>
               ))}
@@ -743,7 +844,7 @@ export function ContentSection({
                 fontFamily: FONT_STACKS.georgia,
                 fontStyle: "italic",
                 fontWeight: 400,
-                fontSize: QUOTE_SIZES[bodySize],
+                fontSize: "var(--cs-qs)",
                 lineHeight: 1.55,
                 whiteSpace: "pre-line",
                 textWrap: "pretty",
@@ -778,7 +879,7 @@ export function ContentSection({
                 marginLeft: 0,
                 color: colHeading,
                 fontFamily: FONT_STACKS[headingFont],
-                fontSize: HEADING_SIZES[subSize],
+                fontSize: "var(--cs-hs)",
                 fontWeight: WEIGHTS[headingWeight],
                 lineHeight: 1.45,
                 textWrap: "balance",
@@ -787,15 +888,15 @@ export function ContentSection({
             >
               {formatInline(block.text)}
             </SubHeading>
-          ) : paragraphGap !== "normal" ? (
-            <div key={index} style={{ fontSize: BODY_SIZES[bodySize], ...blockTop(index), ...joinTop(index) }}>
+          ) : splitBodyParagraphs ? (
+            <div key={index} style={{ fontSize: "var(--cs-bs)", ...blockTop(index), ...joinTop(index) }}>
               {splitParagraphs(block.text).map((para, i) => (
                 <p
                   key={i}
                   style={{
                     margin: 0,
-                    marginTop: i === 0 ? 0 : PARAGRAPH_GAPS[paragraphGap],
-                    fontSize: BODY_SIZES[bodySize],
+                    marginTop: i === 0 ? 0 : "var(--cs-pg)",
+                    fontSize: "var(--cs-bs)",
                     fontWeight: WEIGHTS[bodyWeight],
                     lineHeight: 1.7,
                     whiteSpace: "pre-line",
@@ -811,7 +912,7 @@ export function ContentSection({
               key={index}
               style={{
                 margin: 0,
-                fontSize: BODY_SIZES[bodySize],
+                fontSize: "var(--cs-bs)",
                 fontWeight: WEIGHTS[bodyWeight],
                 lineHeight: 1.7,
                 whiteSpace: "pre-line",
@@ -829,7 +930,6 @@ export function ContentSection({
             className={phoneButtons === "full" ? "cs-btns cs-btns-full" : "cs-btns"}
             style={{
               justifyContent: ALIGN_ITEMS[alignment],
-              ...(hasTextAbove && spacing.paragraphTop !== "0px" ? { marginTop: spacing.paragraphTop } : {}),
             }}
           >
             <style>{BUTTON_ROW_CSS}</style>
@@ -898,9 +998,10 @@ export function ContentSection({
 
   return (
     <section
-      className={isBehind ? `${className} cs-behind`.trim() : className}
+      className={["cs-root", className, isBehind ? "cs-behind" : ""].filter(Boolean).join(" ")}
       style={
         {
+          ...phoneVars,
           position: "relative",
           width: "100%",
           overflow: "hidden",
@@ -916,6 +1017,7 @@ export function ContentSection({
         } as CSSProperties
       }
     >
+      <style>{PHONE_CSS}</style>
       {hasImage && <style>{IMAGE_CSS}</style>}
       {isBehind && (
         <>
