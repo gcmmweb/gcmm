@@ -8,6 +8,26 @@ import { ContentSection } from "@/components/ContentSection"
 // The text-style choices come straight from the Content Section, so they always match it.
 type HeaderStyle = React.ComponentProps<typeof ContentSection>
 
+// Space around the photos: the same named sizes as the Content Section.
+type SpaceChoice = "none" | "small" | "medium" | "large" | "xl"
+const SPACE_Y: Record<SpaceChoice, string> = {
+  none: "0px",
+  small: "clamp(1.5rem, 3vw, 2.5rem)",
+  medium: "clamp(2.5rem, 5vw, 4rem)",
+  large: "clamp(3.5rem, 7vw, 6rem)",
+  xl: "clamp(5rem, 10vw, 8rem)",
+}
+const SPACE_X: Record<SpaceChoice, string> = {
+  none: "0px",
+  small: "1rem",
+  medium: "clamp(1rem, 4vw, 2rem)",
+  large: "clamp(1.5rem, 6vw, 4rem)",
+  xl: "clamp(1rem, calc(8vw - 1rem), 6rem)",
+}
+// Pages that already have a custom value in the old Padding boxes keep it.
+const DEFAULT_PADDING_Y = "80px"
+const DEFAULT_PADDING_X = "40px"
+
 interface Photo {
   image: string
   alt: string
@@ -47,6 +67,7 @@ type SwipeRowProps = {
   borderRadius: string
   sectionPaddingY: string
   sectionPaddingTop?: string
+  sectionPaddingBottom?: string
   alignWithHeader?: boolean
   sectionPaddingX: string
   arrowSize: string
@@ -72,6 +93,7 @@ function SwipeRow({
   borderRadius,
   sectionPaddingY,
   sectionPaddingTop,
+  sectionPaddingBottom,
   alignWithHeader,
   sectionPaddingX,
   arrowSize,
@@ -160,7 +182,7 @@ function SwipeRow({
       style={{
         backgroundColor,
         paddingTop: sectionPaddingTop ?? sectionPaddingY,
-        paddingBottom: sectionPaddingY,
+        paddingBottom: sectionPaddingBottom ?? sectionPaddingY,
         width: "100%",
         overflow: "hidden",
       }}
@@ -345,6 +367,10 @@ export function PhotoCarousel({
   borderRadius = "12px",
   sectionPaddingY = "80px",
   sectionPaddingX = "40px",
+  spaceY,
+  spaceTop,
+  spaceBottom,
+  spaceX,
   arrowSize = "48px",
   arrowIconSize = "24px",
   randomizeOrder = false,
@@ -382,6 +408,10 @@ export function PhotoCarousel({
   borderRadius?: string
   sectionPaddingY?: string
   sectionPaddingX?: string
+  spaceY?: SpaceChoice
+  spaceTop?: SpaceChoice
+  spaceBottom?: SpaceChoice
+  spaceX?: SpaceChoice
   arrowSize?: string
   arrowIconSize?: string
   // Shuffles the photo order once per page load (browser only).
@@ -492,6 +522,14 @@ export function PhotoCarousel({
   // This sits after every hook above, so hook order is unchanged.
   if (!photos || photos.length === 0) return null
 
+  // Space around the photos. Named sizes like the Content Section; a page that already
+  // has custom Padding values keeps them until a Space setting is picked.
+  const anySpace = !!(spaceY || spaceTop || spaceBottom || spaceX)
+  const rawSpace = (sectionPaddingY !== DEFAULT_PADDING_Y || sectionPaddingX !== DEFAULT_PADDING_X) && !anySpace
+  const padTop = rawSpace ? sectionPaddingY : SPACE_Y[spaceTop ?? spaceY ?? "medium"]
+  const padBottom = rawSpace ? sectionPaddingY : SPACE_Y[spaceBottom ?? spaceY ?? "medium"]
+  const padX = rawSpace ? sectionPaddingX : SPACE_X[spaceX ?? "large"]
+
   // Optional heading block above the photos. It is the real Content Section (text only), so it
   // looks exactly like the other sections on the page. No text at all = nothing is added.
   const hasHeader = [eyebrow, heading, lead, body].some((v) => typeof v === "string" && v.trim() !== "")
@@ -526,7 +564,8 @@ export function PhotoCarousel({
       <Root {...rootProps}>
       {header}
       <SwipeRow
-        sectionPaddingTop={hasHeader ? HEADER_GAP : undefined}
+        sectionPaddingTop={hasHeader ? HEADER_GAP : padTop}
+        sectionPaddingBottom={padBottom}
         alignWithHeader={hasHeader}
         className={hasHeader ? undefined : className}
         photos={orderedPhotos.length > 0 ? orderedPhotos : photos}
@@ -543,8 +582,8 @@ export function PhotoCarousel({
         captionPlacement={captionPlacement}
         showCaptions={showCaptions}
         borderRadius={borderRadius}
-        sectionPaddingY={sectionPaddingY}
-        sectionPaddingX={sectionPaddingX}
+        sectionPaddingY={padBottom}
+        sectionPaddingX={padX}
         arrowSize={arrowSize}
         arrowIconSize={arrowIconSize}
         getImageUrl={getImageUrl}
@@ -562,8 +601,8 @@ export function PhotoCarousel({
       className={hasHeader ? "" : className || ""}
       style={{
         backgroundColor,
-        paddingTop: hasHeader ? HEADER_GAP : sectionPaddingY,
-        paddingBottom: sectionPaddingY,
+        paddingTop: hasHeader ? HEADER_GAP : padTop,
+        paddingBottom: padBottom,
         width: "100%",
         overflow: "hidden",
       }}
@@ -623,8 +662,8 @@ export function PhotoCarousel({
               justifyContent: "center",
               alignItems: "center",
               transition: "all 0.5s ease-out",
-              paddingLeft: sectionPaddingX,
-              paddingRight: sectionPaddingX,
+              paddingLeft: padX,
+              paddingRight: padX,
             }}
           >
             {visiblePhotos.map((photo, index) => {

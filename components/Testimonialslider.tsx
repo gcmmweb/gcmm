@@ -73,6 +73,30 @@ const SPACE_X: Record<SpaceChoice, string> = {
   large: "clamp(1.5rem, 6vw, 4rem)",
   xl: "clamp(1rem, calc(8vw - 1rem), 6rem)",
 }
+// Line spacing of the quote text in the Classic look. "normal" is the original 1.8.
+type LineSpacingChoice = "normal" | "medium" | "small" | "tight"
+type PhoneLineSpacing = LineSpacingChoice | "auto" | "same"
+const LINE_SPACINGS: Record<LineSpacingChoice, string> = {
+  normal: "1.8",
+  medium: "1.65",
+  small: "1.5",
+  tight: "1.35",
+}
+// On phones "auto" tightens Normal to Medium and leaves the others as chosen.
+function resolvePhoneLineSpacing(
+  choice: PhoneLineSpacing | undefined,
+  desktop: LineSpacingChoice
+): LineSpacingChoice {
+  if (choice === "same") return desktop
+  if (choice && choice !== "auto") return choice
+  return desktop === "normal" ? "medium" : desktop
+}
+// The old raw boxes still apply on pages that already had a custom value in them.
+const DEFAULT_PADDING = "3rem 1.5rem"
+const DEFAULT_MOBILE_PADDING = "2rem 0.5rem"
+const DEFAULT_QUOTE_FONT_SIZE = "1.25rem"
+const DEFAULT_QUOTE_LINE_HEIGHT = "1.8"
+
 // What each style looks like when the person has not chosen a size / italic.
 const STYLE_DEFAULTS: Record<Exclude<QuoteStyle, "classic">, { size: QuoteSize; italic: boolean }> = {
   pull: { size: "large", italic: true },
@@ -125,6 +149,8 @@ interface TestimonialSliderProps {
   // Typography - Quote
   quoteFontSize?: string
   quoteLineHeight?: string
+  quoteLineSpacing?: LineSpacingChoice
+  quoteLineSpacingPhone?: PhoneLineSpacing
   quoteFontWeight?: "normal" | "bold"
   quoteFontStyle?: "normal" | "italic"
   quoteFont?: "Nunito" | "Poppins" | "Georgia" | "Lexend"
@@ -292,6 +318,8 @@ export function TestimonialSlider({
   // Quote style (unset = classic = original look)
   quoteStyle = "classic",
   quoteSize,
+  quoteLineSpacing,
+  quoteLineSpacingPhone = "auto",
   quoteFace = "georgia",
   quoteItalic = "auto",
   markColor = GOLD,
@@ -306,12 +334,14 @@ export function TestimonialSlider({
   // Private id so this slider's styles never touch another slider on the page.
   const scopeId = "ts" + useId().replace(/[^a-zA-Z0-9]/g, "")
 
-  // Spacing dropdowns. Left blank = the old Padding boxes still apply, so
-  // existing pages do not change.
-  const useSpaceChoices = !!(spaceY || spaceTop || spaceBottom || spaceX)
+  // Space around the slider uses the same named sizes as the Content Section
+  // (None / Small / Medium / Large / Extra large). A page that was given custom
+  // Padding values before keeps them until a Space setting is picked.
+  const hasCustomPadding = padding !== DEFAULT_PADDING || mobilePadding !== DEFAULT_MOBILE_PADDING
+  const useRawPadding = hasCustomPadding && !(spaceY || spaceTop || spaceBottom || spaceX)
   const spacePadding = `${SPACE_Y[spaceTop ?? spaceY ?? "medium"]} ${SPACE_X[spaceX ?? "medium"]} ${SPACE_Y[spaceBottom ?? spaceY ?? "medium"]}`
-  const effPadding = useSpaceChoices ? spacePadding : padding
-  const effMobilePadding = useSpaceChoices ? spacePadding : mobilePadding
+  const effPadding = useRawPadding ? padding : spacePadding
+  const effMobilePadding = useRawPadding ? mobilePadding : spacePadding
 
   // Display order for the testimonials. Starts as the original CMS order
   // (so the server render and the client's first render match, avoiding a
@@ -710,6 +740,17 @@ export function TestimonialSlider({
     )
   }
 
+  // Classic look: quote size and line spacing. A custom raw value from an older page
+  // is kept until a named setting is picked.
+  const useRawQuoteSize = quoteFontSize !== DEFAULT_QUOTE_FONT_SIZE && !quoteSize
+  const classicQuoteSize = useRawQuoteSize ? quoteFontSize : QUOTE_SIZES[quoteSize ?? "small"]
+  const useRawLine = quoteLineHeight !== DEFAULT_QUOTE_LINE_HEIGHT && !quoteLineSpacing
+  const lineDesktop: LineSpacingChoice = quoteLineSpacing ?? "normal"
+  const lineCssDesktop = useRawLine ? quoteLineHeight : LINE_SPACINGS[lineDesktop]
+  const lineCssPhone = useRawLine
+    ? quoteLineHeight
+    : LINE_SPACINGS[resolvePhoneLineSpacing(quoteLineSpacingPhone, lineDesktop)]
+
   return (
     <div
       className={`relative ${scopeId} ${className}`}
@@ -726,6 +767,9 @@ export function TestimonialSlider({
           .${scopeId} .testimonial-flex-container {
             gap: 1.5rem;
           }
+          .${scopeId} .tm-quote {
+            line-height: ${lineCssDesktop};
+          }
           .${scopeId} .testimonial-arrow {
             padding: 0.5rem;
           }
@@ -736,6 +780,9 @@ export function TestimonialSlider({
           @media (max-width: 768px) {
             .${scopeId} .testimonial-outer-wrapper {
               padding: ${effMobilePadding};
+            }
+            .${scopeId} .tm-quote {
+              line-height: ${lineCssPhone};
             }
             .${scopeId} .testimonial-content-wrapper {
               max-width: ${mobileMaxWidth};
@@ -817,11 +864,10 @@ export function TestimonialSlider({
             )}
 
             <blockquote
-              className="mb-6"
+              className="mb-6 tm-quote"
               style={{
                 fontFamily: QUOTE_FONT_STACKS[quoteFont] ?? QUOTE_FONT_STACKS.Nunito,
-                fontSize: quoteFontSize,
-                lineHeight: quoteLineHeight,
+                fontSize: classicQuoteSize,
                 fontWeight: quoteFontWeight,
                 fontStyle: quoteFontStyle,
                 color: textColor,

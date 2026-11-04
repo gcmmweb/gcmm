@@ -785,14 +785,43 @@ PLASMIC.registerComponent(TestimonialSlider, {
     quoteSize: {
       type: "choice",
       displayName: "Quote size",
-      description: "Blank = the best size for the chosen style.",
+      description: "Small is about the old size on computers and a little smaller on phones. Blank = the best size for the chosen style.",
       options: [
         { value: "small", label: "Small" },
         { value: "medium", label: "Medium" },
         { value: "large", label: "Large" },
         { value: "xl", label: "Extra large" },
       ],
-      hidden: (props: any) => !props.quoteStyle || props.quoteStyle === "classic",
+      section: "Style",
+    },
+    quoteLineSpacing: {
+      hidden: (props: any) => !!props.quoteStyle && props.quoteStyle !== "classic",
+      type: "choice",
+      displayName: "Quote line spacing",
+      description: "How far apart the lines of the quote sit. Normal is the original look. Pick a tighter one for a shorter read.",
+      options: [
+        { value: "normal", label: "Normal (original)" },
+        { value: "medium", label: "Medium" },
+        { value: "small", label: "Small" },
+        { value: "tight", label: "Tight" },
+      ],
+      defaultValue: "normal",
+      section: "Style",
+    },
+    quoteLineSpacingPhone: {
+      hidden: (props: any) => !!props.quoteStyle && props.quoteStyle !== "classic",
+      type: "choice",
+      displayName: "Quote line spacing on phones",
+      description: "Automatic = Normal becomes Medium on phones so the quote is shorter to read. Pick one to force it on phones.",
+      options: [
+        { value: "auto", label: "Automatic (tighter on phones)" },
+        { value: "same", label: "Same as computer" },
+        { value: "normal", label: "Normal" },
+        { value: "medium", label: "Medium" },
+        { value: "small", label: "Small" },
+        { value: "tight", label: "Tight" },
+      ],
+      defaultValue: "auto",
       section: "Style",
     },
     quoteFace: {
@@ -1097,7 +1126,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
       section: "Typography - Quote",
     },
     quoteFontSize: {
-      hidden: (props: any) => !!props.quoteStyle && props.quoteStyle !== "classic",
+      hidden: (props: any) => (!!props.quoteStyle && props.quoteStyle !== "classic") || (props.quoteFontSize === undefined || props.quoteFontSize === "1.25rem"),
       type: "string",
       displayName: "Quote Font Size",
       defaultValue: "1.25rem",
@@ -1105,7 +1134,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
       section: "Typography - Quote",
     },
     quoteLineHeight: {
-      hidden: (props: any) => !!props.quoteStyle && props.quoteStyle !== "classic",
+      hidden: (props: any) => (!!props.quoteStyle && props.quoteStyle !== "classic") || (props.quoteLineHeight === undefined || props.quoteLineHeight === "1.8"),
       type: "string",
       displayName: "Quote Line Height",
       defaultValue: "1.8",
@@ -1139,7 +1168,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
       section: "Typography - Name",
     },
     nameLineHeight: {
-      hidden: (props: any) => !!props.quoteStyle && props.quoteStyle !== "classic",
+      hidden: (props: any) => (!!props.quoteStyle && props.quoteStyle !== "classic") || (props.nameLineHeight === undefined || props.nameLineHeight === "1.4"),
       type: "string",
       displayName: "Name Line Height",
       defaultValue: "1.4",
@@ -1173,7 +1202,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
       section: "Typography - Title",
     },
     titleLineHeight: {
-      hidden: (props: any) => !!props.quoteStyle && props.quoteStyle !== "classic",
+      hidden: (props: any) => (!!props.quoteStyle && props.quoteStyle !== "classic") || (props.titleLineHeight === undefined || props.titleLineHeight === "1.5"),
       type: "string",
       displayName: "Title Line Height",
       defaultValue: "1.5",
@@ -1207,7 +1236,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
       section: "Typography - Organization",
     },
     organizationLineHeight: {
-      hidden: (props: any) => !!props.quoteStyle && props.quoteStyle !== "classic",
+      hidden: (props: any) => (!!props.quoteStyle && props.quoteStyle !== "classic") || (props.organizationLineHeight === undefined || props.organizationLineHeight === "1.5"),
       type: "string",
       displayName: "Organization Line Height",
       defaultValue: "1.5",
@@ -1241,7 +1270,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
       section: "Typography - Location",
     },
     locationLineHeight: {
-      hidden: (props: any) => !!props.quoteStyle && props.quoteStyle !== "classic",
+      hidden: (props: any) => (!!props.quoteStyle && props.quoteStyle !== "classic") || (props.locationLineHeight === undefined || props.locationLineHeight === "1.5"),
       type: "string",
       displayName: "Location Line Height",
       defaultValue: "1.5",
@@ -1278,7 +1307,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
     spaceY: {
       type: "choice",
       displayName: "Space above & below",
-      description: "Pick a size instead of typing Padding. Leave all four space settings unset to keep using the Padding boxes below.",
+      description: "Space above and below the slider. Same sizes as the Content Section.",
       options: [
         { value: "none", label: "None" },
         { value: "small", label: "Small" },
@@ -1286,6 +1315,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
         { value: "large", label: "Large" },
         { value: "xl", label: "Extra large" },
       ],
+      defaultValue: "medium",
       section: "Layout",
     },
     spaceTop: {
@@ -1317,6 +1347,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
     spaceX: {
       type: "choice",
       displayName: "Space left & right",
+      description: "Space at the sides of the slider. Same sizes as the Content Section.",
       options: [
         { value: "none", label: "None" },
         { value: "small", label: "Small" },
@@ -1324,6 +1355,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
         { value: "large", label: "Large" },
         { value: "xl", label: "Extra large" },
       ],
+      defaultValue: "medium",
       section: "Layout",
     },
     maxWidth: {
@@ -1341,6 +1373,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
       section: "Layout",
     },
     padding: {
+      hidden: (props: any) => (props.padding === undefined || props.padding === "3rem 1.5rem"),
       type: "string",
       displayName: "Padding",
       defaultValue: "3rem 1.5rem",
@@ -1348,6 +1381,7 @@ PLASMIC.registerComponent(TestimonialSlider, {
       section: "Layout",
     },
     mobilePadding: {
+      hidden: (props: any) => (props.mobilePadding === undefined || props.mobilePadding === "2rem 0.5rem"),
       type: "string",
       displayName: "Mobile Padding",
       defaultValue: "2rem 0.5rem",
@@ -4529,8 +4563,59 @@ PLASMIC.registerComponent(PhotoCarousel, {
       description: "Show the photos in a random order each time the page loads, instead of the order they're listed in below",
     },
 
-    // Spacing
+    // Spacing (same sizes as the Content Section)
+    spaceY: {
+      type: "choice",
+      displayName: "Space above & below",
+      description: "Space above and below the photos. Same sizes as the Content Section.",
+      options: [
+        { value: "none", label: "None" },
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "medium",
+    },
+    spaceTop: {
+      type: "choice",
+      displayName: "Space above (optional)",
+      description: "Changes only the top space. Leave unset to follow 'Space above & below'.",
+      options: [
+        { value: "none", label: "None" },
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+    },
+    spaceBottom: {
+      type: "choice",
+      displayName: "Space below (optional)",
+      description: "Changes only the bottom space. Leave unset to follow 'Space above & below'.",
+      options: [
+        { value: "none", label: "None" },
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+    },
+    spaceX: {
+      type: "choice",
+      displayName: "Space left & right",
+      description: "Space at the sides of the photo row (room for the arrows).",
+      options: [
+        { value: "none", label: "None" },
+        { value: "small", label: "Small" },
+        { value: "medium", label: "Medium" },
+        { value: "large", label: "Large" },
+        { value: "xl", label: "Extra large" },
+      ],
+      defaultValue: "large",
+    },
     sectionPaddingY: {
+      hidden: (props: any) => props.sectionPaddingY === undefined || props.sectionPaddingY === "80px",
       type: "string",
       displayName: "Section Padding Y",
       defaultValue: "80px",
@@ -4538,6 +4623,7 @@ PLASMIC.registerComponent(PhotoCarousel, {
     },
 
 sectionPaddingX: {
+        hidden: (props: any) => props.sectionPaddingX === undefined || props.sectionPaddingX === "40px",
         type: "string",
         displayName: "Section Padding X",
         defaultValue: "40px",
