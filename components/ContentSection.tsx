@@ -759,7 +759,6 @@ export function ContentSection({
               fontSize: "var(--cs-hs)",
               fontWeight: WEIGHTS[headingWeight],
               lineHeight: "var(--cs-hlh)",
-              textWrap: "balance",
               ...(headingLevel === "h1" ? { textTransform: "capitalize" as const } : {}),
             }}
           >
@@ -882,7 +881,6 @@ export function ContentSection({
                 fontSize: "var(--cs-hs)",
                 fontWeight: WEIGHTS[headingWeight],
                 lineHeight: 1.45,
-                textWrap: "balance",
                 ...blockTop(index),
               }}
             >
