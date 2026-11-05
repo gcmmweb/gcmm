@@ -4453,18 +4453,6 @@ PLASMIC.registerComponent(PhotoCarousel, {
       defaultValue: "300px",
       description: "Height of each photo (e.g., 300px, 400px, 50vh)",
     },
-    gap: {
-      type: "string",
-      displayName: "Gap Between Photos",
-      defaultValue: "24px",
-      description: "Space between photos (e.g., 16px, 24px, 32px)",
-    },
-    borderRadius: {
-      type: "string",
-      displayName: "Border Radius",
-      defaultValue: "12px",
-      description: "Border radius for photos (e.g., 0px, 8px, 12px, 50%)",
-    },
 
     // Colors
     backgroundColor: {
@@ -4473,44 +4461,7 @@ PLASMIC.registerComponent(PhotoCarousel, {
       defaultValue: "#ffffff",
       description: "Section background color",
     },
-    arrowColor: {
-      type: "string",
-      displayName: "Arrow Color",
-      defaultValue: "#1f2937",
-      description: "Color of navigation arrows",
-    },
-    arrowHoverColor: {
-      type: "string",
-      displayName: "Arrow Hover Color",
-      defaultValue: "#374151",
-      description: "Arrow color on hover",
-    },
-    arrowBackgroundColor: {
-      type: "string",
-      displayName: "Arrow Background",
-      defaultValue: "#ffffff",
-      description: "Background color of arrow buttons",
-    },
-    arrowBackgroundHoverColor: {
-      type: "string",
-      displayName: "Arrow Background Hover",
-      defaultValue: "#f3f4f6",
-      description: "Arrow button background on hover",
-    },
 
-    // Arrow Size
-    arrowSize: {
-      type: "string",
-      displayName: "Arrow Button Size",
-      defaultValue: "48px",
-      description: "Size of arrow buttons (e.g., 40px, 48px, 56px)",
-    },
-    arrowIconSize: {
-      type: "string",
-      displayName: "Arrow Icon Size",
-      defaultValue: "24px",
-      description: "Size of arrow icons (e.g., 20px, 24px, 28px)",
-    },
 
     // Caption Settings
     showCaptions: {

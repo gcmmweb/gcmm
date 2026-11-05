@@ -878,7 +878,7 @@ export function ContentSection({
                 marginLeft: 0,
                 color: colHeading,
                 fontFamily: FONT_STACKS[headingFont],
-                fontSize: "calc(var(--cs-hs) - 0.25rem)",
+                fontSize: "calc(var(--cs-hs) * 0.8)",
                 fontWeight: WEIGHTS[headingWeight],
                 lineHeight: 1.45,
                 ...blockTop(index),

@@ -353,26 +353,18 @@ export function PhotoCarousel({
   photosPerView = 3,
   photoWidth = "400px",
   photoHeight = "300px",
-  gap = "24px",
   backgroundColor = "#ffffff",
-  arrowColor = "#1f2937",
-  arrowHoverColor = "#374151",
-  arrowBackgroundColor = "#ffffff",
-  arrowBackgroundHoverColor = "#f3f4f6",
   captionColor = "#1f2937",
   captionBackgroundColor = "rgba(255, 255, 255, 0.9)",
   showCaptions = true,
   autoplay = false,
   autoplayInterval = 3000,
-  borderRadius = "12px",
   sectionPaddingY = "80px",
   sectionPaddingX = "40px",
   spaceY,
   spaceTop,
   spaceBottom,
   spaceX,
-  arrowSize = "48px",
-  arrowIconSize = "24px",
   randomizeOrder = false,
   carouselStyle = "classic",
   captionPlacement = "below",
@@ -394,26 +386,18 @@ export function PhotoCarousel({
   photosPerView?: number
   photoWidth?: string
   photoHeight?: string
-  gap?: string
   backgroundColor?: string
-  arrowColor?: string
-  arrowHoverColor?: string
-  arrowBackgroundColor?: string
-  arrowBackgroundHoverColor?: string
   captionColor?: string
   captionBackgroundColor?: string
   showCaptions?: boolean
   autoplay?: boolean
   autoplayInterval?: number
-  borderRadius?: string
   sectionPaddingY?: string
   sectionPaddingX?: string
   spaceY?: SpaceChoice
   spaceTop?: SpaceChoice
   spaceBottom?: SpaceChoice
   spaceX?: SpaceChoice
-  arrowSize?: string
-  arrowIconSize?: string
   // Shuffles the photo order once per page load (browser only).
   // Off by default so existing carousels keep their current order.
   randomizeOrder?: boolean
@@ -437,6 +421,15 @@ export function PhotoCarousel({
   headingSize?: HeaderStyle["headingSize"]
   headingWeight?: HeaderStyle["headingWeight"]
 }) {
+  // Fixed look, the same on every page (simplified Nov 2026).
+  const gap = "24px"
+  const borderRadius = "12px"
+  const arrowColor = "#1f2937"
+  const arrowHoverColor = "#374151"
+  const arrowBackgroundColor = "#ffffff"
+  const arrowBackgroundHoverColor = "#f3f4f6"
+  const arrowSize = "48px"
+  const arrowIconSize = "24px"
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isLeftHovered, setIsLeftHovered] = useState(false)
   const [isRightHovered, setIsRightHovered] = useState(false)
