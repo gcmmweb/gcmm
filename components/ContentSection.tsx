@@ -1019,7 +1019,7 @@ export function ContentSection({
         <>
           <Image
             src={getImageUrl(imageSrc)}
-            alt=""
+            alt={alt}
             fill
             sizes="100vw"
             style={{ objectFit: "cover", objectPosition: IMAGE_FOCUS[imageFocus] ?? "50% 50%", zIndex: 0 }}
