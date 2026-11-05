@@ -2375,9 +2375,9 @@ PLASMIC.registerComponent(ContentSection, {
     textSpacingPhone: {
       type: "choice",
       displayName: "Space between text parts on phones",
-      description: "Automatic = a little tighter on phones (Medium becomes Small-medium, Large becomes Medium). Pick one to force it on phones.",
+      description: "Automatic = the same as the computer. Pick one to force a different spacing on phones.",
       options: [
-        { value: "auto", label: "Automatic (tighter on phones)" },
+        { value: "auto", label: "Automatic (same as computer)" },
         { value: "same", label: "Same as computer" },
         { value: "small", label: "Small (close together)" },
         { value: "comfortable", label: "Small-medium (comfortable)" },
@@ -2403,9 +2403,9 @@ PLASMIC.registerComponent(ContentSection, {
     paragraphGapPhone: {
       type: "choice",
       displayName: "Space between paragraphs on phones",
-      description: "Automatic = Normal becomes Medium on phones, so the text is shorter to scroll. Pick one to force it on phones.",
+      description: "Automatic = the same as the computer. Pick one to force a different spacing on phones.",
       options: [
-        { value: "auto", label: "Automatic (tighter on phones)" },
+        { value: "auto", label: "Automatic (same as computer)" },
         { value: "same", label: "Same as computer" },
         { value: "normal", label: "Normal (a full empty line)" },
         { value: "medium", label: "Medium" },

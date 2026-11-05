@@ -248,9 +248,7 @@ function resolvePhoneSize(choice: PhoneSize | undefined, desktop: SizeChoice): S
 function resolvePhoneSpacing(choice: PhoneTextSpacing | undefined, desktop: TextSpacing): TextSpacing {
   if (choice === "same") return desktop
   if (choice && choice !== "auto") return choice
-  if (desktop === "medium") return "comfortable"
-  if (desktop === "large") return "medium"
-  return desktop
+  return desktop // Automatic = same as the computer
 }
 
 function resolvePhoneParagraphGap(
@@ -259,7 +257,7 @@ function resolvePhoneParagraphGap(
 ): ParagraphGap {
   if (choice === "same") return desktop
   if (choice && choice !== "auto") return choice
-  return desktop === "normal" ? "medium" : desktop
+  return desktop // Automatic = same as the computer
 }
 
 function cssValue(v: string | number): string {
