@@ -140,9 +140,7 @@ import { TimelinePage } from "@/components/timeline-page"
 
 import { TermsAndConditionsPage} from "@/components/terms-and-conditions-page"
 
-import { NewsletterPost } from "@/components/newsletter-post"
 
-import { NewsPostTemplate } from "@/components/news-post-template"
 
 import { AboutUsPage } from "@/components/about-us"
 
