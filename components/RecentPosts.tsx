@@ -232,6 +232,7 @@ export function RecentPosts({
                 <Link
                   href={post.url || "#"}
                   {...(isExternalUrl(post.url || "") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                  aria-label={`Read more: ${post.title}`}
                   style={{
                     display: "inline-flex",
                     alignItems: "center",

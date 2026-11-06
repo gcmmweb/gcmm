@@ -329,7 +329,7 @@ export function MinistriesPage({
   ]
 
   return (
-    <main className={`overflow-hidden ${className || ""}`}>
+    <div className={`overflow-hidden ${className || ""}`}>
       {/* Hero Section */}
       <section ref={heroRef} className="py-32 lg:py-40 bg-gradient-to-b from-gray-50 to-white">
         <div className="container mx-auto px-6 lg:px-8 max-w-7xl">
@@ -543,6 +543,6 @@ export function MinistriesPage({
           </div>
         </div>
       </section>
-    </main>
+    </div>
   )
 }

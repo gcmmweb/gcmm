@@ -323,7 +323,7 @@ export function TransformerBlogPage({
       )}
 
       {/* Main Content */}
-      <main className={`${getLayoutClasses()} mx-auto px-6 py-16`}>
+      <div className={`${getLayoutClasses()} mx-auto px-6 py-16`}>
         <div className={`grid gap-8 ${sidebar ? "lg:grid-cols-3" : "grid-cols-1"}`}>
           {/* Article Content */}
           <article className={sidebar ? "lg:col-span-2" : "col-span-1"}>
@@ -369,7 +369,7 @@ export function TransformerBlogPage({
             </aside>
           )}
         </div>
-      </main>
+      </div>
     </div>
   )
 }

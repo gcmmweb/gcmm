@@ -433,6 +433,7 @@ export function News2({
                   <Link
                     href={article.url || "#"}
                     {...(isExternalUrl(article.url || "") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                    aria-label={`Read more: ${article.title}`}
                     style={{
                       display: "inline-flex",
                       alignItems: "center",

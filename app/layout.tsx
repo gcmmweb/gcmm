@@ -103,7 +103,7 @@ export default async function RootLayout({
       </head>
       <body className="antialiased">
         <SiteAnnouncement data={announcement} />
-        {children}
+        <main id="main-content">{children}</main>
         <Analytics />
         <SpeedInsights />
         <TrackClicks />

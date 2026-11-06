@@ -207,7 +207,7 @@ export function VideosPage({
   }
 
   return (
-    <main className={`overflow-hidden font-light ${className || ""}`}>
+    <div className={`overflow-hidden font-light ${className || ""}`}>
       {/* Hero Section */}
       <section ref={heroRef} className="py-32 lg:py-40 bg-gradient-to-b from-slate-50 via-white to-gray-50/30">
         <div className="container mx-auto px-8 lg:px-12 max-w-6xl">
@@ -374,6 +374,6 @@ export function VideosPage({
           </div>
         </div>
       </section>
-    </main>
+    </div>
   )
 }

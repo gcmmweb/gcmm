@@ -682,7 +682,7 @@ export function StripeDonationPage({
   }, [isMatchingSelected, donationForm.frequency])
 
   return (
-    <main className={`overflow-hidden font-light ${className || ""}`}>
+    <div className={`overflow-hidden font-light ${className || ""}`}>
       <LocationNoticeModal
         show={showLocationNotice}
         detectedCountry={detectedCountry}
@@ -1122,7 +1122,7 @@ export function StripeDonationPage({
           </div>
         </section>
       )}
-    </main>
+    </div>
   )
 }
 

@@ -90,7 +90,7 @@ export function TermsAndConditionsPage({
   ]
 
   return (
-    <main className={`overflow-hidden font-light ${className || ""}`}>
+    <div className={`overflow-hidden font-light ${className || ""}`}>
       <section className="py-32 bg-gradient-to-br from-slate-50 to-white">
         <div className="container mx-auto px-8 lg:px-12 max-w-5xl">
           <div className="max-w-4xl mx-auto">
@@ -116,6 +116,6 @@ export function TermsAndConditionsPage({
           </div>
         </div>
       </section>
-    </main>
+    </div>
   )
 }

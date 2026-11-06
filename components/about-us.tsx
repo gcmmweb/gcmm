@@ -306,7 +306,7 @@ export function AboutUsPage({
   }
 
   return (
-    <main className={`bg-[#FAFAF8] ${className || ""}`}>
+    <div className={`bg-[#FAFAF8] ${className || ""}`}>
       {/* Hero Section */}
       {showHeroSection && (
         <section
@@ -511,7 +511,7 @@ export function AboutUsPage({
           </div>
         </section>
       )}
-    </main>
+    </div>
   )
 }
 

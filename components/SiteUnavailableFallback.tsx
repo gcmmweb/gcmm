@@ -6,7 +6,7 @@
 
 export function SiteUnavailableFallback({ pathname }: { pathname?: string }) {
   return (
-    <main
+    <div
       style={{
         minHeight: "60vh",
         display: "flex",
@@ -52,6 +52,6 @@ export function SiteUnavailableFallback({ pathname }: { pathname?: string }) {
           .
         </p>
       </div>
-    </main>
+    </div>
   )
 }
