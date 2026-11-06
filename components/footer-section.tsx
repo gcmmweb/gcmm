@@ -203,7 +203,7 @@ export function FooterSection({
       >
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-xs sm:text-sm text-center">
-            <span style={{ color: copyrightTextColor }}>{copyrightText}</span>
+            <span style={{ color: copyrightTextColor }} suppressHydrationWarning>{copyrightText.replace(/©\s*\d{4}/, `© ${new Date().getFullYear()}`)}</span>
             <span className="hidden sm:inline" style={{ color: separatorColor }}>
               |
             </span>
