@@ -614,6 +614,8 @@ export function PhotoCarousel({
           {/* Left Arrow */}
           {currentIndex > 0 && (
             <button
+              type="button"
+              aria-label="Previous photo"
               onClick={handlePrevious}
               onMouseEnter={() => setIsLeftHovered(true)}
               onMouseLeave={() => setIsLeftHovered(false)}
@@ -724,6 +726,8 @@ export function PhotoCarousel({
           {/* Right Arrow */}
           {currentIndex < maxIndex && (
             <button
+              type="button"
+              aria-label="Next photo"
               onClick={handleNext}
               onMouseEnter={() => setIsRightHovered(true)}
               onMouseLeave={() => setIsRightHovered(false)}
@@ -764,24 +768,41 @@ export function PhotoCarousel({
             style={{
               display: "flex",
               justifyContent: "center",
-              gap: "8px",
-              marginTop: "32px",
+              flexWrap: "wrap",
+              gap: "0px",
+              marginTop: "16px",
             }}
           >
             {Array.from({ length: maxIndex + 1 }).map((_, index) => (
               <button
                 key={index}
+                type="button"
                 onClick={() => setCurrentIndex(index)}
+                aria-label={`Go to photo ${index + 1}`}
+                aria-current={currentIndex === index ? "true" : undefined}
                 style={{
-                  width: currentIndex === index ? "32px" : "8px",
-                  height: "8px",
-                  borderRadius: "4px",
+                  width: "44px",
+                  height: "44px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: "none",
                   border: "none",
-                  backgroundColor: currentIndex === index ? arrowColor : "#d1d5db",
+                  padding: 0,
                   cursor: "pointer",
-                  transition: "all 0.3s ease-out",
                 }}
-              />
+              >
+                <span
+                  style={{
+                    display: "block",
+                    width: currentIndex === index ? "32px" : "8px",
+                    height: "8px",
+                    borderRadius: "4px",
+                    backgroundColor: currentIndex === index ? arrowColor : "#d1d5db",
+                    transition: "all 0.3s ease-out",
+                  }}
+                />
+              </button>
             ))}
           </div>
         )}
