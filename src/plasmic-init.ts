@@ -163,6 +163,7 @@ import { IconCard } from "@/components/icongrid"
 
 
 import { ContentSection } from "@/components/ContentSection"
+import { SerifHero } from "@/components/SerifHero"
 import { VideoSection } from "@/components/VideoSection"
 
 import { CardGrid } from "@/components/CardGrid"
@@ -16628,4 +16629,114 @@ PLASMIC.registerComponent(VideoSection, {
     },
   },
   importPath: "./components/VideoSection",
+} as any);
+
+// ---- Serif Hero (Nov 2026) ----
+// Garri's original About page look as its own piece. Built next to the old
+// "About Us Page", which stays until Find All References is clean.
+PLASMIC.registerComponent(SerifHero, {
+  name: "SerifHero",
+  displayName: "Serif Hero",
+  description:
+    "Page opening with a big light serif heading and one italic word, a small label above, a short paragraph below and a bouncing scroll icon. Leave any text blank and it disappears.",
+  props: {
+    className: {
+      type: "class",
+      displayName: "CSS Class",
+    },
+
+    // ---- Content ----
+    eyebrow: {
+      type: "string",
+      displayName: "Label above heading",
+      description: "Small capital letters above the heading. Leave blank to hide it.",
+      section: "Content",
+    },
+    headingStart: {
+      type: "string",
+      displayName: "Heading - first words",
+      description: "The heading is built in three parts so one word can be italic. Example: Broadcasting",
+      defaultValue: "Your heading",
+      section: "Content",
+    },
+    headingItalic: {
+      type: "string",
+      displayName: "Heading - italic word",
+      description: "The word shown in italic. Example: Hope. Leave blank for no italic word.",
+      defaultValue: "here",
+      section: "Content",
+    },
+    headingEnd: {
+      type: "string",
+      displayName: "Heading - last words",
+      description: "Words after the italic word. Example: to the world. Leave blank if none.",
+      section: "Content",
+    },
+    headingLevel: {
+      type: "choice",
+      displayName: "Heading level",
+      description: "Use H1 only ONCE per page (the main title). Everything else H2.",
+      options: [
+        { value: "h1", label: "H1 (main page title)" },
+        { value: "h2", label: "H2 (section)" },
+      ],
+      defaultValue: "h1",
+      section: "Content",
+    },
+    description: {
+      type: "string",
+      control: "large",
+      displayName: "Paragraph under heading",
+      description: "Format words: **bold**, *italic*, ***bold and italic***. Example: Help **one person** discover the *mission*.",
+      section: "Content",
+    },
+
+    // ---- Layout ----
+    showScrollIcon: {
+      type: "boolean",
+      displayName: "Show scroll icon",
+      description: "The little bouncing mouse at the bottom of the hero.",
+      defaultValue: true,
+      section: "Layout",
+    },
+    height: {
+      type: "choice",
+      displayName: "Hero height",
+      options: [
+        { value: "tall", label: "Tall (original)" },
+        { value: "medium", label: "Medium" },
+        { value: "short", label: "Short" },
+      ],
+      defaultValue: "tall",
+      section: "Layout",
+    },
+
+    // ---- Colors (defaults = the original About page colors, brand blue on off-white) ----
+    backgroundColor: {
+      type: "color",
+      displayName: "Background",
+      defaultValue: "#FAFAF8",
+      section: "Colors",
+    },
+    accentColor: {
+      type: "color",
+      displayName: "Label and scroll icon",
+      description: "Also the soft fade at the top of the hero.",
+      defaultValue: "#1B4B6B",
+      section: "Colors",
+    },
+    headingColor: {
+      type: "color",
+      displayName: "Heading",
+      defaultValue: "#0A0A0A",
+      section: "Colors",
+    },
+    textColor: {
+      type: "color",
+      displayName: "Paragraph",
+      defaultValue: "#4A4A4A",
+      section: "Colors",
+    },
+  },
+  importPath: "./components/SerifHero",
 } as any);
