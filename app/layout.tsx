@@ -45,6 +45,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <head>
+        <link rel="preconnect" href="https://site-assets.plasmic.app" />
         <link
           rel="preload"
           href="/fonts/nunito-400-800-latin.woff2"

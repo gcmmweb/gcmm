@@ -137,6 +137,7 @@ import { News2 } from "@/components/news2"
 import { StaffPage } from "@/components/staff-page"
 
 import { TimelinePage } from "@/components/timeline-page"
+import { Timeline } from "@/components/Timeline"
 
 import { TermsAndConditionsPage} from "@/components/terms-and-conditions-page"
 
@@ -5622,6 +5623,177 @@ PLASMIC.registerComponent(StaffPage, {
     },
   },
   importPath: "./components/staff-page",
+});
+
+PLASMIC.registerComponent(Timeline, {
+  name: "Timeline",
+  displayName: "Timeline",
+  description:
+    "A vertical timeline of years and events. Click + Add item for each entry. Replaces the old Timeline Page and the Our Journey boxes.",
+  props: {
+    className: {
+      type: "class",
+      displayName: "Custom Classes",
+      description: "CSS classes for full styling control",
+    },
+
+    // ---- Heading block ----
+    title: {
+      type: "string",
+      displayName: "Heading",
+      description: "Format words: **bold**, *italic*, ***bold and italic***. Example: Our *Story*.",
+      section: "Heading block",
+    },
+    subtitle: {
+      type: "string",
+      control: "large",
+      displayName: "Lead line (text under heading)",
+      description: "Optional. Format words: **bold**, *italic*, ***bold and italic***. Leave empty to show nothing.",
+      section: "Heading block",
+    },
+    headingLevel: {
+      type: "choice",
+      displayName: "Heading level",
+      description: "Use H2 for most sections. Entry titles automatically sit one level below it.",
+      options: [
+        { value: "h1", label: "H1 (main page title)" },
+        { value: "h2", label: "H2 (section)" },
+        { value: "h3", label: "H3 (sub-section)" },
+      ],
+      defaultValue: "h2",
+      section: "Heading block",
+    },
+    headingFont: {
+      type: "choice",
+      displayName: "Heading font",
+      options: [
+        { value: "georgia", label: "Georgia" },
+        { value: "nunito", label: "Nunito" },
+        { value: "poppins", label: "Poppins" },
+        { value: "lexend", label: "Lexend" },
+        { value: "site", label: "Site default" },
+      ],
+      defaultValue: "georgia",
+      section: "Heading block",
+    },
+
+    // ---- Entries ----
+    timelineEvents: {
+      type: "array",
+      displayName: "Timeline entries",
+      description: "Click + Add item for each entry. Each entry is named by its year and title.",
+      section: "Timeline entries",
+      defaultValue: [
+        { year: "Year", title: "Event title", description: "Describe what happened in a sentence or two.", highlight: false, hasImage: true, readMore: "auto" },
+        { year: "Year", title: "Event title", description: "Describe what happened in a sentence or two.", highlight: false, hasImage: true, readMore: "auto" },
+      ],
+      itemType: {
+        type: "object",
+        nameFunc: (item: any) => (item.year ? `${item.year} - ${item.title || "Untitled"}` : item.title || "New entry"),
+        fields: {
+          year: {
+            type: "string",
+            displayName: "Year",
+            description: "Example: 1984 or 1984-1985. Years never split onto two lines.",
+          },
+          title: {
+            type: "string",
+            displayName: "Title",
+            description: "Format words: **bold**, *italic*.",
+          },
+          description: {
+            type: "string",
+            control: "large",
+            displayName: "Text",
+            description: "Format words: **bold**, *italic*, ***bold and italic***. A blank line starts a new paragraph.",
+          },
+          highlight: {
+            type: "boolean",
+            displayName: "Highlight (bigger dot)",
+            description: "Turn on for the big moments in the story.",
+            defaultValue: false,
+          },
+          hasImage: {
+            type: "boolean",
+            displayName: "Show photo",
+            description: "Turn off to hide the photo without deleting it.",
+            defaultValue: true,
+          },
+          image: {
+            type: "imageUrl",
+            displayName: "Photo (optional)",
+          },
+          imageAlt: {
+            type: "string",
+            control: "large",
+            displayName: "Photo description (required if there is a photo)",
+            description: "Describe what is in the photo for people who cannot see it. Example: Hannu Haukka at the first radio studio in 1976.",
+          },
+          readMore: {
+            type: "choice",
+            displayName: "Read more",
+            description: "Automatic: a Read more button appears only when the text is longer than 4 lines. Off: always show all the text. Only used when Use Read more buttons is on.",
+            options: [
+              { value: "auto", label: "Automatic (only when text is long)" },
+              { value: "off", label: "Off (show all the text)" },
+            ],
+            defaultValue: "auto",
+          },
+        },
+      },
+    },
+
+    // ---- Behaviour ----
+    readMoreEnabled: {
+      type: "boolean",
+      displayName: "Use Read more buttons",
+      description: "On: long entries are cut after 4 lines with a Read more button. Off: every entry shows all of its text.",
+      defaultValue: true,
+      section: "Options",
+    },
+    showJumpTo: {
+      type: "boolean",
+      displayName: "Show Jump to buttons",
+      description: "Adds a row of decade buttons (1980s, 1990s...) above the timeline. Works from the years you type.",
+      defaultValue: false,
+      section: "Options",
+    },
+    motion: {
+      type: "choice",
+      displayName: "Motion",
+      description: "Gentle: entries fade in and the line fills as you scroll. Off: nothing moves. Always off for visitors who asked their device for reduced motion.",
+      options: [
+        { value: "gentle", label: "Gentle" },
+        { value: "off", label: "Off" },
+      ],
+      defaultValue: "gentle",
+      section: "Options",
+    },
+
+    // ---- Look ----
+    look: {
+      type: "choice",
+      displayName: "Look",
+      options: [
+        { value: "light", label: "Light (on a white page)" },
+        { value: "dark", label: "Dark (navy and gold)" },
+      ],
+      defaultValue: "light",
+      section: "Look",
+    },
+    spacing: {
+      type: "choice",
+      displayName: "Space above and below",
+      options: [
+        { value: "normal", label: "Normal" },
+        { value: "small", label: "Small" },
+        { value: "none", label: "None" },
+      ],
+      defaultValue: "normal",
+      section: "Look",
+    },
+  },
+  importPath: "./components/Timeline",
 });
 
 PLASMIC.registerComponent(TimelinePage, {
