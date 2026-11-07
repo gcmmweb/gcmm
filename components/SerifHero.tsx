@@ -11,6 +11,13 @@ import { formatInline } from "@/lib/inline-format"
  * Look: small capital label above, big serif heading, short paragraph below,
  * soft blue fade at the top and a bouncing scroll icon at the bottom.
  *
+ * Editing works like Content Section: the same four boxes with the same names
+ * (Eyebrow, Heading, Lead line, Body text) and the same word markers. Example
+ * heading:  Broadcasting *Hope* to the world  (the *starred* word shows in
+ * italic). **bold** works in every box. In Body text, a blank line starts a new
+ * paragraph. (Quotes, bullets and ## subheadings are Content Section features
+ * and are not part of this hero.)
+ *
  * Differences from the old About version (on purpose):
  * - The text is visible straight away. The old one hid it until the page's
  *   JavaScript had started, which left a blank hero on slow phones.
@@ -29,16 +36,26 @@ const MIN_HEIGHTS: Record<HeightChoice, string> = {
   short: "400px",
 }
 
+// A single Enter inside a box stays a line break; formatting markers still work.
+function renderLines(text: string): ReactNode {
+  const lines = text.split("\n")
+  return lines.map((line, i) => (
+    <Fragment key={i}>
+      {i > 0 ? <br /> : null}
+      {formatInline(line)}
+    </Fragment>
+  ))
+}
+
 interface SerifHeroProps {
   className?: string
 
   // Content
   eyebrow?: string
-  headingStart?: string
-  headingItalic?: string
-  headingEnd?: string
+  heading?: string
   headingLevel?: Level
-  description?: string
+  lead?: string
+  body?: string
 
   // Layout
   showScrollIcon?: boolean
@@ -54,11 +71,10 @@ interface SerifHeroProps {
 export function SerifHero({
   className,
   eyebrow = "",
-  headingStart = "",
-  headingItalic = "",
-  headingEnd = "",
+  heading = "",
   headingLevel = "h1",
-  description = "",
+  lead = "",
+  body = "",
   showScrollIcon = true,
   height = "tall",
   backgroundColor,
@@ -73,23 +89,15 @@ export function SerifHero({
 
   const HeadingTag: "h1" | "h2" = headingLevel === "h2" ? "h2" : "h1"
 
-  const start = (headingStart || "").trim()
-  const italic = (headingItalic || "").trim()
-  const end = (headingEnd || "").trim()
-
-  const headingParts: ReactNode[] = []
-  if (start) headingParts.push(start)
-  if (italic) {
-    headingParts.push(
-      <span key="italic" className="italic font-normal">
-        {italic}
-      </span>
-    )
-  }
-  if (end) headingParts.push(end)
+  const headingText = (heading || "").trim()
 
   const label = (eyebrow || "").trim()
-  const paragraph = (description || "").trim()
+  const leadText = (lead || "").trim()
+  // Blank lines start a new paragraph; a single Enter stays a line break.
+  const bodyParagraphs = (body || "")
+    .split(/\n(?:[ \t]*\n)+/)
+    .map((part) => part.trim())
+    .filter(Boolean)
 
   return (
     <section
@@ -112,32 +120,40 @@ export function SerifHero({
               className="text-sm font-medium tracking-[0.2em] uppercase"
               style={{ color: accent }}
             >
-              {label}
+              {formatInline(label)}
             </span>
           </div>
         ) : null}
 
-        {headingParts.length > 0 ? (
+        {headingText ? (
           <HeadingTag
-            className="text-6xl md:text-8xl lg:text-9xl font-serif font-light leading-[0.95] mb-8 text-balance"
+            className="text-6xl md:text-8xl lg:text-9xl font-serif font-light leading-[0.95] mb-8 text-balance [&_em]:font-normal"
             style={{ color: headColor }}
           >
-            {headingParts.map((part, i) => (
-              <Fragment key={i}>
-                {i > 0 ? " " : ""}
-                {part}
-              </Fragment>
-            ))}
+            {formatInline(headingText)}
           </HeadingTag>
         ) : null}
 
-        {paragraph ? (
+        {leadText ? (
           <p
             className="text-xl md:text-2xl max-w-3xl mx-auto leading-relaxed text-balance"
             style={{ color: bodyColor }}
           >
-            {formatInline(paragraph)}
+            {renderLines(leadText)}
           </p>
+        ) : null}
+
+        {bodyParagraphs.length > 0 ? (
+          <div
+            className="text-base md:text-lg max-w-3xl mx-auto leading-relaxed"
+            style={{ color: bodyColor, marginTop: leadText ? "1.5rem" : 0 }}
+          >
+            {bodyParagraphs.map((para, i) => (
+              <p key={i} style={{ marginTop: i === 0 ? 0 : "1.25em" }}>
+                {renderLines(para)}
+              </p>
+            ))}
+          </div>
         ) : null}
       </div>
 

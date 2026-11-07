@@ -16648,28 +16648,15 @@ PLASMIC.registerComponent(SerifHero, {
     // ---- Content ----
     eyebrow: {
       type: "string",
-      displayName: "Label above heading",
-      description: "Small capital letters above the heading. Leave blank to hide it.",
+      displayName: "Eyebrow (small label above heading)",
+      description: "Format words: **bold**, *italic*, ***bold and italic***. Example: Help **one person** discover the *mission*.",
       section: "Content",
     },
-    headingStart: {
+    heading: {
       type: "string",
-      displayName: "Heading - first words",
-      description: "The heading is built in three parts so one word can be italic. Example: Broadcasting",
-      defaultValue: "Your heading",
-      section: "Content",
-    },
-    headingItalic: {
-      type: "string",
-      displayName: "Heading - italic word",
-      description: "The word shown in italic. Example: Hope. Leave blank for no italic word.",
-      defaultValue: "here",
-      section: "Content",
-    },
-    headingEnd: {
-      type: "string",
-      displayName: "Heading - last words",
-      description: "Words after the italic word. Example: to the world. Leave blank if none.",
+      displayName: "Heading",
+      description: "Format words: **bold**, *italic*, ***bold and italic***. Example: Help **one person** discover the *mission*. To get an italic word in the heading, put stars around it: Broadcasting *Hope* to the world.",
+      defaultValue: "Your *heading* here",
       section: "Content",
     },
     headingLevel: {
@@ -16683,11 +16670,18 @@ PLASMIC.registerComponent(SerifHero, {
       defaultValue: "h1",
       section: "Content",
     },
-    description: {
+    lead: {
       type: "string",
       control: "large",
-      displayName: "Paragraph under heading",
+      displayName: "Lead line (large text under heading)",
       description: "Format words: **bold**, *italic*, ***bold and italic***. Example: Help **one person** discover the *mission*.",
+      section: "Content",
+    },
+    body: {
+      type: "string",
+      control: "large",
+      displayName: "Body text",
+      description: "Format words: **bold**, *italic*, ***bold and italic***. Example: Help **one person** discover the *mission*. Press Enter twice (a blank line) to start a new paragraph. Quotes, bullets and subheadings are not available here, use a Content Section for those.",
       section: "Content",
     },
 
