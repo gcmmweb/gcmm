@@ -16861,8 +16861,38 @@ PLASMIC.registerComponent(SerifHero, {
     showScrollIcon: {
       type: "boolean",
       displayName: "Show scroll icon",
-      description: "The little bouncing mouse at the bottom of the hero.",
+      description: "The little mouse at the bottom of the hero that tells visitors there is more below. It fades away once the visitor starts scrolling.",
       defaultValue: true,
+      section: "Layout",
+    },
+    scrollIconClick: {
+      type: "boolean",
+      displayName: "Clicking the scroll icon moves down",
+      description: "On: tapping or clicking the icon scrolls smoothly to the next section of the page. Off: the icon is only decoration.",
+      defaultValue: true,
+      section: "Layout",
+    },
+    scrollIconMotion: {
+      type: "choice",
+      displayName: "Scroll icon motion",
+      description: "Bouncing a few times and then resting catches the eye without nagging. Visitors whose device asks for reduced motion always see it still.",
+      options: [
+        { value: "rest", label: "Bounce a few times, then rest" },
+        { value: "loop", label: "Keep bouncing (original)" },
+        { value: "still", label: "Still" },
+      ],
+      defaultValue: "rest",
+      section: "Layout",
+    },
+    headingAccent: {
+      type: "choice",
+      displayName: "Italic word accent",
+      description: "Draws a line under the *italic* word in the heading, once, when the page opens. The heading text is always visible straight away.",
+      options: [
+        { value: "none", label: "None" },
+        { value: "underline", label: "Underline draws in" },
+      ],
+      defaultValue: "none",
       section: "Layout",
     },
     height: {
