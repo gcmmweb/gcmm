@@ -31,7 +31,9 @@ import { formatInline } from "@/lib/inline-format"
  * Motion (all CSS, no libraries, nothing that shifts the layout):
  * - Scroll icon: bounces a few times, then rests (or keeps bouncing, or stays
  *   still - a Studio dropdown). Hover or keyboard focus bounces it once more.
- * - Clicking or tapping the icon scrolls smoothly to the next section.
+ * - Clicking or tapping the icon glides to the next section (a soft, slightly
+ *   slow ease; the icon nudges down and fades as the page moves). The visitor
+ *   can take over at any moment by scrolling, touching or pressing a key.
  * - The icon sits at the bottom of the first screen the visitor sees (not at the
  *   bottom of a tall hero that may run past the edge of the screen), and fades
  *   away once they scroll. One tiny scroll check that switches itself off after
@@ -55,6 +57,9 @@ const MIN_HEIGHTS: Record<HeightChoice, string> = {
 // Room to leave for the sticky site header when scrolling to the next section.
 const HEADER_GAP = 56
 
+// Height of the icon button (64) plus the breathing room under it (40).
+const CUE_BLOCK = 104
+
 const CSS = `
 @keyframes gsh-bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-22%)}}
 @keyframes gsh-bounce-again{0%,100%{transform:translateY(0)}50%{transform:translateY(-22%)}}
@@ -70,10 +75,10 @@ const CSS = `
 .gsh-cue:hover .gsh-m-rest,.gsh-cue:focus-visible .gsh-m-rest{animation:gsh-bounce-again .8s ease-in-out 2}
 .gsh-cue:hover .gsh-m-rest .gsh-dot,.gsh-cue:focus-visible .gsh-m-rest .gsh-dot{animation:gsh-dot-again .8s ease-in-out 2}
 .gsh-cue:focus-visible{outline:3px solid var(--gsh-accent);outline-offset:2px}
-.gsh-underline em{background-image:linear-gradient(var(--gsh-accent),var(--gsh-accent));background-repeat:no-repeat;background-position:0 100%;background-size:0% 3px;padding-bottom:.04em;-webkit-box-decoration-break:clone;box-decoration-break:clone;animation:gsh-draw 1s cubic-bezier(.22,.61,.36,1) .6s forwards}
+@keyframes gsh-go{0%{transform:translateY(0);opacity:1}100%{transform:translateY(18px);opacity:0}}\n@keyframes gsh-dot-fast{0%{transform:translateY(0);opacity:1}100%{transform:translateY(10px);opacity:0}}\n.gsh-cue.gsh-going .gsh-icon{animation:gsh-go .6s ease-in forwards!important}\n.gsh-cue.gsh-going .gsh-dot{animation:gsh-dot-fast .35s ease-in 2!important}\n.gsh-underline em{background-image:linear-gradient(var(--gsh-accent),var(--gsh-accent));background-repeat:no-repeat;background-position:0 100%;background-size:0% 3px;padding-bottom:.04em;-webkit-box-decoration-break:clone;box-decoration-break:clone;animation:gsh-draw 1s cubic-bezier(.22,.61,.36,1) .6s forwards}
 @media (prefers-reduced-motion:reduce){
 .gsh-m-rest,.gsh-m-loop,.gsh-m-rest .gsh-dot,.gsh-m-loop .gsh-dot,.gsh-cue:hover .gsh-m-rest,.gsh-cue:hover .gsh-m-rest .gsh-dot,.gsh-cue:focus-visible .gsh-m-rest,.gsh-cue:focus-visible .gsh-m-rest .gsh-dot{animation:none!important}
-.gsh-underline em{animation:none!important;background-size:100% 3px!important}
+.gsh-underline em{animation:none!important;background-size:100% 3px!important}\n.gsh-cue.gsh-going .gsh-icon,.gsh-cue.gsh-going .gsh-dot{animation:none!important}
 .gsh-fade{transition:none!important}
 }
 `
@@ -149,11 +154,13 @@ export function SerifHero({
     .filter(Boolean)
 
   const sectionRef = useRef<HTMLElement>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
   const [scrolled, setScrolled] = useState(false)
-  // Height of the part of the hero the visitor can see on the first screen.
-  // The icon sits at the bottom of THAT (not at the bottom of an 800px hero
-  // that may run past the bottom of the screen). null until measured.
-  const [area, setArea] = useState<number | null>(null)
+  const [going, setGoing] = useState(false)
+  // Where the icon sits, measured down from the top of the hero. It goes at the
+  // bottom of the first screen the visitor sees, but never on top of the text.
+  // null until measured.
+  const [cueTop, setCueTop] = useState<number | null>(null)
 
   useEffect(() => {
     if (!showScrollIcon) return
@@ -162,8 +169,11 @@ export function SerifHero({
     const start = el.getBoundingClientRect().top
     const measure = () => {
       const r = el.getBoundingClientRect()
-      const visible = window.innerHeight - r.top
-      setArea(Math.round(Math.max(200, Math.min(r.height, visible))))
+      const firstScreen = Math.min(r.height, window.innerHeight - r.top)
+      const content = contentRef.current
+      const textBottom = content ? content.getBoundingClientRect().bottom - r.top : 0
+      const wanted = Math.max(firstScreen - CUE_BLOCK, textBottom + 12)
+      setCueTop(Math.round(Math.max(0, Math.min(wanted, r.height - 72))))
     }
     // The icon has done its job once the visitor starts scrolling: fade it out.
     // One passive scroll check that removes itself after it fires.
@@ -174,6 +184,7 @@ export function SerifHero({
       }
     }
     measure()
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure)
     window.addEventListener("resize", measure)
     window.addEventListener("scroll", check, { passive: true })
     return () => {
@@ -182,7 +193,9 @@ export function SerifHero({
     }
   }, [showScrollIcon])
 
-  // Scroll to whatever section comes next on the page.
+  // Glide down to whatever section comes next on the page. Slower and softer
+  // than the browser's own smooth scroll, and the visitor can take over at any
+  // moment by scrolling, touching or pressing a key.
   const goNext = () => {
     const el = sectionRef.current
     if (!el) return
@@ -190,12 +203,42 @@ export function SerifHero({
     while (node && !node.nextElementSibling) node = node.parentElement
     const target = node ? (node.nextElementSibling as HTMLElement | null) : null
     if (!target) return
+    const from = window.scrollY
+    const to = Math.max(0, target.getBoundingClientRect().top + from - HEADER_GAP)
+    const dist = to - from
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    const top = target.getBoundingClientRect().top + window.scrollY - HEADER_GAP
-    window.scrollTo({ top, behavior: reduce ? "auto" : "smooth" })
+    if (reduce || Math.abs(dist) < 8) {
+      window.scrollTo({ top: to, behavior: "instant" as ScrollBehavior })
+      return
+    }
+    setGoing(true)
+    const duration = Math.min(1100, Math.max(650, Math.abs(dist) * 0.9))
+    const t0 = performance.now()
+    let stopped = false
+    const stop = () => {
+      stopped = true
+      cleanup()
+    }
+    const cleanup = () => {
+      window.removeEventListener("wheel", stop)
+      window.removeEventListener("touchstart", stop)
+      window.removeEventListener("keydown", stop)
+    }
+    window.addEventListener("wheel", stop, { passive: true })
+    window.addEventListener("touchstart", stop, { passive: true })
+    window.addEventListener("keydown", stop)
+    const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
+    const step = (now: number) => {
+      if (stopped) return
+      const t = Math.min(1, (now - t0) / duration)
+      window.scrollTo({ top: from + dist * ease(t), behavior: "instant" as ScrollBehavior })
+      if (t < 1) requestAnimationFrame(step)
+      else cleanup()
+    }
+    requestAnimationFrame(step)
   }
 
-  const ready = area !== null
+  const ready = cueTop !== null
   const icon = (
     <span className={ready ? `gsh-icon gsh-m-${motion}` : "gsh-icon"}>
       <span
@@ -224,7 +267,7 @@ export function SerifHero({
         }}
       />
 
-      <div className="relative z-10 max-w-5xl mx-auto text-center">
+      <div ref={contentRef} className="relative z-10 max-w-5xl mx-auto text-center">
         {label ? (
           <div className="mb-6 inline-block">
             <span
@@ -270,9 +313,10 @@ export function SerifHero({
 
       {showScrollIcon ? (
         <div
-          className="gsh-fade absolute left-0 right-0 top-0 flex items-end justify-center pb-10"
+          className="gsh-fade absolute left-0 right-0 flex justify-center"
           style={{
-            height: area === null ? "100%" : area,
+            top: cueTop === null ? undefined : cueTop,
+            bottom: cueTop === null ? 40 : undefined,
             opacity: scrolled || !ready ? 0 : 1,
             transition: "opacity .5s ease",
             pointerEvents: "none",
@@ -282,7 +326,7 @@ export function SerifHero({
           {scrollIconClick ? (
             <button
               type="button"
-              className="gsh-cue"
+              className={`gsh-cue${going ? " gsh-going" : ""}`}
               onClick={goNext}
               aria-label="Scroll down to the next section"
               tabIndex={scrolled ? -1 : 0}
