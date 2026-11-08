@@ -32,8 +32,10 @@ import { formatInline } from "@/lib/inline-format"
  * - Scroll icon: bounces a few times, then rests (or keeps bouncing, or stays
  *   still - a Studio dropdown). Hover or keyboard focus bounces it once more.
  * - Clicking or tapping the icon scrolls smoothly to the next section.
- * - The icon fades away once the visitor has scrolled past the top. One tiny
- *   scroll check that switches itself off after it fires once.
+ * - The icon sits at the bottom of the first screen the visitor sees (not at the
+ *   bottom of a tall hero that may run past the edge of the screen), and fades
+ *   away once they scroll. One tiny scroll check that switches itself off after
+ *   it fires once.
  * - Optional: a line draws under the italic heading word, once, on load.
  * - Everything stands still for visitors whose device asks for reduced motion.
  */
@@ -148,22 +150,36 @@ export function SerifHero({
 
   const sectionRef = useRef<HTMLElement>(null)
   const [scrolled, setScrolled] = useState(false)
+  // Height of the part of the hero the visitor can see on the first screen.
+  // The icon sits at the bottom of THAT (not at the bottom of an 800px hero
+  // that may run past the bottom of the screen). null until measured.
+  const [area, setArea] = useState<number | null>(null)
 
-  // The icon has done its job once the visitor starts scrolling: fade it out.
-  // One passive scroll check that removes itself after it fires.
   useEffect(() => {
     if (!showScrollIcon) return
     const el = sectionRef.current
     if (!el) return
+    const start = el.getBoundingClientRect().top
+    const measure = () => {
+      const r = el.getBoundingClientRect()
+      const visible = window.innerHeight - r.top
+      setArea(Math.round(Math.max(200, Math.min(r.height, visible))))
+    }
+    // The icon has done its job once the visitor starts scrolling: fade it out.
+    // One passive scroll check that removes itself after it fires.
     const check = () => {
-      if (el.getBoundingClientRect().top < -40) {
+      if (Math.abs(el.getBoundingClientRect().top - start) > 60) {
         setScrolled(true)
         window.removeEventListener("scroll", check)
       }
     }
+    measure()
+    window.addEventListener("resize", measure)
     window.addEventListener("scroll", check, { passive: true })
-    check()
-    return () => window.removeEventListener("scroll", check)
+    return () => {
+      window.removeEventListener("resize", measure)
+      window.removeEventListener("scroll", check)
+    }
   }, [showScrollIcon])
 
   // Scroll to whatever section comes next on the page.
@@ -179,8 +195,9 @@ export function SerifHero({
     window.scrollTo({ top, behavior: reduce ? "auto" : "smooth" })
   }
 
+  const ready = area !== null
   const icon = (
-    <span className={`gsh-icon gsh-m-${motion}`}>
+    <span className={ready ? `gsh-icon gsh-m-${motion}` : "gsh-icon"}>
       <span
         className="w-6 h-10 border-2 rounded-full flex items-start justify-center p-2"
         style={{ borderColor: accent }}
@@ -253,11 +270,12 @@ export function SerifHero({
 
       {showScrollIcon ? (
         <div
-          className="gsh-fade absolute bottom-10 left-0 right-0 flex justify-center"
+          className="gsh-fade absolute left-0 right-0 top-0 flex items-end justify-center pb-10"
           style={{
-            opacity: scrolled ? 0 : 1,
+            height: area === null ? "100%" : area,
+            opacity: scrolled || !ready ? 0 : 1,
             transition: "opacity .5s ease",
-            pointerEvents: scrolled ? "none" : "auto",
+            pointerEvents: "none",
           }}
           aria-hidden={scrolled || !scrollIconClick ? true : undefined}
         >
@@ -268,6 +286,7 @@ export function SerifHero({
               onClick={goNext}
               aria-label="Scroll down to the next section"
               tabIndex={scrolled ? -1 : 0}
+              style={{ pointerEvents: scrolled ? "none" : "auto" }}
             >
               {icon}
             </button>
