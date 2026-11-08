@@ -130,8 +130,8 @@ const CSS = `
 .gtl-fade{-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 1.7em),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - 1.7em),transparent)}
 .gtl-more{display:inline-flex;align-items:center;justify-content:center;min-height:2.75rem;margin-top:.75rem;padding:0 1.5rem;border:2px solid var(--gtl-accent);border-radius:999px;background:transparent;color:var(--gtl-accent);font:inherit;font-size:1rem;font-weight:600;cursor:pointer;transition:background-color .2s ease,color .2s ease}
 .gtl-more:hover{background:var(--gtl-accent);color:var(--gtl-accent-text)}
-.gtl-photo{position:relative;width:100%;max-width:26rem;margin-top:1.25rem;aspect-ratio:4/3;overflow:hidden;border-radius:.5rem;background:var(--gtl-photo-bg)}
-.gtl-note{max-width:26rem;margin:.75rem 0 0;padding:.5rem .75rem;border-radius:.375rem;background:var(--gtl-note-bg);color:var(--gtl-note-text);font-size:.9rem;line-height:1.4}
+.gtl-photo{position:relative;width:100%;max-width:24rem;margin-top:1.25rem;aspect-ratio:4/3;overflow:hidden;border-radius:.5rem;background:var(--gtl-photo-bg)}
+.gtl-note{max-width:24rem;margin:.75rem 0 0;padding:.5rem .75rem;border-radius:.375rem;background:var(--gtl-note-bg);color:var(--gtl-note-text);font-size:.9rem;line-height:1.4}
 @media (max-width:767px){
 .gtl{--gtl-yfs:1.75rem;--gtl-rail:2.25rem;--gtl-tfs:1.0625rem}
 .gtl-track{left:calc(var(--gtl-rail)/2 - 1px)}
@@ -271,7 +271,7 @@ function Entry({ event, id, textId, EntryTitle, titleFont, readMoreOn, motionOn,
               src={getImageUrl(photoUrl)}
               alt={alt || (year ? `Ministry work in ${year}` : "Ministry work")}
               fill
-              sizes="(max-width: 767px) calc(100vw - 6rem), 416px"
+              sizes="(max-width: 767px) calc(100vw - 4.75rem), 384px"
               style={{ objectFit: "cover" }}
               loading="lazy"
             />
