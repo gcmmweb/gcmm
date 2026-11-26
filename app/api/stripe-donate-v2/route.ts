@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import Stripe from "stripe"
 import nodemailer from "nodemailer"
+import { createHash } from "crypto"
 
 // Initialize Stripe
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -133,6 +134,120 @@ function getClientIP(request: NextRequest): string {
   if (forwarded) return forwarded.split(",")[0].trim()
   if (realIP) return realIP
   return "127.0.0.1"
+}
+
+// -----------------------------------------------------------------------------
+// MAILCHIMP: add NEW donors to the newsletter audience
+// -----------------------------------------------------------------------------
+// Rules this follows:
+//  - Only if the donor left the newsletter box ticked.
+//  - Only if the email is NOT already in the audience. Anyone already there
+//    (subscribed, unsubscribed, cleaned, archived) is left completely alone:
+//    no tag, no change, no welcome email.
+//  - If Mailchimp is slow, down, or not set up, the donation and the receipt
+//    emails are NOT affected. The problem is just logged (never the email address).
+
+// null = donors from every country. To limit it, e.g. Canada only: ["CA"]
+const NEWSLETTER_ALLOWED_COUNTRIES: string[] | null = null
+
+// Campaign ID typed in Plasmic -> the existing Mailchimp tag for that campaign.
+// "general" (Where Most Needed) has no campaign tag, only WebDonor.
+const CAMPAIGN_TAGS: Record<string, string> = {
+  mcmc: "MegaCityCampaign",
+  "sat-tv": "10/40Window",
+  "israel-ministries": "IsraelJewishMinistries",
+  ukraineaid: "UkraineAid",
+}
+
+// What the thank-you page is told:
+//  "added"              = newly added to the newsletter
+//  "already_subscribed" = was already on the list (nothing changed)
+//  "opted_out"          = donor unticked the box
+//  "not_added"          = anything else (unsubscribed before, error, not set up)
+type NewsletterResult = "added" | "already_subscribed" | "opted_out" | "not_added"
+
+async function addDonorToNewsletter(
+  donorInfo: any,
+  campaignId: string,
+  optedIn: boolean
+): Promise<NewsletterResult> {
+  try {
+    if (!optedIn) return "opted_out"
+
+    const apiKey = process.env.MAILCHIMP_API_KEY
+    const serverPrefix = process.env.MAILCHIMP_SERVER_PREFIX
+    const audienceId = process.env.MAILCHIMP_AUDIENCE_ID
+    if (!apiKey || !serverPrefix || !audienceId) {
+      // Settings not present here (for example the live site, until we turn it on).
+      return "not_added"
+    }
+
+    const country = String(donorInfo?.country || "").toUpperCase()
+    if (NEWSLETTER_ALLOWED_COUNTRIES && !NEWSLETTER_ALLOWED_COUNTRIES.includes(country)) {
+      return "not_added"
+    }
+
+    const email = String(donorInfo?.email || "").trim().toLowerCase()
+    if (!email || !email.includes("@")) return "not_added"
+
+    const memberUrl =
+      "https://" + serverPrefix + ".api.mailchimp.com/3.0/lists/" + audienceId +
+      "/members/" + createHash("md5").update(email).digest("hex")
+    const headers = {
+      Authorization: "Bearer " + apiKey,
+      "Content-Type": "application/json",
+    }
+
+    // 1. Is this email already in the audience? Then leave them completely alone.
+    const check = await fetch(memberUrl + "?fields=status", {
+      headers,
+      signal: AbortSignal.timeout(8000),
+    })
+    if (check.status === 200) {
+      const existing = await check.json()
+      return existing?.status === "subscribed" ? "already_subscribed" : "not_added"
+    }
+    if (check.status !== 404) {
+      console.error("[mailchimp] could not check the donor. Status:", check.status)
+      return "not_added"
+    }
+
+    // 2. New to the audience: add them. status_if_new never changes an existing contact.
+    const fullName = String(donorInfo?.name || "").trim()
+    const space = fullName.indexOf(" ")
+    const firstName = space > 0 ? fullName.slice(0, space) : fullName
+    const lastName = space > 0 ? fullName.slice(space + 1) : ""
+
+    const tags = ["WebDonor"]
+    const id = String(campaignId || "").toLowerCase()
+    if (CAMPAIGN_TAGS[id]) {
+      tags.push(CAMPAIGN_TAGS[id])
+    } else if (id && id !== "general") {
+      console.warn("[mailchimp] no tag set up for campaign ID:", id)
+    }
+
+    const add = await fetch(memberUrl + "?skip_merge_validation=true", {
+      method: "PUT",
+      headers,
+      body: JSON.stringify({
+        email_address: email,
+        status_if_new: "subscribed",
+        merge_fields: { FNAME: firstName, LNAME: lastName },
+        tags,
+      }),
+      signal: AbortSignal.timeout(8000),
+    })
+    if (!add.ok) {
+      const detail = await add.text().catch(() => "")
+      console.error("[mailchimp] could not add the donor. Status:", add.status, detail.slice(0, 300))
+      return "not_added"
+    }
+    const added = await add.json()
+    return added?.status === "subscribed" ? "added" : "not_added"
+  } catch (error) {
+    console.error("[mailchimp] problem (the donation is not affected):", error)
+    return "not_added"
+  }
 }
 
 // Email transporter setup
@@ -423,6 +538,7 @@ export async function POST(request: NextRequest) {
       comment,
       account_id,
       email_customization,
+      newsletter_opt_in,
     }: {
       amount: number
       currency?: string
@@ -432,6 +548,7 @@ export async function POST(request: NextRequest) {
       comment?: string
       account_id?: string
       email_customization?: EmailCustomization
+      newsletter_opt_in?: boolean
     } = await request.json()
 
     console.log("[v0] Received payment method ID:", payment_method_id)
@@ -584,8 +701,12 @@ export async function POST(request: NextRequest) {
             ),
           ])
 
+          // Newsletter step: never blocks or breaks the donation (see helper above)
+          const newsletter = await addDonorToNewsletter(donor_info, campaignId, newsletter_opt_in === true)
+
           return NextResponse.json({
             success: true,
+            newsletter,
             payment_intent_id: subPaymentIntent.id,
             subscription_id: subscription.id,
             customer_id: customer.id,
@@ -710,8 +831,12 @@ export async function POST(request: NextRequest) {
       // (Monthly donations are handled earlier via the subscription flow —
       // they never reach this point.)
 
+      // Newsletter step: never blocks or breaks the donation (see helper above)
+      const newsletter = await addDonorToNewsletter(donor_info, campaignId, newsletter_opt_in === true)
+
       return NextResponse.json({
         success: true,
+        newsletter,
         payment_intent_id: confirmedPaymentIntent.id,
         amount: confirmedPaymentIntent.amount,
         currency: confirmedPaymentIntent.currency,
