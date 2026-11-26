@@ -642,6 +642,9 @@ export function StripeDonationPage({
         amount: Number(redirectAmount) || 0,
         frequency: redirectFrequency || "one-time",
         name: redirectName || "",
+        // What the server did about the newsletter: "added", "already_subscribed",
+        // "opted_out" or "not_added". Missing (older flows) = "".
+        newsletter: typeof result?.newsletter === "string" ? result.newsletter : "",
       }
       window.sessionStorage.setItem("gcmm_donation", JSON.stringify(donationRecord))
     } catch {

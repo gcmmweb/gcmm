@@ -33,6 +33,7 @@ interface DonationRecord {
   amount: number
   frequency: string
   name: string
+  newsletter?: string // "added" | "already_subscribed" | "opted_out" | "not_added"
 }
 
 const FALLBACK_HEADLINE = "Your generosity is already at work."
@@ -69,6 +70,7 @@ export default function DonationThankYou({
   const amount = record ? String(record.amount || "") : searchParams?.get("amount") ?? ""
   const frequency = record?.frequency ?? searchParams?.get("frequency") ?? ""
   const donorName = record?.name ?? searchParams?.get("name") ?? ""
+  const newsletterStatus = record?.newsletter ?? ""
 
   const matched = campaigns.find(
   (c) => c.campaignId && c.campaignId.toLowerCase() === campaignId.toLowerCase()
@@ -183,12 +185,31 @@ export default function DonationThankYou({
           </p>
         </div>
 
-        <div style={styles.ctaRow}>
-          <a href={newsletterUrl} style={styles.ctaButton}>
-            <Heart size={16} style={{ marginRight: 6, verticalAlign: -2 }} />
-            Subscribe to updates
-          </a>
-        </div>
+        {/* Newsletter area:
+            added              -> says so, no button
+            already_subscribed -> nothing (they already get it)
+            opted_out          -> nothing (they unticked the box)
+            anything else      -> the original "Subscribe to updates" button */}
+        {newsletterStatus === "added" && (
+          <div style={styles.noticeBox}>
+            <CheckCircle size={18} color={accentColor} style={{ flexShrink: 0, marginTop: 2 }} />
+            <p style={styles.noticeText}>
+              You have been added to our monthly ministry newsletter. You can unsubscribe
+              anytime using the link in any of our emails.
+            </p>
+          </div>
+        )}
+
+        {newsletterStatus !== "added" &&
+          newsletterStatus !== "already_subscribed" &&
+          newsletterStatus !== "opted_out" && (
+            <div style={styles.ctaRow}>
+              <a href={newsletterUrl} style={styles.ctaButton}>
+                <Heart size={16} style={{ marginRight: 6, verticalAlign: -2 }} />
+                Subscribe to updates
+              </a>
+            </div>
+          )}
       </div>
     </div>
   )
