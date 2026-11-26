@@ -253,6 +253,7 @@ function StripePaymentForm({
           },
           frequency: donationData.frequency,
           comment: donationData.comment,
+          newsletter_opt_in: donationData.newsletterOptIn === true,
           email_customization: emailCustomization,
         }),
       })
@@ -477,6 +478,7 @@ export function StripeDonationPage({
     zipCode: "",
     country: "CA", // FIX: GCMM is Canadian — default CA (was hardcoded US with no field to change it)
     comment: "",
+    newsletterOptIn: true, // pre-ticked: donor unticks to stay off the newsletter
   })
 
   const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle")
@@ -624,6 +626,7 @@ export function StripeDonationPage({
       zipCode: "",
       country: "CA", // FIX: was hardcoded US
       comment: "",
+      newsletterOptIn: true,
     })
 
     // LIVE — redirects to the real thank-you page after a successful donation.
@@ -980,6 +983,24 @@ export function StripeDonationPage({
                 rows={3}
                 className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-300 resize-none"
               />
+            </div>
+
+            {/* Newsletter box (pre-ticked). Unticked = donor is never added to Mailchimp. */}
+            <div className="mb-8">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="newsletterOptIn"
+                  checked={donationForm.newsletterOptIn}
+                  onChange={(e) =>
+                    setDonationForm((prev) => ({ ...prev, newsletterOptIn: e.target.checked }))
+                  }
+                  className="mt-1 h-5 w-5 flex-shrink-0 rounded border-slate-300 text-blue-600 focus:ring-blue-300"
+                />
+                <span className="text-slate-700 text-base leading-snug">
+                  Keep me updated with the monthly ministry newsletter. Unsubscribe anytime.
+                </span>
+              </label>
             </div>
 
             {isFormValid() && resolvedStripePromise && (
