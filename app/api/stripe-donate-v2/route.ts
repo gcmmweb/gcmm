@@ -367,7 +367,7 @@ async function sendConfirmationEmail(
       : `${process.env.NEXT_PUBLIC_BASE_URL || "https://gcmm.ca"}${bannerUrl}`
 
     const mailOptions = {
-      from: `"${orgName}" <${process.env.SMTP_USER}>`,
+      from: `"${orgName}" <${process.env.EMAIL_FROM || process.env.SMTP_USER}>`,
       to: donorInfo.email,
       subject: subject,
       html: `
@@ -473,7 +473,7 @@ async function sendNotificationEmail(
     }
 
     const mailOptions = {
-      from: `"${orgName}" <${process.env.SMTP_USER}>`,
+      from: `"${orgName}" <${process.env.EMAIL_FROM || process.env.SMTP_USER}>`,
       to: notificationRecipient,
       subject: `New Donation Received - ${formattedAmount}${accountId ? ` (Account: ${escapeHtml(accountId)})` : ""}`,
       html: `
